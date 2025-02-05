@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:app2025/cliente/provider/user_provider.dart';
-import 'package:app2025/config/model/zona_model.dart';
+import 'package:app2025/conductor/model/zona_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:location/location.dart' as location_package;

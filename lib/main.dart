@@ -22,6 +22,7 @@ import 'package:app2025/conductor/notificaciones.dart';
 import 'package:app2025/conductor/demo.dart';
 import 'package:app2025/config/localization.dart';
 import 'package:app2025/config/notifications.dart';
+import 'package:app2025/config/socketcentral.dart';
 import 'package:app2025/inicios/bienvenida.dart';
 import 'package:app2025/inicios/login.dart';
 import 'package:app2025/inicios/nowifi.dart';
@@ -59,7 +60,7 @@ void main() async {
 
   UserProvider userProvider = UserProvider();
   await userProvider.initUser();
-
+  SocketService();
   runApp(
     MultiProvider(
       providers: [

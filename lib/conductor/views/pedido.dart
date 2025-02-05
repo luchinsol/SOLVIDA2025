@@ -1,3 +1,4 @@
+import 'package:app2025/config/socketcentral.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -23,6 +24,8 @@ class _DrivePedidosState extends State<DrivePedidos> {
   LatLng _currentPosition = const LatLng(-16.4014, -71.5343);
   BitmapDescriptor? _destinationIcon;
   String _mapStyle = '';
+  final SocketService socketService = SocketService();
+
   // FUNCIONES
   Future<void> _loadMarkerIcons() async {
     _destinationIcon = await BitmapDescriptor.asset(
@@ -86,6 +89,23 @@ class _DrivePedidosState extends State<DrivePedidos> {
   @override
   void initState() {
     super.initState();
+    socketService.loadConductorEvent(3);
+    socketService.onHolapedido((data) {
+      print("$data");
+    });
+
+    /* socketService.
+
+    socketService.emitEvent('register_driver', 1);
+
+    socketService.((data) {
+      print("Llegué tarde $data");
+    });
+
+    socketService.onPedidoNow((data) {
+      print("A tiempo $data");
+    });*/
+
     _loadMarkerIcons();
     _loadMapStyle();
     selected = List.generate(
