@@ -8,7 +8,7 @@ import 'package:app2025/cliente/pedido.dart';
 import 'package:app2025/cliente/provider/pedido_provider.dart';
 import 'package:app2025/cliente/provider/ubicacion_list_provider.dart';
 import 'package:app2025/cliente/provider/user_provider.dart';
-import 'package:app2025/config/model/zona_model.dart';
+import 'package:app2025/conductor/model/zona_model.dart';
 import 'package:app2025/config/socketcentral.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
