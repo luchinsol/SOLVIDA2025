@@ -2,7 +2,7 @@ import 'package:app2025/cliente/models/pedido_model.dart';
 import 'package:app2025/cliente/models/producto_model.dart';
 import 'package:app2025/cliente/models/producto_promocion.dart';
 import 'package:app2025/cliente/models/promo_model.dart';
-import 'package:app2025/cliente/pedido.dart';
+import 'package:app2025/cliente/views/pedido.dart';
 import 'package:app2025/cliente/provider/pedido_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';

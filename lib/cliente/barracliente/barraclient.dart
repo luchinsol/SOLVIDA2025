@@ -57,10 +57,10 @@ class _CurvedNavigationState extends State<BarraCliente> {
 }
 */
 
-import 'package:app2025/cliente/estadopedido.dart';
-import 'package:app2025/cliente/hola.dart';
-import 'package:app2025/cliente/perfilcliente.dart';
-import 'package:app2025/cliente/promos.dart';
+import 'package:app2025/cliente/views/estadopedido.dart';
+import 'package:app2025/cliente/views/hola.dart';
+import 'package:app2025/cliente/views/perfilcliente.dart';
+import 'package:app2025/cliente/views/promos.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 

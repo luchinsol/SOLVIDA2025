@@ -1,7 +1,7 @@
 import 'package:app2025/cliente/models/ubicacion_model.dart';
 import 'package:app2025/cliente/models/user_model.dart';
 import 'package:app2025/cliente/provider/user_provider.dart';
-import 'package:app2025/config/localization.dart';
+import 'package:app2025/cliente/config/localization.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

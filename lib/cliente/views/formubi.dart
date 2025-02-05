@@ -146,7 +146,7 @@ Map<String, List<String>> distritosPorProvincia = {
 
 }*/
 
-import 'package:app2025/cliente/confirmarubi.dart';
+import 'package:app2025/cliente/views/confirmarubi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';

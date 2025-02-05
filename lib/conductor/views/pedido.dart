@@ -1,4 +1,4 @@
-import 'package:app2025/config/socketcentral.dart';
+import 'package:app2025/conductor/config/socketcentral.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
