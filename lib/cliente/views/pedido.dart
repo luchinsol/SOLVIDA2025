@@ -1,10 +1,10 @@
-import 'package:app2025/cliente/formubi.dart';
+import 'package:app2025/cliente/views/formubi.dart';
 import 'package:app2025/cliente/models/pedido_model.dart';
 import 'package:app2025/cliente/models/producto_model.dart';
 import 'package:app2025/cliente/models/promo_model.dart';
 import 'package:app2025/cliente/models/ubicacion_list_model.dart';
 import 'package:app2025/cliente/models/ubicacion_model.dart';
-import 'package:app2025/cliente/prefinal.dart';
+import 'package:app2025/cliente/views/prefinal.dart';
 import 'package:app2025/cliente/provider/pedido_provider.dart';
 import 'package:app2025/cliente/provider/ubicacion_list_provider.dart';
 import 'package:app2025/cliente/provider/ubicacion_provider.dart';

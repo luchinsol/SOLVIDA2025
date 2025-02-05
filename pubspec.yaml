@@ -91,7 +91,7 @@ flutter:
   assets:
      - lib/animaciones/
      - lib/imagenes/
-     - lib/stylemap/
+     - lib/conductor/stylemap/
      - .env
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

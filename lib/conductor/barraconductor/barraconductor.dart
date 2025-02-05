@@ -1,7 +1,7 @@
-import 'package:app2025/conductor/historial.dart';
-import 'package:app2025/conductor/inicio.dart';
-import 'package:app2025/conductor/pedido.dart';
-import 'package:app2025/conductor/perfil.dart';
+import 'package:app2025/conductor/views/historial.dart';
+import 'package:app2025/conductor/views/inicio.dart';
+import 'package:app2025/conductor/views/pedido.dart';
+import 'package:app2025/conductor/views/perfil.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
