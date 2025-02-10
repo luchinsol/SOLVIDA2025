@@ -3,8 +3,8 @@ class NotificacionesModel {
   String mensaje;
   String tipo;
   String estado;
-  DateTime fechacreacion;
-  DateTime fechaenvio;
+  String fechacreacion;
+  String fechaenvio;
 
   NotificacionesModel({
     required this.id,

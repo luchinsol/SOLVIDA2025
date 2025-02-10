@@ -1,3 +1,4 @@
+import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:badges/badges.dart' as badges;
+import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class InicioDriver extends StatefulWidget {
@@ -22,12 +24,19 @@ class _InicioDriverState extends State<InicioDriver> {
     "Moquegua",
     "San Juan de Lima asd a asdf"
   ];
-  //bool light = true;
+  bool light = false;
 
-  bool enabled = false;
+  bool enabled = true;
 
   @override
   Widget build(BuildContext context) {
+    final conductorProvider = context.watch<ConductorProvider>();
+    if (conductorProvider.conductor != null) {
+      setState(() {
+        enabled = false;
+      });
+    }
+
     return Scaffold(
         backgroundColor: Colors.white,
         body: Container(
@@ -52,7 +61,10 @@ class _InicioDriverState extends State<InicioDriver> {
                             width: 45.h,
                             decoration: BoxDecoration(
                                 color: const Color.fromARGB(255, 255, 255, 255),
-                                borderRadius: BorderRadius.circular(50.r)),
+                                borderRadius: BorderRadius.circular(50.r),
+                                image: DecorationImage(
+                                    image: NetworkImage(
+                                        'https://cdn-icons-png.flaticon.com/512/10987/10987390.png'))),
                           ),
                           Container(
                             height: 45.h,
@@ -103,7 +115,7 @@ class _InicioDriverState extends State<InicioDriver> {
                             baseColor: Colors.white,
                             highlightColor: Colors.grey.shade500),
                         child: Text(
-                          "Hola, Jhon",
+                          "Hola, ${conductorProvider.conductor?.nombres}",
                           style: GoogleFonts.manrope(
                               fontSize: 22.sp,
                               color: Colors.white,
@@ -131,7 +143,7 @@ class _InicioDriverState extends State<InicioDriver> {
                                 baseColor: Colors.white,
                                 highlightColor: Colors.grey.shade500),
                             child: Text(
-                              "4.5",
+                              "${conductorProvider.conductor?.valoracion}",
                               style: GoogleFonts.manrope(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -171,7 +183,8 @@ class _InicioDriverState extends State<InicioDriver> {
                               effect: ShimmerEffect(
                                   baseColor: Colors.white,
                                   highlightColor: Colors.grey.shade500),
-                              child: Text("Arequipa",
+                              child: Text(
+                                  "${conductorProvider.conductor?.departamento}",
                                   style: GoogleFonts.manrope(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
@@ -234,10 +247,10 @@ class _InicioDriverState extends State<InicioDriver> {
                           ),
                           Switch(
                               activeColor: Colors.amber, //.shade400,
-                              value: enabled,
+                              value: light,
                               onChanged: (bool value) {
                                 setState(() {
-                                  enabled = value;
+                                  light = value;
                                 });
                               })
                         ],

@@ -1,10 +1,19 @@
+import 'dart:convert';
+
+import 'package:app2025/conductor/model/almacenes_model.dart';
+import 'package:app2025/conductor/providers/almacen_provider.dart';
+import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:http/http.dart' as http;
 
 class Almacenes extends StatefulWidget {
   const Almacenes({Key? key}) : super(key: key);
@@ -20,9 +29,11 @@ class _AlmacenesState extends State<Almacenes> {
       false; // Lista para controlar el estado expandido de cada ítem
 
   BitmapDescriptor? _destinationIcon;
+  String microUrl = dotenv.env['MICRO_URL'] ?? '';
 
   Future<void> _loadMapStyle() async {
-    String style = await rootBundle.loadString('lib/stylemap/estilomap.json');
+    String style =
+        await rootBundle.loadString('lib/conductor/stylemap/estilomap.json');
     setState(() {
       _mapStyle = style;
     });
@@ -35,16 +46,73 @@ class _AlmacenesState extends State<Almacenes> {
     );
   }
 
+  Future<void> cargaAlmacenID() async {
+    int? almacenId = 0;
+    String? token = '';
+
+    try {
+      final conductorProvider =
+          Provider.of<ConductorProvider>(context, listen: false);
+
+      if (conductorProvider.conductor != null) {
+        setState(() {
+          almacenId = conductorProvider.conductor?.evento_id;
+        });
+
+        SharedPreferences tokenUser = await SharedPreferences.getInstance();
+        setState(() {
+          token = tokenUser.getString('token'); // Recupera el token
+        });
+
+        if (token == null) {
+          print("No hay token almacenado");
+          return;
+        }
+      }
+
+      var res = await http.get(
+          Uri.parse(microUrl + '/almacen/' + almacenId.toString()),
+          headers: {"Authorization": "Bearer $token"});
+      if (res.statusCode == 200) {
+        var data = json.decode(res.body);
+        print("alma...............");
+        print(data['id']);
+        print(data['nombre']);
+        print(data['latitud']);
+        if (data != null && data is Map<String, dynamic>) {
+          // Asegurar que es un mapa válido
+          AlmacenModel newAlmacen = AlmacenModel(
+            id: data['id'],
+            nombre: data['nombre'],
+            latitud: data['latitud'],
+            longitud: data['longitud'],
+            horario: data['horario'],
+            departamento: data['departamento'],
+            provincia: data['provincia'],
+            direccion: data['direccion'],
+          );
+          Provider.of<AlmacenProvider>(context, listen: false)
+              .updateAlmacen(newAlmacen);
+        }
+      }
+    } catch (e) {
+      throw Exception('Error get almacen $e');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _loadMapStyle();
     _loadMarkerIcons();
+    cargaAlmacenID();
     // Inicializa todos los ítems como "no seleccionados"
   }
 
   @override
   Widget build(BuildContext context) {
+    final almacenProvider = context.watch<AlmacenProvider>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -99,13 +167,38 @@ class _AlmacenesState extends State<Almacenes> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    "Almacén 1",
+                                    "Almacén ${almacenProvider.almacen?.nombre}",
                                     style: GoogleFonts.manrope(
                                         fontSize: 14.sp,
                                         color: Colors.grey.shade600),
                                   ),
+                                  Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: "Horario: ",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color.fromARGB(
+                                                255, 25, 43, 145),
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: almacenProvider
+                                                  .almacen?.horario ??
+                                              '',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.normal,
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   Text(
-                                    "Fátima, KM 2.3, Yanahuara, Arequipa",
+                                    "${almacenProvider.almacen?.direccion}, ${almacenProvider.almacen?.provincia}",
                                     style: GoogleFonts.manrope(
                                         fontSize: 14.sp,
                                         fontWeight: FontWeight.w600),
