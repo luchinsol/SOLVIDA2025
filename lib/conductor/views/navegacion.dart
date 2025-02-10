@@ -102,7 +102,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   }
 
   Future<void> _loadMapStyle() async {
-    String style = await rootBundle.loadString('lib/stylemap/estilomap.json');
+    String style =
+        await rootBundle.loadString('lib/conductor/stylemap/estilomap.json');
     setState(() {
       _mapStyle = style;
     });

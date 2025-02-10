@@ -149,7 +149,58 @@ class _BienvenidaState extends State<Bienvenida> {
                 ),
 
                 SizedBox(
-                  height: 80.h,
+                  height: 26.h,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        color: Colors.white,
+                        thickness: 2,
+                        indent: 40.sp,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal:
+                              8.0), // Espacio entre las líneas y el texto
+                      child: Text(
+                        "o",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: Colors.white,
+                        thickness: 2,
+                        endIndent: 40.sp,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 26.h,
+                ),
+                Container(
+                  width: 331.w,
+                  height: 39.h,
+                  // color: Colors.grey,
+                  child: ElevatedButton(
+                      onPressed: () {
+                        context.push('/repartidortemp');
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromRGBO(0, 77, 255, 1),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.r))),
+                      child: Text(
+                        "Iniciar sesión conductor",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                            fontSize: 18.sp,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700),
+                      )),
                 ),
               ],
             ),

@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:http/http.dart' as http;
 
 class Calificacion extends StatefulWidget {
   const Calificacion({Key? key}) : super(key: key);
@@ -13,6 +18,37 @@ class Calificacion extends StatefulWidget {
 class _CalificacionState extends State<Calificacion> {
   // Variable para mantener la calificación actual
   int _rating = 0;
+  String microUrl = dotenv.env['MICRO_URL'] ?? '';
+
+  Future<void> updateCalificationClient(int calificacion) async {
+    print("...claificcacion");
+    print(calificacion);
+    try {
+      SharedPreferences tokenUser = await SharedPreferences.getInstance();
+      String? token = tokenUser.getString('token');
+
+      if (token == null) {
+        return;
+      }
+      var res = await http.put(Uri.parse(microUrl + '/cliente_calificar/4'),
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json", // Especifica que envías JSON
+          },
+          body: jsonEncode({"calificacion": calificacion}));
+      if (res.statusCode == 200) {
+        var data = json.decode(res.body);
+        print(data['calificacion']);
+      }
+    } catch (e) {
+      throw Exception('Error update calification $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +118,7 @@ class _CalificacionState extends State<Calificacion> {
                       setState(() {
                         _rating = index + 1;
                       });
+                      print(_rating);
                     },
                     icon: Icon(
                       _rating >= index + 1
@@ -107,7 +144,13 @@ class _CalificacionState extends State<Calificacion> {
                 height: 70.h,
                 width: 1.sw,
                 child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      if (_rating == 0) {
+                        setState(() {
+                          _rating = 5;
+                        });
+                      }
+                      await updateCalificationClient(_rating);
                       context.go('/drive');
                     },
                     style: ButtonStyle(
