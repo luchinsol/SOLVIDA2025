@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
@@ -59,14 +62,27 @@ class NotificationsService {
   // Manejo de respuestas a las acciones de la notificación
   void onNotificationResponse(NotificationResponse response) {
     final actionId = response.actionId;
+    final payload = response.payload;
+    if (payload == null) return;
     print("Response type: ${response.notificationResponseType}");
+    final pedidoData = json.decode(payload);
+    print("PEDIDO DATA NOTIFIACACIONES.------------------>${pedidoData}");
+    final pedidoId = pedidoData['id']?.toString();
+    print("PEDIDO DATA NOTIFIACACIONES.------------------>${pedidoId}");
+    if (pedidoId == null) return;
     switch (actionId) {
-      case 'accept_action':
+      case 'accept_order':
         print("La acción 'Aceptar' fue seleccionada");
         // Lógica para aceptar
+        final pedidosProvider = PedidosProvider();
+        print(
+            "EVENTO FUE ACTUALIZADO----->${pedidosProvider.getActivePedidos().length}");
+        pedidosProvider.aceptarPedido(pedidoId);
+        print(
+            "EVENTO FUE ACTUALIZADO----->${pedidosProvider.getActivePedidos().length}");
         break;
-      case 'deny_action':
-        print("La acción 'Denegar' fue seleccionada");
+      case 'view_order':
+        print("Acción 'Ver' seleccionada para pedido: $pedidoId");
         // Lógica para denegar
         break;
       default:
@@ -91,21 +107,21 @@ class NotificationsService {
   // Detalles de la notificación con acciones
   NotificationDetails notificationDetailsWithActions() {
     final androidChannel = AndroidNotificationDetails(
-      'daily_channel',
-      'Action Notifications',
-      channelDescription: 'Notificaciones con acciones',
+      'orders_channel',
+      'Order Notifications',
+      channelDescription: 'Notificaciones de pedidos nuevos',
       importance: Importance.max,
       priority: Priority.high,
       playSound: true,
       setAsGroupSummary: true,
       actions: [
         AndroidNotificationAction(
-            'accept_action', // ID de la acción
+            'accept_order', // ID de la acción
             'Aceptar', // Título del botón
             showsUserInterface: true),
         AndroidNotificationAction(
-            'deny_action', // ID de la acción
-            'Denegar', // Título del botón
+            'view_order', // ID de la acción
+            'Ver', // Título del botón
             showsUserInterface: true),
       ],
     );
@@ -121,6 +137,7 @@ class NotificationsService {
     required String body,
     required String payload,
   }) async {
+    if (!_isInitialized) await initNotification();
     try {
       await notificationsPlugin.show(
         id,

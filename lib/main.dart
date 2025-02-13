@@ -13,6 +13,7 @@ import 'package:app2025/cliente/provider/ubicacion_list_provider.dart';
 import 'package:app2025/cliente/provider/ubicacion_provider.dart';
 import 'package:app2025/cliente/provider/user_provider.dart';
 import 'package:app2025/conductor/barraconductor/barraconductor.dart';
+import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/views/calificacion.dart';
 import 'package:app2025/conductor/views/cargaproductos.dart';
 import 'package:app2025/conductor/views/demodrive.dart';
@@ -43,6 +44,7 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final notificationsService = NotificationsService();
   NotificationsService().initNotification();
   NotificationsService().requestNotificationPermission();
 
@@ -68,6 +70,11 @@ void main() async {
         ChangeNotifierProvider(create: (context) => PedidoProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionListProvider()),
+        ChangeNotifierProvider(create: (context) {
+          final pedidosProvider = PedidosProvider();
+          // Setup notification handling when orders are received
+          return pedidosProvider;
+        }),
       ],
       child: const MyApp(),
     ),
@@ -94,6 +101,7 @@ final GoRouter _router = GoRouter(
     GoRoute(
         path: '/drive',
         builder: (BuildContext context, GoRouterState state) {
+          NotificationsService().silenceNotifications(false);
           return const BarraConductor(); // Pantalla principal con navegación curva
         },
         routes: [

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:app2025/conductor/model/pedido_model.dart';
+import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -9,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -44,6 +47,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   bool _hasArrived = false; // Nueva variable de control
   bool _isExpanded = false;
   bool _isExpandedProductos = false;
+  Pedido? _currentPedido;
 
   void _expandirDraggable() {
     _draggableController.animateTo(
@@ -102,7 +106,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   }
 
   Future<void> _loadMapStyle() async {
-    String style = await rootBundle.loadString('lib/stylemap/estilomap.json');
+    String style =
+        await rootBundle.loadString('lib/conductor/stylemap/estilomap.json');
     setState(() {
       _mapStyle = style;
     });
@@ -281,6 +286,30 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     super.initState();
     _loadMapStyle();
     _initializeMap();
+    _loadPedidoDetails();
+  }
+
+  void _loadPedidoDetails() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        final pedidosProvider =
+            Provider.of<PedidosProvider>(context, listen: false);
+        final activePedidos = pedidosProvider.getActivePedidos();
+
+        if (activePedidos.isNotEmpty) {
+          setState(() {
+            _currentPedido = activePedidos.first;
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('No hay pedidos activos')));
+        }
+      } catch (e) {
+        print('Error cargando pedidos: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al cargar los pedidos')));
+      }
+    });
   }
 
   @override
@@ -292,6 +321,14 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
 
   @override
   Widget build(BuildContext context) {
+    final pedidosProvider = context.watch<PedidosProvider>();
+    final activePedidos = pedidosProvider.getActivePedidos();
+    final departamento = _currentPedido?.ubicacion?['departamento'];
+    final provincia = _currentPedido?.ubicacion?['provincia'];
+    final distrito = _currentPedido?.ubicacion?['distrito'];
+    final direccion = _currentPedido?.ubicacion?['direccion'];
+    final direccionCompleta =
+        '${direccion},${distrito},${provincia},${departamento}';
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -435,13 +472,15 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                             MainAxisAlignment.spaceEvenly,
                                         children: [
                                           Text(
-                                            "Luis Gonzáles",
+                                            _currentPedido?.cliente.nombre ??
+                                                'Cargando...',
                                             style: GoogleFonts.manrope(
                                                 fontSize: 14.sp,
                                                 color: Colors.grey.shade600),
                                           ),
                                           Text(
-                                            "S/.7.90",
+                                            _currentPedido?.total.toString() ??
+                                                '0.00',
                                             style: GoogleFonts.manrope(
                                                 fontSize: 14.sp,
                                                 fontWeight: FontWeight.bold),
@@ -461,14 +500,15 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      "ID: #7654321",
+                                      "ID: #${_currentPedido?.id?.toString()}",
                                       style: GoogleFonts.manrope(
                                           fontSize: 14.sp,
                                           color: const Color.fromARGB(
                                               255, 66, 66, 66)),
                                     ),
                                     Text(
-                                      "Normal",
+                                      _currentPedido?.pedidoinfo?['tipo'] ??
+                                          'Tipo no disponible',
                                       style: GoogleFonts.manrope(
                                           fontSize: 14.sp,
                                           fontWeight: FontWeight.bold),
@@ -599,8 +639,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                       SizedBox(
                                         height: 4.h,
                                       ),
-                                      Text(
-                                          "Av. Dolores 104, Jose Luis B y R, Arequipa",
+                                      Text(direccionCompleta,
                                           style: GoogleFonts.manrope(
                                               fontSize: 12.sp,
                                               fontWeight: FontWeight.w600))
@@ -667,18 +706,9 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                   child: ListView(
                                     children: [
                                       Text(
-                                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                                        "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-                                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                                        "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-                                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                                        "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-                                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                                        "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-                                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                                        "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-                                        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
-                                        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+                                        _currentPedido
+                                                ?.pedidoinfo['observacion'] ??
+                                            "N/A",
                                         style: GoogleFonts.manrope(
                                           fontSize: 12,
                                           color: const Color.fromARGB(
@@ -712,7 +742,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    "Lista de productos (5)",
+                                    "Lista de productos (${(_currentPedido?.productos?.length ?? 0) + (_currentPedido?.promociones?.length ?? 0)})",
                                     style: GoogleFonts.manrope(
                                         fontSize: 13.sp,
                                         color: Colors.grey.shade700),
@@ -739,8 +769,33 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                     height:
                                         150, // Altura fija para que el ListView sea scrollable
                                     child: ListView.builder(
-                                      itemCount: 5,
+                                      itemCount:
+                                          (_currentPedido?.productos?.length ??
+                                                  0) +
+                                              (_currentPedido
+                                                      ?.promociones?.length ??
+                                                  0),
                                       itemBuilder: (context, index) {
+                                        dynamic item;
+                                        String name;
+
+                                        if (index <
+                                            (_currentPedido
+                                                    ?.productos?.length ??
+                                                0)) {
+                                          // Productos
+                                          item =
+                                              _currentPedido?.productos?[index];
+                                          name = item?.nombre ?? 'N/A';
+                                        } else {
+                                          // Promociones
+                                          item = _currentPedido?.promociones?[
+                                              index -
+                                                  (_currentPedido
+                                                          ?.productos?.length ??
+                                                      0)];
+                                          name = item?.nombre ?? 'N/A';
+                                        }
                                         return Column(
                                           children: [
                                             Container(
@@ -758,7 +813,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                                     width: 20.w,
                                                   ),
                                                   Text(
-                                                    "4",
+                                                    name,
                                                     style: GoogleFonts.manrope(
                                                         fontWeight:
                                                             FontWeight.bold,

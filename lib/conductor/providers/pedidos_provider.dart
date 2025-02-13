@@ -1,0 +1,319 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:app2025/conductor/config/notifications.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:app2025/conductor/model/pedido_model.dart';
+import 'package:app2025/conductor/config/socketcentral.dart';
+
+class PedidosProvider extends ChangeNotifier {
+  final List<Pedido> _pedidos = [];
+  final Map<String, Timer> _timers = {};
+  final SocketService _socketService = SocketService();
+  final Map<String, List<Map<String, dynamic>>> _orderHistory = {};
+  final Set<String> _globallyExpiredOrders = {};
+  final Map<String, List<Map<String, dynamic>>> _orderRotations = {};
+
+  bool _isLoading = false;
+  bool _isInitialized = false;
+  bool _isConnected = false;
+
+  List<Pedido> get pedidos => List.unmodifiable(_pedidos);
+
+  bool get isLoading => _isLoading;
+  bool get isInitialized => _isInitialized;
+  bool get isConnected => _isConnected;
+
+  final Set<String> _pedidosAceptados = {};
+
+  final NotificationsService _notificationsService = NotificationsService();
+
+  void _log(String message) {
+    print('📱 [Provider] $message');
+  }
+
+  PedidosProvider() {
+    _initializeProvider();
+  }
+
+  Future<void> _initializeProvider() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _initializeSocket();
+      _isInitialized = true;
+    } catch (e) {
+      debugPrint('Error initializing provider: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void _initializeSocket() {
+    _socketService.onHolapedido((data) {
+      print('📱 [Provider] Received pedido data: $data');
+      _processPedidoData(data);
+    });
+  }
+
+  Future<void> _handleReconnection() async {
+    try {
+      await syncWithServer();
+    } catch (e) {
+      debugPrint('Error during reconnection sync: $e');
+    }
+  }
+
+  Future<void> loadInitialData(int conductorId) async {
+    if (_isInitialized) {
+      print('📱 [Provider] Already initialized');
+      return;
+    }
+
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await _socketService.loadConductorEvent(conductorId);
+      _isInitialized = true;
+    } catch (e) {
+      print('📱 [Provider] Error loading initial data: $e');
+      _isInitialized = false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> addPedido(
+      Map<String, dynamic> pedidoData, bool showNotification) async {
+    try {
+      final pedido = Pedido.fromMap(pedidoData);
+      _log('Adding pedido: ${pedido.id}');
+
+      // Verificar si el pedido ya existe o está aceptado
+      if (_pedidos.any((p) => p.id == pedido.id) ||
+          _pedidosAceptados.contains(pedido.id)) {
+        _log('Pedido already exists or is accepted: ${pedido.id}');
+        return true;
+      }
+
+      if (showNotification) {
+        await _notificationsService.showOrderNotification(
+          id: int.parse(pedido.id),
+          title: 'Nuevo Pedido #${pedido.id}',
+          body:
+              'Total: \$${pedido.total.toStringAsFixed(2)}\nCliente: ${pedido.cliente?.nombre ?? 'No especificado'}',
+          payload: json.encode(pedidoData),
+        );
+      }
+
+      _pedidos.add(pedido);
+      _setupExpirationTimer(pedido);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _log('Error adding pedido: $e');
+      return false;
+    }
+  }
+
+  // Manejar pedido tomado
+  void _handlePedidoTomado(String pedidoId) {
+    _pedidos.removeWhere((p) => p.id.toString() == pedidoId);
+    notifyListeners();
+  }
+
+  List<Pedido> getActivePedidos() {
+    final now = DateTime.now();
+    return _pedidos
+        .where((pedido) =>
+            pedido.estado != 'expirado' &&
+            pedido.expiredTime.isAfter(now) &&
+            !_pedidosAceptados.contains(pedido.id))
+        .toList();
+  }
+  // Método para manejar la expiración global de pedidos
+
+  void handleGlobalExpiration(String pedidoId) async {
+    _globallyExpiredOrders.add(pedidoId);
+    await updatePedidoEstado(pedidoId, 'expirado');
+    _timers[pedidoId]?.cancel();
+    _timers.remove(pedidoId);
+  }
+
+  Future<void> updatePedidoEstado(String pedidoId, String newEstado) async {
+    try {
+      final index = _pedidos.indexWhere((p) => p.id == pedidoId);
+      if (index != -1) {
+        final updatedPedido = _pedidos[index].copyWith(estado: newEstado);
+        print("UPDATE---zz");
+        print(updatedPedido.id);
+        //await updatePedidoInDatabase(updatedPedido);
+        _pedidos[index] = updatedPedido;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error updating pedido estado: $e');
+      rethrow;
+    }
+  }
+
+  //1. ALMACENAR EL PEDIDO PROVIDER
+  // ESTE ES EL METODO QUE AGREGA MIS PEDIDOS
+  Future<void> _processPedidoData(Map<String, dynamic> data) async {
+    try {
+      if (data['estado'] == 'expirado') {
+        _pedidos.removeWhere((p) => p.id == data['id']);
+        _timers[data['id']]?.cancel();
+        _timers.remove(data['id']);
+        notifyListeners();
+        return;
+      }
+
+      final pedido = Pedido.fromMap(data);
+      _log('Processing pedido: ${pedido.id}');
+
+      if (!_pedidosAceptados.contains(pedido.id)) {
+        await addPedido(data, true);
+      }
+    } catch (e) {
+      _log('Error processing pedido data: $e');
+    }
+  }
+
+  void _setupExpirationTimer(Pedido pedido) {
+    _timers[pedido.id]?.cancel();
+
+    final localExpiredTime = pedido.expiredTime.toLocal();
+    final timeUntilExpiration = localExpiredTime.difference(DateTime.now());
+
+    if (timeUntilExpiration.isNegative) {
+      _handleExpiration(pedido.id);
+    } else {
+      _timers[pedido.id] = Timer(timeUntilExpiration, () {
+        _handleExpiration(pedido.id);
+      });
+    }
+  }
+
+  void _handleExpiration(String pedidoId) {
+    try {
+      final index = _pedidos.indexWhere((p) => p.id == pedidoId);
+      if (index != -1) {
+        _pedidos.removeAt(index);
+        _timers[pedidoId]?.cancel();
+        _timers.remove(pedidoId);
+        notifyListeners();
+      }
+    } catch (e) {
+      _log('Error handling expiration: $e');
+    }
+  }
+
+  Future<void> aceptarPedido(String pedidoId) async {
+    try {
+      _log('Accepting pedido: $pedidoId');
+      final index = _pedidos.indexWhere((p) => p.id == pedidoId);
+
+      if (index != -1) {
+        final pedido = _pedidos[index];
+
+        // Marcar como aceptado primero
+        _pedidosAceptados.add(pedidoId);
+
+        // Actualizar estado
+        await updatePedidoEstado(pedidoId, 'aceptado');
+
+        // Emitir al socket
+        _socketService.emitTakeOrder(pedidoId, pedido.almacenId);
+
+        // Limpiar recursos
+        _timers[pedidoId]?.cancel();
+        _timers.remove(pedidoId);
+
+        // Remover de la lista de pedidos pendientes
+        _pedidos.removeAt(index);
+
+        notifyListeners();
+        _log('Pedido accepted successfully: $pedidoId');
+      }
+    } catch (e) {
+      _log('Error accepting pedido: $e');
+      _pedidosAceptados.remove(pedidoId);
+      await updatePedidoEstado(pedidoId, 'pendiente');
+      rethrow;
+    }
+  }
+
+  void ignorarPedido(Map<String, dynamic> pedidoData) {
+    try {
+      // Emitir el evento al socket
+      _socketService.emitPedidoExpirado(pedidoData);
+
+      // Remover el pedido de la lista local
+      _pedidos.removeWhere((p) => p.id == pedidoData['id']);
+
+      // Limpiar recursos asociados
+      _timers[pedidoData['id']]?.cancel();
+      _timers.remove(pedidoData['id']);
+
+      // Notificar a los listeners para actualizar la UI
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error ignorando pedido: $e');
+    }
+  }
+/*
+  void _handleOrderTaken(String pedidoId) {
+    _timers[pedidoId]?.cancel();
+    _timers.remove(pedidoId);
+    _pedidos.removeWhere((pedido) => pedido.id == pedidoId);
+    _orderHistory.remove(pedidoId);
+    notifyListeners();
+  }
+*/
+/*
+  List<Pedido> getActivePedidos() {
+    print('🔍 Checking active pedidos');
+    var activePedidos = _pedidos.toList();
+    print('🚨 Active Pedidos count: ${activePedidos.length}');
+    return activePedidos;
+  }*/
+
+  Future<void> syncWithServer() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Implementar lógica de sincronización con el servidor
+      // Por ejemplo, obtener estados actualizados de pedidos
+
+      //await _loadPedidosFromDatabase();
+    } catch (e) {
+      debugPrint('Error syncing with server: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  double getTotalValueOfActivePedidos() {
+    return getActivePedidos().fold(0, (sum, pedido) => sum + pedido.total);
+  }
+
+  @override
+  void dispose() {
+    for (var timer in _timers.values) {
+      timer.cancel();
+    }
+    _timers.clear();
+    _pedidos.clear();
+    _orderRotations.clear();
+    _globallyExpiredOrders.clear();
+    _socketService.dispose();
+    super.dispose();
+  }
+}
