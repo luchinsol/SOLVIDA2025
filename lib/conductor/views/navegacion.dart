@@ -294,13 +294,18 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       try {
         final pedidosProvider =
             Provider.of<PedidosProvider>(context, listen: false);
-        final activePedidos = pedidosProvider.getActivePedidos();
+        //final activePedidos = pedidosProvider.getActivePedidos();
+        final pedidoAceptado = pedidosProvider.ultimoPedidoAceptado;
+        print("-----------------------> VISTA NAVEGACION");
 
-        if (activePedidos.isNotEmpty) {
+        print("MEJORA ------>");
+        print(pedidoAceptado?.id);
+        if (pedidoAceptado != null) {
           setState(() {
-            _currentPedido = activePedidos.first;
+            _currentPedido = pedidoAceptado;
           });
         } else {
+          print("No se encontró pedido aceptado");
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('No hay pedidos activos')));
         }

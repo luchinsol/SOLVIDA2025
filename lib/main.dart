@@ -44,8 +44,11 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Crear instancia del provider
+  final pedidosProvider = PedidosProvider();
   final notificationsService = NotificationsService();
-  NotificationsService().initNotification();
+  NotificationsService().initProvider(pedidosProvider);
+  await NotificationsService().initNotification();
   NotificationsService().requestNotificationPermission();
 
   await dotenv.load(fileName: ".env");

@@ -8,6 +8,8 @@ import 'package:app2025/conductor/config/socketcentral.dart';
 
 class PedidosProvider extends ChangeNotifier {
   final List<Pedido> _pedidos = [];
+  // Nueva lista para pedidos aceptados
+  final List<Pedido> _pedidosAceptadosList = [];
   final Map<String, Timer> _timers = {};
   final SocketService _socketService = SocketService();
   final Map<String, List<Map<String, dynamic>>> _orderHistory = {};
@@ -20,6 +22,11 @@ class PedidosProvider extends ChangeNotifier {
 
   List<Pedido> get pedidos => List.unmodifiable(_pedidos);
 
+  List<Pedido> get pedidosAceptados => List.unmodifiable(_pedidosAceptadosList);
+
+  Pedido? get ultimoPedidoAceptado =>
+      _pedidosAceptadosList.isNotEmpty ? _pedidosAceptadosList.last : null;
+
   bool get isLoading => _isLoading;
   bool get isInitialized => _isInitialized;
   bool get isConnected => _isConnected;
@@ -30,6 +37,14 @@ class PedidosProvider extends ChangeNotifier {
 
   void _log(String message) {
     print('📱 [Provider] $message');
+  }
+
+  Pedido? getPedidoAceptadoById(String id) {
+    try {
+      return _pedidosAceptadosList.firstWhere((pedido) => pedido.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 
   PedidosProvider() {
@@ -213,30 +228,37 @@ class PedidosProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> aceptarPedido(String pedidoId) async {
+  Future<void> aceptarPedido(String pedidoId,
+      {Map<String, dynamic>? pedidoData}) async {
     try {
+      print("INGRESANDO AL PROVIDER DE PEDIDO---->> METODO ACEPTAR");
       _log('Accepting pedido: $pedidoId');
+
+      // Si no está en la lista de pedidos pero tenemos los datos, lo agregamos primero
+      if (pedidoData != null && !_pedidos.any((p) => p.id == pedidoId)) {
+        await _processPedidoData(pedidoData);
+      }
+
       final index = _pedidos.indexWhere((p) => p.id == pedidoId);
+      print(index);
 
       if (index != -1) {
         final pedido = _pedidos[index];
 
-        // Marcar como aceptado primero
+        _pedidosAceptadosList.add(pedido);
         _pedidosAceptados.add(pedidoId);
 
-        // Actualizar estado
         await updatePedidoEstado(pedidoId, 'aceptado');
-
-        // Emitir al socket
         _socketService.emitTakeOrder(pedidoId, pedido.almacenId);
 
-        // Limpiar recursos
         _timers[pedidoId]?.cancel();
         _timers.remove(pedidoId);
 
-        // Remover de la lista de pedidos pendientes
         _pedidos.removeAt(index);
 
+        print('Pedido aceptado y guardado: ${pedido.id}');
+        print('Total pedidos aceptados: ${_pedidosAceptadosList.length}');
+        print('Pedidos Almacenados en la Lista: ${_pedidosAceptadosList}');
         notifyListeners();
         _log('Pedido accepted successfully: $pedidoId');
       }

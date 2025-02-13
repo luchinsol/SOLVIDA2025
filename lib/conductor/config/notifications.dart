@@ -1,11 +1,22 @@
 import 'dart:convert';
 
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
 class NotificationsService {
+  //ESTA VARIABLE SE AGREGO PARA OBTENER EL CONTEXTO DEBIDO A QUE NECESITAMOS ESTO PARA PODER AGREGAR A LA LSITA DE PEDIDOS ACEPTADOS
+  late BuildContext _context;
+  // Método para inicializar el contexto
+  void initContext(BuildContext context) {
+    _context = context;
+  }
+
+  late PedidosProvider _pedidosProvider;
+
   static final NotificationsService _instance =
       NotificationsService._internal();
   factory NotificationsService() => _instance;
@@ -15,6 +26,10 @@ class NotificationsService {
 
   bool _isInitialized = false;
   final notificationsPlugin = FlutterLocalNotificationsPlugin();
+  //CAMBIOS
+  void initProvider(PedidosProvider provider) {
+    _pedidosProvider = provider;
+  }
 
   // Solicitar permisos de notificación
   Future<void> requestNotificationPermission() async {
@@ -74,12 +89,10 @@ class NotificationsService {
       case 'accept_order':
         print("La acción 'Aceptar' fue seleccionada");
         // Lógica para aceptar
-        final pedidosProvider = PedidosProvider();
+        // Obtener la instancia de provider ya no una diferente sino una que contenga la misma
+        _pedidosProvider.aceptarPedido(pedidoId, pedidoData: pedidoData);
         print(
-            "EVENTO FUE ACTUALIZADO----->${pedidosProvider.getActivePedidos().length}");
-        pedidosProvider.aceptarPedido(pedidoId);
-        print(
-            "EVENTO FUE ACTUALIZADO----->${pedidosProvider.getActivePedidos().length}");
+            "ULTIMO PEDIDO ID -------->>>>>>${_pedidosProvider.ultimoPedidoAceptado?.id}");
         break;
       case 'view_order':
         print("Acción 'Ver' seleccionada para pedido: $pedidoId");
