@@ -1,3 +1,4 @@
+/*
 import 'package:app2025/conductor/config/notifications.dart';
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,7 @@ class Demos extends StatefulWidget {
 }
 
 class _DemosState extends State<Demos> {
-  late PedidosProvider _pedidosProvider;
+  //late PedidosProvider _pedidosProvider;
   final NotificationsService _notificationsService = NotificationsService();
   String text = "Pedidos";
   bool _shouldShowNotifications = false;
@@ -131,3 +132,4 @@ class _DemosState extends State<Demos> {
     );
   }
 }
+*/

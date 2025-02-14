@@ -116,7 +116,7 @@ class _HolaState extends State<Hola2> with TickerProviderStateMixin {
   Timer? _timer;
   DateTime fechaLimite = DateTime.now();
 
-  final socketService = SocketService();
+  //final socketService = SocketService();
 
 // VARIABLES PARA DEPÓSITO
   bool depositaron = false;

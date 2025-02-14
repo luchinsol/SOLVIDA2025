@@ -172,7 +172,8 @@ class SocketService {
     listenToEvent('depósito', callback);
   }*/
 }*/
-
+//------------------------------------------------
+/*
 import 'dart:async';
 import 'dart:io';
 
@@ -305,18 +306,19 @@ class SocketService {
 //2. OBTENER EVENTO DE ALMACEN
   Future<void> _registerDriver() async {
     if (_almacenId == null) return;
-
+    //Registra un conductor
     socket.emit('register_driver', {'almacenId': _almacenId});
     _isRegistered = true;
 
     await Future.delayed(const Duration(milliseconds: 500));
+    //Solicita órdenes iniciales
     socket.emit('get_initial_orders', {'almacenId': _almacenId});
   }
 
   //3. ESCUCHA DE EVENTO
   Future<void> _setupEventListener() async {
     if (_eventName == null || _isListening) return;
-
+    //Eventos dinámicos como almacen_1, almacen_3 - Para recibir pedidos específicos
     socket.on(_eventName!, (data) {
       _logEvent('[Events] Received order on $_eventName: $data');
       if (_uniqueCallback != null) {
@@ -324,6 +326,8 @@ class SocketService {
       }
     });
 
+    //Recibe órdenes iniciales
+    //Eventos dinámicos como almacen_1, almacen_3 - Para recibir pedidos específicos
     socket.on('initial_orders', (data) {
       _logEvent('[Events] Received initial orders: $data');
       if (data is List) {
@@ -472,6 +476,7 @@ class SocketService {
         final jsonString = jsonEncode(jsonData);
 
         if (!_processedOrderIds.contains(pedidoData['id'].toString())) {
+          // Rechaza un pedido
           socket.emit('pedido_rechazado', jsonString);
           _processedOrderIds.add(pedidoData['id'].toString());
           print('🚀 Pedido Expirado Emitido: $jsonString');
@@ -490,7 +495,7 @@ class SocketService {
       if (!_processedOrderIds.contains(orderId)) {
         final takeOrderData = {'orderId': orderId, 'almacenId': almacenId};
         print("---------------------------> SOCKETTTTTTT");
-
+        //Toma un pedido
         socket.emit('take_order', takeOrderData);
         _processedOrderIds.add(orderId);
 
@@ -500,6 +505,7 @@ class SocketService {
       print('❌ Error al emitir take_order: $e');
     }
 
+    //Notificación de orden tomada
     // Listen for order_taken event to confirm deletion
     socket.on('order_taken', (data) {
       print('✅ Orden tomada confirmada: $data');
@@ -513,6 +519,7 @@ class SocketService {
   }
 
   void setupOrderTakenListener(Function(String) onOrderTaken) {
+    //Notificación de orden tomada
     socket.on('order_taken', (data) {
       if (data['id'] != null) {
         onOrderTaken(data['id'].toString());
@@ -536,3 +543,4 @@ class SocketService {
     disconnect();
   }
 }
+*/

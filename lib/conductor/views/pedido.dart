@@ -1,3 +1,4 @@
+/*
 import 'dart:convert';
 
 import 'package:app2025/conductor/config/socketcentral.dart';
@@ -31,9 +32,9 @@ class _DrivePedidosState extends State<DrivePedidos> {
   LatLng _currentPosition = const LatLng(-16.4014, -71.5343);
   BitmapDescriptor? _destinationIcon;
   String _mapStyle = '';
-  final SocketService socketService = SocketService();
+  //final SocketService socketService = SocketService();
   static const int _conductorId = 3;
-  late PedidosProvider _provider;
+  //late PedidosProvider _provider;
   // Creamos un Map que actúa como caché para almacenar las direcciones
   // La llave es el ID del pedido y el valor es la dirección en texto
   Map<String, String> addresses = {};
@@ -103,7 +104,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
   @override
   void initState() {
     super.initState();
-    _provider = Provider.of<PedidosProvider>(context, listen: false);
+    //_provider = Provider.of<PedidosProvider>(context, listen: false);
     print('🔄 Initializing DrivePedidos state');
     _initializeAll();
   }
@@ -114,9 +115,9 @@ class _DrivePedidosState extends State<DrivePedidos> {
     final currentContext = context;
 
     try {
-      final provider =
-          Provider.of<PedidosProvider>(currentContext, listen: false);
-      await provider.aceptarPedido(pedidoid);
+      //final provider =
+      //    Provider.of<PedidosProvider>(currentContext, listen: false);
+      //await provider.aceptarPedido(pedidoid);
       await actualizarEstadoPedido(pedidoid, _conductorId, almacenid);
 
       // Verificamos si el widget sigue montado antes de navegar
@@ -161,7 +162,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
       await Future.wait([
         _loadMarkerIcons(),
         _loadMapStyle(),
-        _provider.loadInitialData(_conductorId),
+        //_provider.loadInitialData(_conductorId),
       ]);
 
       print('✅ All initialization completed');
@@ -185,29 +186,29 @@ class _DrivePedidosState extends State<DrivePedidos> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_provider.getActivePedidos().isEmpty) {
-      _initializeData();
-    }
+    //if (_provider.getActivePedidos().isEmpty) {
+    //  _initializeData();
+    //}
   }
 
   void _initializeData() {
     if (!mounted) return;
 
-    final activePedidos = _provider.getActivePedidos();
-    print('📊 Initializing data with ${activePedidos.length} active pedidos');
+    //final activePedidos = _provider.getActivePedidos();
+    //print('📊 Initializing data with ${activePedidos.length} active pedidos');
 
     setState(() {
-      selected = List.generate(activePedidos.length, (_) => false);
+      selected = List.generate(50, (_) => false);
       colorDeploy = List.generate(
-        activePedidos.length,
-        (_) => [Colors.white, const Color.fromRGBO(42, 75, 160, 1)],
+        //activePedidos.length,
+        50,(_) => [Colors.white, const Color.fromRGBO(42, 75, 160, 1)],
       );
     });
   }
 
   @override
   void dispose() {
-    _provider.removeListener(_onPedidosChanged);
+    //_provider.removeListener(_onPedidosChanged);
     super.dispose();
   }
 
@@ -915,4 +916,4 @@ class _DrivePedidosState extends State<DrivePedidos> {
           ));
     });
   }
-}
+}*/

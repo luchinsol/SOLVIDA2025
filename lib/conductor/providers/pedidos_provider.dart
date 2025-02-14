@@ -1,3 +1,4 @@
+/*
 import 'dart:async';
 import 'dart:convert';
 import 'package:app2025/conductor/config/notifications.dart';
@@ -65,6 +66,15 @@ class PedidosProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // El Provider utiliza SocketService para la comunicación en tiempo real con el servidor
+// Se utiliza este enfoque porque:
+//   1. Separa la lógica de red (SocketService) de la gestión de estado (Provider)
+//   2. Permite reutilizar la conexión socket en múltiples partes de la aplicación
+//   3. Facilita el manejo de eventos asíncronos y su transformación a estados de UI
+
+// El método _initializeSocket configura la escucha de eventos
+// Se usa para recibir pedidos nuevos sin tener que hacer polling continuo
 
   void _initializeSocket() {
     _socketService.onHolapedido((data) {
@@ -228,6 +238,9 @@ class PedidosProvider extends ChangeNotifier {
     }
   }
 
+  // El método aceptarPedido usa el socket para confirmar aceptación
+// Esto permite que otros conductores sean notificados inmediatamente
+// cuando un pedido ya no está disponible
   Future<void> aceptarPedido(String pedidoId,
       {Map<String, dynamic>? pedidoData}) async {
     try {
@@ -269,6 +282,10 @@ class PedidosProvider extends ChangeNotifier {
       rethrow;
     }
   }
+
+  // El método ignorarPedido utiliza el socket para notificar rechazo
+// Se hace así para garantizar que tanto el estado local como el servidor
+// estén sincronizados cuando un conductor rechaza un pedido
 
   void ignorarPedido(Map<String, dynamic> pedidoData) {
     try {
@@ -339,3 +356,14 @@ class PedidosProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+
+*/
+/*
+El uso de métodos Socket en el Provider sigue un patrón donde:
+
+El SocketService maneja la comunicación de bajo nivel
+El Provider traduce eventos de red en cambios de estado de la aplicación
+Los cambios de estado en la UI se propagan al servidor a través del SocketService
+
+Este enfoque es adecuado, pero podría mejorarse con una gestión más robusta de errores y reconexiones para evitar la pérdida de eventos.
+ */
