@@ -172,8 +172,7 @@ class SocketService {
     listenToEvent('depósito', callback);
   }*/
 }*/
-//------------------------------------------------
-/*
+
 import 'dart:async';
 import 'dart:io';
 
@@ -234,8 +233,8 @@ class SocketService {
 
   void _initializeSocket() {
     //"http://147.182.251.164:5010"
-    final apiUrl = "http://10.0.2.2:5010";
-    _logEvent('[Socket] Connecting to: $apiUrl');
+    final apiUrl = "http://147.182.251.164:5010";
+    //_logEvent('[Socket] Connecting to: $apiUrl');
 
     socket = io.io(apiUrl, <String, dynamic>{
       'transports': ['websocket'],
@@ -261,7 +260,7 @@ class SocketService {
     });
 
     socket.onAny((event, data) {
-      _logEvent('[Socket] Received event: $event with data: $data');
+      //_logEvent('[Socket] Received event: $event with data: $data');
       // Procesar eventos específicos
       if (event == 'almacen_1' || event == 'almacen_3') {
         if (_uniqueCallback != null) {
@@ -283,7 +282,7 @@ class SocketService {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://10.0.2.2:3000/apigw/v1/conductor_evento/$conductorId'),
+            'http://147.182.251.164:8082/apigw/v1/conductor_evento/$conductorId'),
       );
 //'http://147.182.251.164:8082/apigw/v1/conductor_evento/$conductorId'
       if (response.statusCode == 200) {
@@ -310,7 +309,7 @@ class SocketService {
     socket.emit('register_driver', {'almacenId': _almacenId});
     _isRegistered = true;
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    //await Future.delayed(const Duration(milliseconds: 500));
     //Solicita órdenes iniciales
     socket.emit('get_initial_orders', {'almacenId': _almacenId});
   }
@@ -320,7 +319,7 @@ class SocketService {
     if (_eventName == null || _isListening) return;
     //Eventos dinámicos como almacen_1, almacen_3 - Para recibir pedidos específicos
     socket.on(_eventName!, (data) {
-      _logEvent('[Events] Received order on $_eventName: $data');
+      //_logEvent('[Events] Received order on $_eventName: $data');
       if (_uniqueCallback != null) {
         _uniqueCallback!(data);
       }
@@ -329,7 +328,7 @@ class SocketService {
     //Recibe órdenes iniciales
     //Eventos dinámicos como almacen_1, almacen_3 - Para recibir pedidos específicos
     socket.on('initial_orders', (data) {
-      _logEvent('[Events] Received initial orders: $data');
+      //_logEvent('[Events] Received initial orders: $data');
       if (data is List) {
         for (var order in data) {
           if (_uniqueCallback != null) {
@@ -345,7 +344,7 @@ class SocketService {
   void _processPedido(dynamic data) {
     try {
       if (data == null) {
-        _logEvent('[Process] Received null data');
+        //_logEvent('[Process] Received null data');
         return;
       }
 
@@ -354,11 +353,11 @@ class SocketService {
 
       final orderId = pedidoData['id']?.toString();
       if (orderId == null) {
-        _logEvent('[Process] Order ID is null');
+        //_logEvent('[Process] Order ID is null');
         return;
       }
 
-      _logEvent('[Process] Processing order: $orderId');
+      //_logEvent('[Process] Processing order: $orderId');
 /*
       NotificationsService.showOrderNotification(
         id: int.parse(orderId), // Convert string ID to int
@@ -369,10 +368,10 @@ class SocketService {
             json.encode(pedidoData), // Pass the entire order data as payload
       );*/
       _uniqueCallback?.call(pedidoData);
-      _logEvent('[Process] Order processed: $orderId');
+      //_logEvent('[Process] Order processed: $orderId');
     } catch (e, stackTrace) {
-      _logEvent('[Process] Error: $e');
-      _logEvent('[Process] Stack trace: $stackTrace');
+      //_logEvent('[Process] Error: $e');
+      //_logEvent('[Process] Stack trace: $stackTrace');
     }
   }
 
@@ -382,7 +381,7 @@ class SocketService {
 
   void onHolapedido(PedidoCallback callback) {
     _uniqueCallback = callback;
-    _logEvent('[Callback] Pedido callback registered');
+    //_logEvent('[Callback] Pedido callback registered');
   }
 
   List<String> getEventLogs() {
@@ -543,4 +542,3 @@ class SocketService {
     disconnect();
   }
 }
-*/

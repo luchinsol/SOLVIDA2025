@@ -19,7 +19,7 @@ class _BarraConductorState extends State<BarraConductor> {
 
   final List<Widget> _screens = const [
     InicioDriver(),
-    //DrivePedidos(),
+    DrivePedidos(),
     Historial(),
     Perfil(),
   ];

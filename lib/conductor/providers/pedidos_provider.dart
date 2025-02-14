@@ -1,4 +1,3 @@
-/*
 import 'dart:async';
 import 'dart:convert';
 import 'package:app2025/conductor/config/notifications.dart';
@@ -192,7 +191,10 @@ class PedidosProvider extends ChangeNotifier {
     try {
       if (data['estado'] == 'expirado') {
         _pedidos.removeWhere((p) => p.id == data['id']);
+        print("TIMERRRRR ${data['id']}");
+        print(_timers[data['id']]);
         _timers[data['id']]?.cancel();
+
         _timers.remove(data['id']);
         notifyListeners();
         return;
@@ -265,10 +267,11 @@ class PedidosProvider extends ChangeNotifier {
         _socketService.emitTakeOrder(pedidoId, pedido.almacenId);
 
         _timers[pedidoId]?.cancel();
+        print(_timers[pedidoId]);
         _timers.remove(pedidoId);
-
+        print("LLego hasta aqui");
         _pedidos.removeAt(index);
-
+        print("PEDIDO ACTUALIZADO SU ID${pedido.id}");
         print('Pedido aceptado y guardado: ${pedido.id}');
         print('Total pedidos aceptados: ${_pedidosAceptadosList.length}');
         print('Pedidos Almacenados en la Lista: ${_pedidosAceptadosList}');
@@ -278,7 +281,7 @@ class PedidosProvider extends ChangeNotifier {
     } catch (e) {
       _log('Error accepting pedido: $e');
       _pedidosAceptados.remove(pedidoId);
-      await updatePedidoEstado(pedidoId, 'pendiente');
+      //await updatePedidoEstado(pedidoId, 'pendiente');
       rethrow;
     }
   }
@@ -357,7 +360,7 @@ class PedidosProvider extends ChangeNotifier {
   }
 }
 
-*/
+
 /*
 El uso de métodos Socket en el Provider sigue un patrón donde:
 

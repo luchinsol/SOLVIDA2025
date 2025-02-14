@@ -13,9 +13,7 @@ import 'package:app2025/cliente/provider/ubicacion_list_provider.dart';
 import 'package:app2025/cliente/provider/ubicacion_provider.dart';
 import 'package:app2025/cliente/provider/user_provider.dart';
 import 'package:app2025/conductor/barraconductor/barraconductor.dart';
-import 'package:app2025/conductor/config/socketCentral2.dart';
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
-import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:app2025/conductor/views/calificacion.dart';
 import 'package:app2025/conductor/views/cargaproductos.dart';
 import 'package:app2025/conductor/views/demodrive.dart';
@@ -25,7 +23,7 @@ import 'package:app2025/conductor/views/notificaciones.dart';
 import 'package:app2025/conductor/views/demo.dart';
 import 'package:app2025/cliente/config/localization.dart';
 import 'package:app2025/conductor/config/notifications.dart';
-//import 'package:app2025/conductor/config/socketcentral.dart';
+import 'package:app2025/conductor/config/socketcentral.dart';
 import 'package:app2025/cliente/inicios/bienvenida.dart';
 import 'package:app2025/cliente/inicios/login.dart';
 import 'package:app2025/cliente/inicios/nowifi.dart';
@@ -47,11 +45,11 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Crear instancia del provider
-  //final pedidosProvider = PedidosProvider();
-  //final notificationsService = NotificationsService();
-  //NotificationsService().initProvider(pedidosProvider);
-  //await NotificationsService().initNotification();
-  //NotificationsService().requestNotificationPermission();
+  final pedidosProvider = PedidosProvider();
+  final notificationsService = NotificationsService();
+  NotificationsService().initProvider(pedidosProvider);
+  await NotificationsService().initNotification();
+  NotificationsService().requestNotificationPermission();
 
   await dotenv.load(fileName: ".env");
   await initializeDateFormatting('es_ES', null);
@@ -67,26 +65,19 @@ void main() async {
 
   UserProvider userProvider = UserProvider();
   await userProvider.initUser();
-  final socketService = SocketService2();
-  // SocketService();
+  SocketService();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider<UserProvider>.value(value: userProvider),
         ChangeNotifierProvider(create: (context) => PedidoProvider()),
-        ChangeNotifierProvider(create: (context) {
-          print("UbicacionListProvider se está inicializando en MultiProvider");
-          return UbicacionListProvider();
-        }),
+        ChangeNotifierProvider(create: (context) => UbicacionProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionListProvider()),
-        ChangeNotifierProvider(
-            create: (context) => PedidosProvider2(socketService)),
-
-        /*ChangeNotifierProvider(create: (context) {
+        ChangeNotifierProvider(create: (context) {
           final pedidosProvider = PedidosProvider();
           // Setup notification handling when orders are received
           return pedidosProvider;
-        }),*/
+        }),
       ],
       child: const MyApp(),
     ),
@@ -113,7 +104,7 @@ final GoRouter _router = GoRouter(
     GoRoute(
         path: '/drive',
         builder: (BuildContext context, GoRouterState state) {
-          //NotificationsService().silenceNotifications(false);
+          NotificationsService().silenceNotifications(false);
           return const BarraConductor(); // Pantalla principal con navegación curva
         },
         routes: [
@@ -124,15 +115,13 @@ final GoRouter _router = GoRouter(
               return const Notificaciones(); //OrderDetailScreen(orderId: orderId);
             },
           ),
-          /*
           GoRoute(
             path: 'navegar',
             builder: (BuildContext context, GoRouterState state) {
-              
               // final orderId = state.params['id'];
-              //return const NavegacionPedido(); //OrderDetailScreen(orderId: orderId);
+              return const NavegacionPedido(); //OrderDetailScreen(orderId: orderId);
             },
-          ),*/
+          ),
           GoRoute(
             path: 'calificar',
             builder: (BuildContext context, GoRouterState state) {
@@ -168,12 +157,12 @@ final GoRouter _router = GoRouter(
           GoRoute(
             path: 'pedido',
             builder: (BuildContext context, GoRouterState state) {
-              //NotificationsService().silenceNotifications(true);
+              NotificationsService().silenceNotifications(false);
               return PopScope(
                   canPop: true,
                   onPopInvoked: (bool didPop) {
                     if (didPop) {
-                      //NotificationsService().silenceNotifications(false);
+                      NotificationsService().silenceNotifications(false);
                       return;
                     }
                   },
