@@ -10,8 +10,13 @@ class UbicacionListProvider extends ChangeNotifier {
   // OBTIENES EL USUARIO
   UbicacionListaModel? get ubicacion => _ubicacion;
 
+  UbicacionListProvider() {
+    print("UbicacionListProvider inicializado");
+  }
+
   // ACTUALIZAS EL VALOR DEL OBJETO Y NOTIFICAMOS A LOS RECEPTORES
   void updateUbicacionList(UbicacionListaModel newUbicacion) {
+    print("UBICACION");
     _ubicacion = newUbicacion;
     notifyListeners();
   }

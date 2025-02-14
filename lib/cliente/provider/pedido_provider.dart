@@ -8,6 +8,10 @@ class PedidoProvider extends ChangeNotifier {
   // OBTIENES EL USUARIO
   PedidoModel? get pedido => _pedido;
 
+  PedidoProvider() {
+    print("CLIENTE PROVIDER");
+  }
+
   // ACTUALIZAS EL VALOR DEL OBJETO Y NOTIFICAMOS A LOS RECEPTORES
   void updatePedido(PedidoModel newPedido) {
     _pedido = newPedido;
