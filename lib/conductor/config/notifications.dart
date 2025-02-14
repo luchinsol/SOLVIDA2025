@@ -126,7 +126,7 @@ class NotificationsService {
       importance: Importance.max,
       priority: Priority.high,
       playSound: true,
-      setAsGroupSummary: true,
+      setAsGroupSummary: false,
       actions: [
         AndroidNotificationAction(
             'accept_order', // ID de la acción

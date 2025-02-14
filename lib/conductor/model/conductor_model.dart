@@ -3,16 +3,17 @@ class ConductorModel {
   String nombres;
   String apellidos;
   DateTime fecha_nacimiento;
-  String licencia;
-  String soat;
-  double valoracion;
-  double latitud;
-  double longitud;
-  String estado_registro;
-  String estado_trabajo;
-  String departamento;
-  String provincia;
-  int evento_id;
+  String? licencia;
+  String? soat;
+  double? valoracion;
+  double? latitud;
+  double? longitud;
+  String? estado_registro;
+  String? estado_trabajo;
+  String? departamento;
+  String? provincia;
+  int? evento_id;
+  String? foto_perfil;
 
   ConductorModel(
       {required this.id,
@@ -21,12 +22,13 @@ class ConductorModel {
       required this.fecha_nacimiento,
       required this.licencia,
       required this.soat,
-      required this.valoracion,
+      this.valoracion,
       required this.latitud,
       required this.longitud,
       required this.estado_registro,
       required this.estado_trabajo,
       required this.departamento,
       required this.provincia,
-      required this.evento_id});
+      required this.evento_id,
+      this.foto_perfil});
 }

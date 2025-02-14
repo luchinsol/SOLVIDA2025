@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:app2025/cliente/barracliente/barraclient.dart';
+import 'package:app2025/cliente/inicios/logindrive.dart';
 import 'package:app2025/cliente/views/confirmarubi.dart';
 import 'package:app2025/cliente/views/formubi.dart';
 import 'package:app2025/cliente/views/pedido.dart';
@@ -13,7 +14,12 @@ import 'package:app2025/cliente/provider/ubicacion_list_provider.dart';
 import 'package:app2025/cliente/provider/ubicacion_provider.dart';
 import 'package:app2025/cliente/provider/user_provider.dart';
 import 'package:app2025/conductor/barraconductor/barraconductor.dart';
+
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
+
+import 'package:app2025/conductor/providers/almacen_provider.dart';
+import 'package:app2025/conductor/providers/conductor_provider.dart';
+
 import 'package:app2025/conductor/views/calificacion.dart';
 import 'package:app2025/conductor/views/cargaproductos.dart';
 import 'package:app2025/conductor/views/demodrive.dart';
@@ -73,11 +79,16 @@ void main() async {
         ChangeNotifierProvider(create: (context) => PedidoProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionListProvider()),
+
         ChangeNotifierProvider(create: (context) {
           final pedidosProvider = PedidosProvider();
           // Setup notification handling when orders are received
           return pedidosProvider;
         }),
+
+        ChangeNotifierProvider(create: (context) => ConductorProvider()),
+        ChangeNotifierProvider(create: (context) => AlmacenProvider())
+
       ],
       child: const MyApp(),
     ),
@@ -98,6 +109,13 @@ final GoRouter _router = GoRouter(
       path: '/login',
       builder: (BuildContext context, GoRouterState state) {
         return const Prelogin();
+        // return const Login(); // Pantalla principal con navegación curva
+      },
+    ),
+    GoRoute(
+      path: '/repartidortemp',
+      builder: (BuildContext context, GoRouterState state) {
+        return const PreloginDriver();
         // return const Login(); // Pantalla principal con navegación curva
       },
     ),
