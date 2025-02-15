@@ -81,17 +81,9 @@ void main() async {
         ChangeNotifierProvider(create: (context) => PedidoProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionListProvider()),
-<<<<<<< HEAD
         ChangeNotifierProvider<PedidosProvider>.value(value: pedidosProvider),
-=======
-        ChangeNotifierProvider(create: (context) {
-          final pedidosProvider = PedidosProvider();
-          // Setup notification handling when orders are received
-          return pedidosProvider;
-        }),
         ChangeNotifierProvider(create: (context) => ConductorProvider()),
         ChangeNotifierProvider(create: (context) => AlmacenProvider())
->>>>>>> 22d4e7acd0e9d4ff29020755b244f6f77bca5b86
       ],
       child: const MyApp(),
     ),
