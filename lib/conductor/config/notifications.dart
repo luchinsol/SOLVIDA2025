@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 
 class NotificationsService {
   //ESTA VARIABLE SE AGREGO PARA OBTENER EL CONTEXTO DEBIDO A QUE NECESITAMOS ESTO PARA PODER AGREGAR A LA LSITA DE PEDIDOS ACEPTADOS
-  late BuildContext _context;
+  BuildContext? _context;
   // Método para inicializar el contexto
   void initContext(BuildContext context) {
     _context = context;
