@@ -11,7 +11,7 @@ class PedidosProvider extends ChangeNotifier {
   // Nueva lista para pedidos aceptados
   final List<Pedido> _pedidosAceptadosList = [];
   final Map<String, Timer> _timers = {};
-  final SocketService _socketService = SocketService();
+  final SocketService _socketService = SocketService(); //c
   final Map<String, List<Map<String, dynamic>>> _orderHistory = {};
   final Set<String> _globallyExpiredOrders = {};
   final Map<String, List<Map<String, dynamic>>> _orderRotations = {};
@@ -348,17 +348,30 @@ class PedidosProvider extends ChangeNotifier {
   Future<void> entregarPedido(String pedidoId) async {
     try {
       print("Entregando el Pedido ------>");
+      print("ID del pedido a entregar: $pedidoId");
       //BUSCAMOS EL PEDIDO QUE ACEPTAMOS PARA ELIMINARLO DE LA LISTA Y TOMAR EL SIGUIENTE
       final index = _pedidosAceptadosList.indexWhere((p) => p.id == pedidoId);
       if (index != -1) {
         // Remover el pedido de la lista de aceptados
         final pedido = _pedidosAceptadosList[index];
+        print(
+            'Antes de eliminar - Total pedidos aceptados: ${_pedidosAceptadosList.length}');
+        print(
+            'Lista de IDs antes de eliminar: ${_pedidosAceptadosList.map((p) => p.id).toList()}');
         _pedidosAceptadosList.removeAt(index);
         _pedidosAceptados.remove(pedidoId);
-
+        print("POSIBLE ERROR------------------------------------------");
         print('Pedido entregado y eliminado de la lista: ${pedido.id}');
         print(
+            'Después de eliminar - Total pedidos aceptados: ${_pedidosAceptadosList.length}');
+        print(
+            'Lista de IDs después de eliminar: ${_pedidosAceptadosList.map((p) => p.id).toList()}');
+        //print('${_pedidosAceptadosList[1].id}');
+        print('Pedido entregado y eliminado de la lista: ${pedido.id}');
+        print('-------------------------->>>>>>>>>>>>><<<<-----------------');
+        print(
             'Total pedidos aceptados restantes: ${_pedidosAceptadosList.length}');
+        print('-----------------------------------<<<<<<---------------<<<<');
         if (_pedidosAceptadosList.isNotEmpty) {
           print('Siguiente pedido en la lista: ${_pedidosAceptadosList[0].id}');
         } else {
