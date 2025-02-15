@@ -1,4 +1,7 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+
+String microUrl = dotenv.env['MICRO_PEDIDO'] ?? '';
 
 class SocketService2 {
   late IO.Socket socket;
@@ -8,7 +11,7 @@ class SocketService2 {
   }
 
   void _initSocket() {
-    socket = IO.io("http://10.0.2.2:5010", <String, dynamic>{
+    socket = IO.io(microUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
       'reconnect': true,

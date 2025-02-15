@@ -50,6 +50,7 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   // Crear instancia del provider
   final pedidosProvider = PedidosProvider();
   final notificationsService = NotificationsService();
@@ -57,7 +58,6 @@ void main() async {
   await NotificationsService().initNotification();
   NotificationsService().requestNotificationPermission();
 
-  await dotenv.load(fileName: ".env");
   await initializeDateFormatting('es_ES', null);
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -79,16 +79,13 @@ void main() async {
         ChangeNotifierProvider(create: (context) => PedidoProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionListProvider()),
-
         ChangeNotifierProvider(create: (context) {
           final pedidosProvider = PedidosProvider();
           // Setup notification handling when orders are received
           return pedidosProvider;
         }),
-
         ChangeNotifierProvider(create: (context) => ConductorProvider()),
         ChangeNotifierProvider(create: (context) => AlmacenProvider())
-
       ],
       child: const MyApp(),
     ),
