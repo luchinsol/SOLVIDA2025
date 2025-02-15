@@ -1,8 +1,8 @@
 class AlmacenModel {
   int id;
   String nombre;
-  String latitud;
-  String longitud;
+  double latitud;
+  double longitud;
   String horario;
   String departamento;
   String provincia;

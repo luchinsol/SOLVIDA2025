@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:app2025/cliente/barracliente/barraclient.dart';
+import 'package:app2025/cliente/inicios/logindrive.dart';
 import 'package:app2025/cliente/views/confirmarubi.dart';
 import 'package:app2025/cliente/views/formubi.dart';
 import 'package:app2025/cliente/views/pedido.dart';
@@ -13,7 +14,12 @@ import 'package:app2025/cliente/provider/ubicacion_list_provider.dart';
 import 'package:app2025/cliente/provider/ubicacion_provider.dart';
 import 'package:app2025/cliente/provider/user_provider.dart';
 import 'package:app2025/conductor/barraconductor/barraconductor.dart';
+
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
+
+import 'package:app2025/conductor/providers/almacen_provider.dart';
+import 'package:app2025/conductor/providers/conductor_provider.dart';
+
 import 'package:app2025/conductor/views/calificacion.dart';
 import 'package:app2025/conductor/views/cargaproductos.dart';
 import 'package:app2025/conductor/views/demodrive.dart';
@@ -44,6 +50,7 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   // Crear instancia del provider
   final pedidosProvider = PedidosProvider();
   final notificationsService = NotificationsService();
@@ -51,7 +58,6 @@ void main() async {
   await NotificationsService().initNotification();
   NotificationsService().requestNotificationPermission();
 
-  await dotenv.load(fileName: ".env");
   await initializeDateFormatting('es_ES', null);
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -75,7 +81,17 @@ void main() async {
         ChangeNotifierProvider(create: (context) => PedidoProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionListProvider()),
+<<<<<<< HEAD
         ChangeNotifierProvider<PedidosProvider>.value(value: pedidosProvider),
+=======
+        ChangeNotifierProvider(create: (context) {
+          final pedidosProvider = PedidosProvider();
+          // Setup notification handling when orders are received
+          return pedidosProvider;
+        }),
+        ChangeNotifierProvider(create: (context) => ConductorProvider()),
+        ChangeNotifierProvider(create: (context) => AlmacenProvider())
+>>>>>>> 22d4e7acd0e9d4ff29020755b244f6f77bca5b86
       ],
       child: const MyApp(),
     ),
@@ -96,6 +112,13 @@ final GoRouter _router = GoRouter(
       path: '/login',
       builder: (BuildContext context, GoRouterState state) {
         return const Prelogin();
+        // return const Login(); // Pantalla principal con navegación curva
+      },
+    ),
+    GoRoute(
+      path: '/repartidortemp',
+      builder: (BuildContext context, GoRouterState state) {
+        return const PreloginDriver();
         // return const Login(); // Pantalla principal con navegación curva
       },
     ),
