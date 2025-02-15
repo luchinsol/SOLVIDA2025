@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:app2025/conductor/model/pedido_model.dart';
@@ -14,6 +15,7 @@ import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 class NavegacionPedido extends StatefulWidget {
   const NavegacionPedido({Key? key}) : super(key: key);
@@ -279,6 +281,45 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       _nextPosition = newLatLng;
       _animateCarMovement();
     });
+  }
+
+  Future<void> entregarPedido(BuildContext context, String pedidoId,
+      int conductorId, int almacenId) async {
+    try {
+      // 1. Obtener el provider
+      final pedidoProvider =
+          Provider.of<PedidosProvider>(context, listen: false);
+
+      // 2. Actualizar en la base de datos
+      final url =
+          Uri.parse('http://10.0.2.2:3000/apigw/v1/pedido_estado/$pedidoId');
+
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'conductor_id': conductorId,
+          'estado': 'entregado',
+          'almacen_id': almacenId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al actualizar estado: ${response.body}');
+      }
+
+      // 3. Actualizar el provider y eliminar de la lista de aceptados
+      await pedidoProvider.entregarPedido(pedidoId);
+
+      // 4. Navegar a la pantalla de calificación
+      context.push('/drive/calificar');
+    } catch (e) {
+      print('Error al entregar pedido: $e');
+      // Mostrar un mensaje de error al usuario
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al entregar el pedido: $e')),
+      );
+    }
   }
 
   @override
@@ -890,7 +931,30 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                               child: ElevatedButton(
                                 onPressed: () {
                                   // Acción al presionar el botón
-                                  context.push('/drive/calificar');
+                                  //context.push('/drive/calificar');
+                                  final pedidoProvider =
+                                      Provider.of<PedidosProvider>(context,
+                                          listen: false);
+                                  if (pedidoProvider
+                                      .pedidosAceptados.isNotEmpty) {
+                                    final pedido = pedidoProvider
+                                            .pedidosAceptados[
+                                        0]; // Tomamos el primer pedido de la lista
+
+                                    // Llamamos a la función para entregar el pedido
+                                    entregarPedido(
+                                      context,
+                                      pedido.id,
+                                      3, // Asegúrate de tener el conductorId en tu modelo
+                                      pedido.almacenId,
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              'No hay pedidos para entregar')),
+                                    );
+                                  }
                                 },
                                 style: ButtonStyle(
                                   backgroundColor: WidgetStateProperty.all(

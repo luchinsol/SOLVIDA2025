@@ -108,23 +108,38 @@ class _DrivePedidosState extends State<DrivePedidos> {
     _initializeAll();
   }
 
+  // Versión mejorada de handlePedidoAcceptance
   Future<void> handlePedidoAcceptance(
       dynamic pedidoid, dynamic almacenid) async {
-    // Guardamos el contexto en una variable local
-    final currentContext = context;
-
     try {
-      final provider =
-          Provider.of<PedidosProvider>(currentContext, listen: false);
+      // 1. Obtener el provider
+      final provider = Provider.of<PedidosProvider>(context, listen: false);
+
+      // 2. Aceptar el pedido
       await provider.aceptarPedido(pedidoid);
+
+      // 3. Actualizar estado
       await actualizarEstadoPedido(pedidoid, _conductorId, almacenid);
 
-      // Verificamos si el widget sigue montado antes de navegar
-      if (mounted) {
-        currentContext.go('/drive/cargar');
-      }
+      // 4. Navegación usando GoRouter
+      if (!mounted) return;
+
+      // Usar BuildContext.go() dentro de un Future delayed para asegurar que la navegación ocurra
+      Future.delayed(Duration.zero, () {
+        if (mounted) {
+          GoRouter.of(context).go('/drive/cargar');
+        }
+      });
     } catch (e) {
       print('Error al manejar la aceptación del pedido: $e');
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al procesar el pedido'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -144,13 +159,12 @@ class _DrivePedidosState extends State<DrivePedidos> {
         }),
       );
 
-      if (response.statusCode == 200) {
-        print('Estado actualizado correctamente');
-      } else {
-        print('Error al actualizar estado: ${response.body}');
+      if (response.statusCode != 200) {
+        throw Exception('Error al actualizar estado: ${response.body}');
       }
     } catch (e) {
       print('Error en la llamada al API: $e');
+      rethrow; // Relanzar el error para manejarlo en handlePedidoAcceptance
     }
   }
 

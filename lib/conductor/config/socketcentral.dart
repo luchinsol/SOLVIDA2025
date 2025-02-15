@@ -233,7 +233,7 @@ class SocketService {
 
   void _initializeSocket() {
     //"http://147.182.251.164:5010"
-    final apiUrl = "http://147.182.251.164:5010";
+    final apiUrl = "http://10.0.2.2:5010";
     //_logEvent('[Socket] Connecting to: $apiUrl');
 
     socket = io.io(apiUrl, <String, dynamic>{
@@ -282,7 +282,7 @@ class SocketService {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://147.182.251.164:8082/apigw/v1/conductor_evento/$conductorId'),
+            'http://10.0.2.2:3000/apigw/v1/conductor_evento/$conductorId'),
       );
 //'http://147.182.251.164:8082/apigw/v1/conductor_evento/$conductorId'
       if (response.statusCode == 200) {

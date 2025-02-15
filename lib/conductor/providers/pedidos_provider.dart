@@ -274,6 +274,8 @@ class PedidosProvider extends ChangeNotifier {
         print("PEDIDO ACTUALIZADO SU ID${pedido.id}");
         print('Pedido aceptado y guardado: ${pedido.id}');
         print('Total pedidos aceptados: ${_pedidosAceptadosList.length}');
+        print(
+            "-------------------------------------------------------->LISTA DE ACEPTADOS");
         print('Pedidos Almacenados en la Lista: ${_pedidosAceptadosList}');
         notifyListeners();
         _log('Pedido accepted successfully: $pedidoId');
@@ -339,6 +341,38 @@ class PedidosProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  //Logica del BUCLE
+  Future<void> entregarPedido(String pedidoId) async {
+    try {
+      print("Entregando el Pedido ------>");
+      //BUSCAMOS EL PEDIDO QUE ACEPTAMOS PARA ELIMINARLO DE LA LISTA Y TOMAR EL SIGUIENTE
+      final index = _pedidosAceptadosList.indexWhere((p) => p.id == pedidoId);
+      if (index != -1) {
+        // Remover el pedido de la lista de aceptados
+        final pedido = _pedidosAceptadosList[index];
+        _pedidosAceptadosList.removeAt(index);
+        _pedidosAceptados.remove(pedidoId);
+
+        print('Pedido entregado y eliminado de la lista: ${pedido.id}');
+        print(
+            'Total pedidos aceptados restantes: ${_pedidosAceptadosList.length}');
+        if (_pedidosAceptadosList.isNotEmpty) {
+          print('Siguiente pedido en la lista: ${_pedidosAceptadosList[0].id}');
+        } else {
+          print('No hay más pedidos en la lista de aceptados');
+        }
+
+        notifyListeners();
+        _log('Pedido entregado exitosamente: $pedidoId');
+        print("Saliendo de aqui -------->");
+      } else {
+        _log('Pedido no encontrado en la lista de aceptados: $pedidoId');
+      }
+    } catch (error) {
+      print("Pedido no se Entrego ${error}");
     }
   }
 

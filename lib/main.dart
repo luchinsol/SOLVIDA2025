@@ -61,6 +61,8 @@ void main() async {
 
   if (estalogeado) {
     rol = jsonDecode(userJson)['rolid'];
+    print("ROLLLLLLL----->>>");
+    print(rol);
   }
 
   UserProvider userProvider = UserProvider();
@@ -73,11 +75,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => PedidoProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionListProvider()),
-        ChangeNotifierProvider(create: (context) {
-          final pedidosProvider = PedidosProvider();
-          // Setup notification handling when orders are received
-          return pedidosProvider;
-        }),
+        ChangeNotifierProvider<PedidosProvider>.value(value: pedidosProvider),
       ],
       child: const MyApp(),
     ),
