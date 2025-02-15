@@ -181,15 +181,12 @@ import 'package:app2025/conductor/model/cliente_model.dart';
 import 'package:app2025/conductor/model/pedido_model.dart';
 import 'package:app2025/conductor/model/producto_model.dart';
 import 'package:app2025/conductor/model/promocion_model.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 typedef PedidoCallback = void Function(Map<String, dynamic> data);
 typedef ConnectionStateCallback = void Function(bool isConnected);
-String micro_pedido = dotenv.env['MICRO_PEDIDO'] ?? '';
-String micro_url = dotenv.env['MICRO_URL'] ?? '';
 
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -235,7 +232,8 @@ class SocketService {
   }
 
   void _initializeSocket() {
-    final apiUrl = micro_pedido;
+    //"http://147.182.251.164:5010"
+    final apiUrl = "http://10.0.2.2:5010";
     //_logEvent('[Socket] Connecting to: $apiUrl');
 
     socket = io.io(apiUrl, <String, dynamic>{
@@ -283,9 +281,10 @@ class SocketService {
   Future<void> loadConductorEvent(int conductorId) async {
     try {
       final response = await http.get(
-        Uri.parse('$micro_url/conductor_evento/$conductorId'),
+        Uri.parse(
+            'http://10.0.2.2:3000/apigw/v1/conductor_evento/$conductorId'),
       );
-
+//'http://147.182.251.164:8082/apigw/v1/conductor_evento/$conductorId'
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _conductorAlmacen = data['nombre'];
