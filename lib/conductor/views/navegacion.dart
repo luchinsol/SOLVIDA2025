@@ -308,8 +308,6 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
         throw Exception('Error al actualizar estado: ${response.body}');
       }
 
-      print("------------------------->>>>> UI NAVEGACION--->>> NAVEGACION");
-      print(pedidoId);
       // 3. Actualizar el provider y eliminar de la lista de aceptados
       await pedidoProvider.entregarPedido(pedidoId);
 
@@ -939,20 +937,16 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                           listen: false);
                                   if (pedidoProvider
                                       .pedidosAceptados.isNotEmpty) {
-                                    final pedido2 = _currentPedido;
-                                    /*
                                     final pedido = pedidoProvider
                                             .pedidosAceptados[
                                         0]; // Tomamos el primer pedido de la lista
-                                    */
-                                    print("UI ---->> LOGS PARA DEPURAR");
-                                    print(pedido2?.id);
+
                                     // Llamamos a la función para entregar el pedido
                                     entregarPedido(
                                       context,
-                                      pedido2!.id,
+                                      pedido.id,
                                       3, // Asegúrate de tener el conductorId en tu modelo
-                                      pedido2!.almacenId,
+                                      pedido.almacenId,
                                     );
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(

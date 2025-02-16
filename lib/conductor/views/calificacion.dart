@@ -1,12 +1,10 @@
 import 'dart:convert';
 
-import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:http/http.dart' as http;
@@ -44,41 +42,6 @@ class _CalificacionState extends State<Calificacion> {
       }
     } catch (e) {
       throw Exception('Error update calification $e');
-    }
-  }
-
-  void _finishAndNavigate(BuildContext context, int rating) async {
-    if (rating == 0) {
-      setState(() {
-        _rating = 5;
-      });
-    } else {
-      _rating = rating;
-    }
-
-    try {
-      await updateCalificationClient(_rating);
-
-      // Verificamos antes de la navegación
-      if (!mounted) return;
-
-      // Obtenemos el provider para verificar si hay pedidos aceptados
-      final pedidosProvider =
-          Provider.of<PedidosProvider>(context, listen: false);
-      final bool hasPedidos = pedidosProvider.pedidosAceptados.isNotEmpty;
-
-      // Navegamos según la condición
-      if (!mounted) return;
-      if (hasPedidos) {
-        context.go('/drive/navegar');
-      } else {
-        context.go('/drive');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
     }
   }
 
@@ -181,7 +144,15 @@ class _CalificacionState extends State<Calificacion> {
                 height: 70.h,
                 width: 1.sw,
                 child: ElevatedButton(
-                    onPressed: () => _finishAndNavigate(context, _rating),
+                    onPressed: () async {
+                      if (_rating == 0) {
+                        setState(() {
+                          _rating = 5;
+                        });
+                      }
+                      await updateCalificationClient(_rating);
+                      context.go('/drive');
+                    },
                     style: ButtonStyle(
                         backgroundColor: WidgetStateProperty.all(
                           Color.fromRGBO(42, 75, 160, 1),
