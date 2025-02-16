@@ -169,7 +169,9 @@ class _PreloginState extends State<Prelogin> {
           body: jsonEncode({"nickname": username, "contrasena": password}));
       print("why");
       print(res);
+      print(res.body);
       if (res.statusCode == 200) {
+        print("DENTRO");
         var data = json.decode(res.body);
         // CLIENTE
 
@@ -230,6 +232,7 @@ class _PreloginState extends State<Prelogin> {
         }
         //CONDUCTOR
         else if (data['usuario']['rol_id'] == 5) {
+          print(".....conductor data");
           print("conductor-data");
           print(data['usuario']['id']);
           print(data['usuario']['nombres']);
@@ -619,9 +622,25 @@ class _PreloginState extends State<Prelogin> {
 
                                           //SI ES CONDUCTOR
                                         } else if (rol == 5) {
-                                          context.go('/drive');
-
-                                          //SI ES GERENTE
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Text(
+                                                    "Inicio de sesión no válido"),
+                                                content: Text(
+                                                    "Este inicio de sesión ya no es válido. Inicie sesión como conductor."),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(),
+                                                    child: Text("OK"),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
                                         } else if (rol == 3) {
                                           //por cmabiar
                                         }
