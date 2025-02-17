@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:app2025/conductor/config/notifications.dart';
 import 'package:app2025/conductor/config/socketCentral2.dart';
@@ -112,6 +113,9 @@ class PedidosProvider2 extends ChangeNotifier {
         {'pedidoId': pedidoId, 'timestamp': DateTime.now().toIso8601String()});
   }
 
+  void rechazarPedido(String data) {
+    _socketService.emit('pedido_rechazado', data);
+  }
   // 3. MÉTODOS DEL PROVIDER
 
   /*
@@ -354,6 +358,116 @@ class PedidosProvider2 extends ChangeNotifier {
       }
     } catch (error) {
       print("Pedido no se Entrego ${error}");
+    }
+  }
+
+  void emitPedidoExpirado(Map<String, dynamic> pedidoData) {
+    try {
+      final pendingStores = pedidoData['AlmacenesPendientes'] ?? [];
+      // Ensure the data is converted to a standard JSON format
+      if (pendingStores.isNotEmpty) {
+        final jsonData = {
+          "id": pedidoData['id'],
+          "ubicacion": pedidoData['ubicacion'],
+          "detalles": {
+            "promociones":
+                (pedidoData['detalles']['promociones'] as List).map((promo) {
+              return {
+                "id": promo['id'],
+                "nombre": promo['nombre'],
+                "descripcion": promo['descripcion'],
+                "foto": promo['foto'],
+                "valoracion": promo['valoracion'],
+                "categoria": promo['categoria'],
+                "precio": promo['precio'],
+                "descuento": promo['descuento'],
+                "total": promo['total'],
+                "cantidad": promo['cantidad'],
+                "subtotal": promo['subtotal'],
+                "productos": (promo['productos'] as List).map((prod) {
+                  return {
+                    "id": prod['id'],
+                    "nombre": prod['nombre'],
+                    "descripcion": prod['descripcion'],
+                    "foto": prod['foto'],
+                    "valoracion": prod['valoracion'],
+                    "categoria": prod['categoria'],
+                    "precio": prod['precio'],
+                    "descuento": prod['descuento'],
+                    "total": prod['total'],
+                    "cantidad": prod['cantidad'],
+                    "cantidadProductos": prod['cantidadProductos']
+                  };
+                }).toList()
+              };
+            }).toList(),
+            "productos":
+                (pedidoData['detalles']['productos'] as List).map((prod) {
+              return {
+                "id": prod['id'],
+                "nombre": prod['nombre'],
+                "descripcion": prod['descripcion'],
+                "foto": prod['foto'],
+                "valoracion": prod['valoracion'],
+                "categoria": prod['categoria'],
+                "precio": prod['precio'],
+                "descuento": prod['descuento'],
+                "subtotal": prod['subtotal'],
+                "cantidad": prod['cantidad'],
+                "total": prod['total']
+              };
+            }).toList()
+          },
+          "region_id": pedidoData['region_id'] ?? 1,
+          "almacen_id": pedidoData['almacen_id'] ?? 3,
+          "subtotal": pedidoData['subtotal'] ?? 0,
+          "descuento": pedidoData['descuento'] ?? 0,
+          "total": pedidoData['total'] ?? 0,
+          "AlmacenesPendientes": pedidoData['AlmacenesPendientes'] ?? [],
+          "Cliente": pedidoData["Cliente"],
+          "emitted_time": DateTime.now().toIso8601String(),
+          "expired_time":
+              DateTime.now().add(Duration(minutes: 1)).toIso8601String(),
+          'is_rotation': true,
+          'accepted': false,
+          'rotation_attempts': (pedidoData['rotation_attempts'] ?? 0) + 1,
+          'pedidoinfo': pedidoData['pedidoinfo'],
+        };
+
+        // Convert to JSON string
+        final jsonString = jsonEncode(jsonData);
+
+        if (!_processedOrderIds.contains(pedidoData['id'].toString())) {
+          // Rechaza un pedido
+          rechazarPedido(jsonString);
+          _processedOrderIds.add(pedidoData['id'].toString());
+          print('🚀 Pedido Expirado Emitido: $jsonString');
+          if (_uniqueCallback != null) {
+            _uniqueCallback!({'id': pedidoData['id'], 'estado': 'expirado'});
+          }
+        }
+      }
+    } catch (e) {
+      print('❌ Error al procesar pedido expirado: $e');
+    }
+  }
+
+  //IGNORAR PEDIDO
+  void ignorarPedido(Map<String, dynamic> pedidoData) {
+    try {
+      // Emitir el evento al socket
+      emitPedidoExpirado(pedidoData);
+      // Remover el pedido de la lista local
+      _pedidos.removeWhere((p) => p.id == pedidoData['id']);
+
+      // Limpiar recursos asociados
+      _timers[pedidoData['id']]?.cancel();
+      _timers.remove(pedidoData['id']);
+
+      // Notificar a los listeners para actualizar la UI
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error ignorando pedido: $e');
     }
   }
 

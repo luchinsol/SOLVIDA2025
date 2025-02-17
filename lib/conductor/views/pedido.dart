@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:app2025/conductor/config/notifications.dart';
 import 'package:app2025/conductor/config/socketcentral.dart';
-import 'package:app2025/conductor/providers/pedidos_provider.dart';
+//import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -764,7 +764,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                     child: ElevatedButton(
                                                       onPressed: () {
                                                         final provider = Provider
-                                                            .of<PedidosProvider>(
+                                                            .of<PedidosProvider2>(
                                                                 context,
                                                                 listen: false);
 
