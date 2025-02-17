@@ -100,7 +100,7 @@ class PedidosProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      await _socketService.loadConductorEvent(conductorId);
+      //await _socketService.loadConductorEvent(conductorId);
       _isInitialized = true;
     } catch (e) {
       print('📱 [Provider] Error loading initial data: $e');

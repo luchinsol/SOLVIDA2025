@@ -1,3 +1,4 @@
+import 'package:app2025/conductor/config/notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -192,6 +193,7 @@ class _PerfilState extends State<Perfil> {
                               borderRadius: BorderRadius.circular(50.r)),
                           child: IconButton(
                               onPressed: () {
+                                NotificationsService().disposeNotifications();
                                 context.go('/');
                               },
                               icon: Icon(

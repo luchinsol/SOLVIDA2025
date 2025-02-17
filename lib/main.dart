@@ -19,6 +19,7 @@ import 'package:app2025/conductor/providers/pedidos_provider.dart';
 
 import 'package:app2025/conductor/providers/almacen_provider.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
+import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 
 import 'package:app2025/conductor/views/calificacion.dart';
 import 'package:app2025/conductor/views/cargaproductos.dart';
@@ -52,12 +53,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   // Crear instancia del provider
-  final pedidosProvider = PedidosProvider();
-  final notificationsService = NotificationsService();
-  NotificationsService().initProvider(pedidosProvider);
-  await NotificationsService().initNotification();
-  NotificationsService().requestNotificationPermission();
+  //final pedidosProvider = PedidosProvider();
+  //final notificationsService = NotificationsService();
+  //await notificationsService.initNotification();
+  //await notificationsService.requestNotificationPermission();
 
+  //notificationsService.silenceNotifications(true);
   await initializeDateFormatting('es_ES', null);
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -73,7 +74,7 @@ void main() async {
 
   UserProvider userProvider = UserProvider();
   await userProvider.initUser();
-  SocketService();
+  //SocketService();
   runApp(
     MultiProvider(
       providers: [
@@ -81,9 +82,10 @@ void main() async {
         ChangeNotifierProvider(create: (context) => PedidoProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionListProvider()),
-        ChangeNotifierProvider<PedidosProvider>.value(value: pedidosProvider),
+        //ChangeNotifierProvider<PedidosProvider>.value(value: pedidosProvider),
         ChangeNotifierProvider(create: (context) => ConductorProvider()),
-        ChangeNotifierProvider(create: (context) => AlmacenProvider())
+        ChangeNotifierProvider(create: (context) => AlmacenProvider()),
+        ChangeNotifierProvider(create: (context) => PedidosProvider2()),
       ],
       child: const MyApp(),
     ),
@@ -96,7 +98,9 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (BuildContext context, GoRouterState state) {
+        //NotificationsService().silenceNotifications(true);
         return const Bienvenida();
+        //return const Demos();
         //return const NavegacionPedido2(); // Pantalla principal con navegación curva
       },
     ),
@@ -117,7 +121,7 @@ final GoRouter _router = GoRouter(
     GoRoute(
         path: '/drive',
         builder: (BuildContext context, GoRouterState state) {
-          NotificationsService().silenceNotifications(false);
+          //NotificationsService().silenceNotifications(false);
           return const BarraConductor(); // Pantalla principal con navegación curva
         },
         routes: [
@@ -170,12 +174,12 @@ final GoRouter _router = GoRouter(
           GoRoute(
             path: 'pedido',
             builder: (BuildContext context, GoRouterState state) {
-              NotificationsService().silenceNotifications(false);
+              //NotificationsService().silenceNotifications(false);
               return PopScope(
                   canPop: true,
                   onPopInvoked: (bool didPop) {
                     if (didPop) {
-                      NotificationsService().silenceNotifications(false);
+                      //NotificationsService().silenceNotifications(false);
                       return;
                     }
                   },

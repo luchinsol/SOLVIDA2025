@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:app2025/conductor/providers/pedidos_provider.dart';
+//import 'package:app2025/conductor/providers/pedidos_provider.dart';
+import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -64,7 +65,7 @@ class _CalificacionState extends State<Calificacion> {
 
       // Obtenemos el provider para verificar si hay pedidos aceptados
       final pedidosProvider =
-          Provider.of<PedidosProvider>(context, listen: false);
+          Provider.of<PedidosProvider2>(context, listen: false);
       final bool hasPedidos = pedidosProvider.pedidosAceptados.isNotEmpty;
 
       // Navegamos según la condición

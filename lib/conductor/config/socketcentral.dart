@@ -277,7 +277,9 @@ class SocketService {
     });
   }
 
+//----------->ESTO SE DESCARTA PORQUE YA HAY LOGIN
 //1. CARGAR EVENTOS DEL CONDUCTOR
+  /*
   Future<void> loadConductorEvent(int conductorId) async {
     try {
       final response = await http.get(
@@ -300,7 +302,7 @@ class SocketService {
       _logEvent('[Conductor] Error: $e');
       rethrow;
     }
-  }
+  }*/
 
 //2. OBTENER EVENTO DE ALMACEN
   Future<void> _registerDriver() async {

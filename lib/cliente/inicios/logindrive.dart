@@ -103,7 +103,7 @@ class _PreloginDriverState extends State<PreloginDriver> {
         // Guardar token de la respuesta
         SharedPreferences tokenUser = await SharedPreferences.getInstance();
         tokenUser.setString('token', data['token']);
-
+        print("ENTRANDO AL MODEL ----------------------------");
         conductor = ConductorModel(
             id: data['driver']['id'],
             nombres: data['driver']['nombres'],
@@ -120,9 +120,12 @@ class _PreloginDriverState extends State<PreloginDriver> {
             departamento: data['driver']['departamento'],
             provincia: data['driver']['provincia'],
             evento_id: data['driver']['evento_id'],
-            foto_perfil: data['driver']['foto_perfil']);
+            foto_perfil: data['driver']['foto_perfil'],
+            nombre: 'almacen_${data['driver']['evento_id']}');
+
         print("Login exitoso:");
-        print(data);
+        //print(data);
+        print(conductor.nombre);
 
         Provider.of<ConductorProvider>(context, listen: false)
             .updateConductor(conductor);

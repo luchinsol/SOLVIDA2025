@@ -1,4 +1,6 @@
+import 'package:app2025/cliente/provider/pedido_provider.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
+import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +33,8 @@ class _InicioDriverState extends State<InicioDriver> {
   @override
   Widget build(BuildContext context) {
     final conductorProvider = context.watch<ConductorProvider>();
+    final pedidoProvider =
+        Provider.of<PedidosProvider2>(context, listen: false);
     if (conductorProvider.conductor != null) {
       setState(() {
         enabled = false;
@@ -249,6 +253,9 @@ class _InicioDriverState extends State<InicioDriver> {
                               activeColor: Colors.amber, //.shade400,
                               value: light,
                               onChanged: (bool value) {
+                                pedidoProvider.conectarSocket(
+                                    conductorProvider.conductor!.evento_id,
+                                    conductorProvider.conductor!.nombre);
                                 setState(() {
                                   light = value;
                                 });
