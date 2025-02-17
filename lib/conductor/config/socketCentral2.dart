@@ -1,67 +1,61 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
-String microUrl = dotenv.env['MICRO_PEDIDO'] ?? '';
-
 class SocketService2 {
-  late IO.Socket socket;
+  // 🔥 PATRÓN SINGLETON
+  static final SocketService2 _instance = SocketService2._internal();
+  factory SocketService2() => _instance;
 
-  SocketService2() {
-    _initSocket();
+  IO.Socket? _socket;
+
+  // 🔒 Constructor privado
+  SocketService2._internal();
+
+  // MÉTODOS GENERALES
+  void connect() {
+    if (_socket == null) {
+      String microUrl = dotenv.env['MICRO_PEDIDO'] ?? '';
+      print("🌐 Conectando a: $microUrl");
+
+      _socket = IO.io(
+        microUrl,
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setReconnectionAttempts(10)
+            .setReconnectionDelay(2000)
+            .setReconnectionDelayMax(5000)
+            .setTimeout(10000)
+            .build(),
+      );
+
+      _socket?.onConnect((_) => print('✅ Conectado a Socket.IO'));
+      _socket?.onDisconnect((_) => print('❌ Desconectado de Socket.IO'));
+      _socket?.onConnectError((error) => print('⚠️ Error de conexión: $error'));
+      _socket
+          ?.onError((error) => print('🚨 Error general en el socket: $error'));
+    }
+
+    _socket?.connect();
   }
 
-  void _initSocket() {
-    socket = IO.io(microUrl, <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': true,
-      'reconnect': true,
-      'reconnectionAttempts': 10,
-      'reconnectionDelay': 2000,
-      'reconnectionDelayMax': 2000,
-      'timeout': 10000,
-    });
-
-    // Eventos básicos
-    socket.onConnect((_) {
-      print('Conectado al servidor de Socket.IO');
-      print('ESTOY AQUIIIIIII');
-      // Importante: Re-registrar al conductor al reconectar
-      socket.emit("register_driver", {'almacenId': 3});
-
-      socket.on('initial_orders', (data) {
-        // print("INITIAL ORDER.---");
-        if (data is List) {
-          print("Es una lista 665");
-        }
-      });
-    });
-
-    socket.onDisconnect((_) {
-      print('Desconectado del servidor');
-    });
-
-    socket.onError((error) {
-      print('Error de conexión: $error');
-    });
-  }
-
-  // Método para escuchar un evento específico
-  void on(String eventName, Function(dynamic) callback) {
-    socket.on(eventName, (data) => callback(data));
-  }
-
-  // Método para emitir un evento
-  void emit(String eventName, dynamic data) {
-    socket.emit(eventName, data);
-  }
-
-  // Método para desconectar el socket
   void disconnect() {
-    socket.disconnect();
+    _socket?.disconnect();
   }
 
-  // Método para liberar recursos
-  void dispose() {
-    socket.dispose();
+  void reconnect() {
+    _socket?.connect();
+  }
+
+  void on(String eventName, Function(dynamic) callback) {
+    _socket?.on(eventName, (data) => callback(data));
+  }
+
+  void onDisconnect(Function callback) {
+    _socket?.onDisconnect((_) => callback());
+  }
+
+  void emit(String eventName, dynamic data) {
+    print("📤 Emitiendo evento: $eventName con data: $data");
+    _socket?.emit(eventName, data);
   }
 }

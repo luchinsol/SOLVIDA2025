@@ -1,4 +1,3 @@
-/*
 import 'package:app2025/conductor/config/notifications.dart';
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +20,7 @@ class _DemosState extends State<Demos> {
   @override
   void initState() {
     super.initState();
-    _pedidosProvider = Provider.of<PedidosProvider>(context, listen: false);
+    //_pedidosProvider = Provider.of<PedidosProvider>(context, listen: false);
     _setupNotifications();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkCurrentRoute();
@@ -52,17 +51,18 @@ class _DemosState extends State<Demos> {
   void _setupNotifications() {
     _notificationsService.initNotification();
     _notificationsService.requestNotificationPermission();
+    /*
     _pedidosProvider.addListener(() {
       if (_shouldShowNotifications) {
         _handlePedidosChange();
       }
-    });
+    });*/
   }
 
   void _handlePedidosChange() {
     if (!_shouldShowNotifications) return;
 
-    final activePedidos = _pedidosProvider.getActivePedidos();
+    /*final activePedidos = _pedidosProvider.getActivePedidos();
     for (var pedido in activePedidos) {
       _notificationsService.showOrderNotification(
         id: int.parse(pedido.id),
@@ -71,12 +71,12 @@ class _DemosState extends State<Demos> {
             'Cliente: ${pedido.clienteName}\nDirección: ${pedido.ubicacion['direccion']}',
         payload: 'order_${pedido.id}',
       );
-    }
+    }*/
   }
 
   @override
   void dispose() {
-    _pedidosProvider.removeListener(_handlePedidosChange);
+    //_pedidosProvider.removeListener(_handlePedidosChange);
     super.dispose();
   }
 
@@ -132,4 +132,3 @@ class _DemosState extends State<Demos> {
     );
   }
 }
-*/

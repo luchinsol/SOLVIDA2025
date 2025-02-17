@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:app2025/conductor/config/notifications.dart';
 import 'package:app2025/conductor/config/socketcentral.dart';
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
+import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -31,13 +33,15 @@ class _DrivePedidosState extends State<DrivePedidos> {
   LatLng _currentPosition = const LatLng(-16.4014, -71.5343);
   BitmapDescriptor? _destinationIcon;
   String _mapStyle = '';
-  final SocketService socketService = SocketService();
+  //final SocketService socketService = SocketService();
   static const int _conductorId = 3;
-  late PedidosProvider _provider;
+  late PedidosProvider2 _provider;
   // Creamos un Map que actúa como caché para almacenar las direcciones
   // La llave es el ID del pedido y el valor es la dirección en texto
   Map<String, String> addresses = {};
   bool _isLoading = true; // Nuevo flag para controlar el estado de carga
+
+  //notifactions
 
   // FUNCIONES
   Future<void> _loadMarkerIcons() async {
@@ -103,9 +107,12 @@ class _DrivePedidosState extends State<DrivePedidos> {
   @override
   void initState() {
     super.initState();
-    _provider = Provider.of<PedidosProvider>(context, listen: false);
+    _provider = Provider.of<PedidosProvider2>(context, listen: false);
     print('🔄 Initializing DrivePedidos state');
     _initializeAll();
+    final notificationsService = NotificationsService();
+    notificationsService.initNotification();
+    notificationsService.requestNotificationPermission();
   }
 
   // Versión mejorada de handlePedidoAcceptance
@@ -113,7 +120,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
       dynamic pedidoid, dynamic almacenid) async {
     try {
       // 1. Obtener el provider
-      final provider = Provider.of<PedidosProvider>(context, listen: false);
+      final provider = Provider.of<PedidosProvider2>(context, listen: false);
 
       // 2. Aceptar el pedido
       await provider.aceptarPedido(pedidoid);
@@ -184,7 +191,11 @@ class _DrivePedidosState extends State<DrivePedidos> {
       print('❌ Error in initialization: $e');
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        // Usamos addPostFrameCallback para evitar llamar a setState durante el build.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          setState(() => _isLoading =
+              false); // Actualizamos el estado después de la construcción
+        });
       }
     }
   }
@@ -227,7 +238,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PedidosProvider>(builder: (context, provider, child) {
+    return Consumer<PedidosProvider2>(builder: (context, provider, child) {
       final activePedidos = provider.getActivePedidos();
       if (_isLoading) {
         return const Scaffold(

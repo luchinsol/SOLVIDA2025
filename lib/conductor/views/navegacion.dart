@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:app2025/conductor/model/pedido_model.dart';
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
+import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -288,7 +289,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     try {
       // 1. Obtener el provider
       final pedidoProvider =
-          Provider.of<PedidosProvider>(context, listen: false);
+          Provider.of<PedidosProvider2>(context, listen: false);
 
       // 2. Actualizar en la base de datos
       final url =
@@ -336,7 +337,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         final pedidosProvider =
-            Provider.of<PedidosProvider>(context, listen: false);
+            Provider.of<PedidosProvider2>(context, listen: false);
         //final activePedidos = pedidosProvider.getActivePedidos();
         final pedidoAceptado = pedidosProvider.ultimoPedidoAceptado;
         print("-----------------------> VISTA NAVEGACION");
@@ -369,7 +370,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
 
   @override
   Widget build(BuildContext context) {
-    final pedidosProvider = context.watch<PedidosProvider>();
+    final pedidosProvider = context.watch<PedidosProvider2>();
     final activePedidos = pedidosProvider.getActivePedidos();
     final departamento = _currentPedido?.ubicacion?['departamento'];
     final provincia = _currentPedido?.ubicacion?['provincia'];
@@ -935,7 +936,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                   // Acción al presionar el botón
                                   //context.push('/drive/calificar');
                                   final pedidoProvider =
-                                      Provider.of<PedidosProvider>(context,
+                                      Provider.of<PedidosProvider2>(context,
                                           listen: false);
                                   if (pedidoProvider
                                       .pedidosAceptados.isNotEmpty) {
