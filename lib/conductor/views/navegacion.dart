@@ -7,6 +7,7 @@ import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -51,6 +52,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   bool _isExpanded = false;
   bool _isExpandedProductos = false;
   Pedido? _currentPedido;
+  String microUrl = dotenv.env['MICRO_URL'] ?? '';
 
   void _expandirDraggable() {
     _draggableController.animateTo(
@@ -292,8 +294,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
           Provider.of<PedidosProvider2>(context, listen: false);
 
       // 2. Actualizar en la base de datos
-      final url =
-          Uri.parse('http://10.0.2.2:3000/apigw/v1/pedido_estado/$pedidoId');
+      final url = Uri.parse('${microUrl}/pedido_estado/$pedidoId');
 
       final response = await http.put(
         url,

@@ -40,6 +40,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
   // La llave es el ID del pedido y el valor es la dirección en texto
   Map<String, String> addresses = {};
   bool _isLoading = true; // Nuevo flag para controlar el estado de carga
+  String microUrl = dotenv.env['MICRO_URL'] ?? '';
 
   //notifactions
 
@@ -152,8 +153,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
 
   Future<void> actualizarEstadoPedido(
       String pedidoId, int conductorId, int almacenId) async {
-    final url =
-        Uri.parse('http://10.0.2.2:3000/apigw/v1/pedido_estado/$pedidoId');
+    final url = Uri.parse('${microUrl}/pedido_estado/$pedidoId');
 
     try {
       final response = await http.put(
