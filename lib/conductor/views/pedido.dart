@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:app2025/conductor/config/notifications.dart';
 import 'package:app2025/conductor/config/socketcentral.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
+import 'package:app2025/conductor/providers/conexionswitch_provider.dart';
 //import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:flutter/material.dart';
@@ -244,6 +245,8 @@ class _DrivePedidosState extends State<DrivePedidos> {
 
   @override
   Widget build(BuildContext context) {
+    final conexionTrabajo =
+        Provider.of<ConductorConnectionProvider>(context, listen: false);
     return Consumer<PedidosProvider2>(builder: (context, provider, child) {
       final activePedidos = provider.getActivePedidos();
       if (_isLoading) {
@@ -282,120 +285,129 @@ class _DrivePedidosState extends State<DrivePedidos> {
             child: Container(
                 // color: Colors.grey,
                 height: 1.sh,
-                child: activePedidos.isEmpty
-                    ? Center(
-                        child: Text(
-                          "Espera a la central",
-                          style: GoogleFonts.manrope(fontSize: 16.sp),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: activePedidos.length,
-                        itemBuilder: (context, index) {
-                          final pedido = activePedidos[index];
-                          final clienteNombre =
-                              pedido.cliente.nombre ?? 'Cliente sin nombre';
-                          final total = pedido.total ?? 0.0;
-                          final estado = pedido.estado ?? 'Estado pendiente';
-                          final emittedTime =
-                              pedido.emittedTime ?? DateTime.now();
-                          final latitud = pedido.ubicacion['latitud'] ?? -16;
-                          final longitud = pedido.ubicacion['longitud'] ?? -71;
-                          final departamento = pedido.ubicacion['departamento'];
-                          final provincia = pedido.ubicacion['provincia'];
-                          final distrito = pedido.ubicacion['distrito'];
-                          final direccion = pedido.ubicacion['direccion'];
-                          final direccionCompleta =
-                              '${pedido.ubicacion['direccion']}, ${pedido.ubicacion['distrito']}, ${pedido.ubicacion['provincia']}, ${pedido.ubicacion['departamento']}';
+                child: conexionTrabajo.isConnected
+                    ? (activePedidos.isEmpty
+                        ? Center(
+                            child: Text(
+                              "Espera a la central",
+                              style: GoogleFonts.manrope(fontSize: 16.sp),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: activePedidos.length,
+                            itemBuilder: (context, index) {
+                              final pedido = activePedidos[index];
+                              final clienteNombre =
+                                  pedido.cliente.nombre ?? 'Cliente sin nombre';
+                              final total = pedido.total ?? 0.0;
+                              final estado =
+                                  pedido.estado ?? 'Estado pendiente';
+                              final emittedTime =
+                                  pedido.emittedTime ?? DateTime.now();
+                              final latitud =
+                                  pedido.ubicacion['latitud'] ?? -16;
+                              final longitud =
+                                  pedido.ubicacion['longitud'] ?? -71;
+                              final departamento =
+                                  pedido.ubicacion['departamento'];
+                              final provincia = pedido.ubicacion['provincia'];
+                              final distrito = pedido.ubicacion['distrito'];
+                              final direccion = pedido.ubicacion['direccion'];
+                              final direccionCompleta =
+                                  '${pedido.ubicacion['direccion']}, ${pedido.ubicacion['distrito']}, ${pedido.ubicacion['provincia']}, ${pedido.ubicacion['departamento']}';
 
-                          print("VERIFICANDO LAS COORDENADAS");
-                          print(longitud);
-                          print(latitud);
-                          print(direccionCompleta);
-                          /*
+                              print("VERIFICANDO LAS COORDENADAS");
+                              print(longitud);
+                              print(latitud);
+                              print(direccionCompleta);
+                              /*
                           if (!addresses.containsKey(pedido.id)) {
                             getAddress(latitud, longitud, pedido.id);
                           }*/
-                          return Column(
-                            children: [
-                              Skeletonizer(
-                                enabled: false,
-                                effect: ShimmerEffect(
-                                    baseColor: Colors.white,
-                                    highlightColor: Colors.grey.shade500),
-                                child: Material(
-                                  elevation: 5.r,
-                                  borderRadius: BorderRadius.circular(20.r),
-                                  child: AnimatedContainer(
-                                    padding: EdgeInsets.all(7.r),
-                                    alignment: Alignment.topCenter,
-                                    height: selected[index] ? 990.0.h : 225.5.h,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          // color: const Color.fromRGBO(42, 75, 160, 0.575),
-                                          width: 0.05),
-                                      color: selected[index]
-                                          ? colorDeploy[index][0]
-                                          : colorDeploy[index][1],
-                                      //color: const Color.fromARGB(255, 255, 255, 255),
-                                      // color: const Color.fromARGB(255, 27, 51, 160),
+                              return Column(
+                                children: [
+                                  Skeletonizer(
+                                    enabled: false,
+                                    effect: ShimmerEffect(
+                                        baseColor: Colors.white,
+                                        highlightColor: Colors.grey.shade500),
+                                    child: Material(
+                                      elevation: 5.r,
                                       borderRadius: BorderRadius.circular(20.r),
-                                    ),
-                                    clipBehavior: Clip.hardEdge,
-                                    duration: const Duration(milliseconds: 450),
-                                    curve: Curves.easeInOut,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        // Cabecera: Siempre visible
-                                        Container(
-                                          height: 145.h,
-                                          //color: Colors.green,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                                      child: AnimatedContainer(
+                                        padding: EdgeInsets.all(7.r),
+                                        alignment: Alignment.topCenter,
+                                        height:
+                                            selected[index] ? 990.0.h : 225.5.h,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                              // color: const Color.fromRGBO(42, 75, 160, 0.575),
+                                              width: 0.05),
+                                          color: selected[index]
+                                              ? colorDeploy[index][0]
+                                              : colorDeploy[index][1],
+                                          //color: const Color.fromARGB(255, 255, 255, 255),
+                                          // color: const Color.fromARGB(255, 27, 51, 160),
+                                          borderRadius:
+                                              BorderRadius.circular(20.r),
+                                        ),
+                                        clipBehavior: Clip.hardEdge,
+                                        duration:
+                                            const Duration(milliseconds: 450),
+                                        curve: Curves.easeInOut,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            // Cabecera: Siempre visible
+                                            Container(
+                                              height: 145.h,
+                                              //color: Colors.green,
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
-                                                  // FOTO Y NOMBRE
-                                                  Container(
-                                                    //color: Colors.amber,
-                                                    width: 153.h,
-                                                    child: Column(
-                                                      children: [
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      // FOTO Y NOMBRE
+                                                      Container(
+                                                        //color: Colors.amber,
+                                                        width: 153.h,
+                                                        child: Column(
                                                           children: [
-                                                            Column(
+                                                            Row(
                                                               mainAxisAlignment:
                                                                   MainAxisAlignment
-                                                                      .center,
+                                                                      .spaceBetween,
                                                               children: [
-                                                                Container(
-                                                                  width: 45.h,
-                                                                  height: 45.h,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: const Color
-                                                                        .fromARGB(
-                                                                        255,
-                                                                        224,
-                                                                        224,
-                                                                        224),
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            50.r),
-                                                                  ),
-                                                                ),
-                                                                /*Row(
+                                                                Column(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  children: [
+                                                                    Container(
+                                                                      width:
+                                                                          45.h,
+                                                                      height:
+                                                                          45.h,
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        color: const Color
+                                                                            .fromARGB(
+                                                                            255,
+                                                                            224,
+                                                                            224,
+                                                                            224),
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(50.r),
+                                                                      ),
+                                                                    ),
+                                                                    /*Row(
                                                         mainAxisAlignment:
                                                             MainAxisAlignment.spaceBetween,
                                                         children: [
@@ -410,165 +422,90 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                           ),
                                                         ],
                                                       ),*/
-                                                              ],
-                                                            ),
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                Text(
-                                                                  clienteNombre,
-                                                                  style: GoogleFonts.manrope(
-                                                                      fontSize:
-                                                                          14.sp,
-                                                                      color: selected[
-                                                                              index]
-                                                                          ? Colors
-                                                                              .grey
-                                                                              .shade600
-                                                                          : Colors
-                                                                              .white
-
-                                                                      //Colors.grey.shade600
-
-                                                                      ),
+                                                                  ],
                                                                 ),
-                                                                Text(
-                                                                  "S/.${total.toStringAsFixed(2)}",
-                                                                  style: GoogleFonts.manrope(
-                                                                      fontSize:
-                                                                          14.sp,
-                                                                      color: selected[
-                                                                              index]
-                                                                          ? const Color
-                                                                              .fromARGB(
-                                                                              255,
-                                                                              45,
-                                                                              45,
-                                                                              45)
-                                                                          : Colors
-                                                                              .white,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold),
-                                                                ),
-                                                                Text(
-                                                                  pedido
-                                                                      .emittedTime
-                                                                      .toString()
-                                                                      .split(
-                                                                          ' ')[0],
-                                                                  style: GoogleFonts.manrope(
-                                                                      fontSize:
-                                                                          14.sp,
-                                                                      color: selected[
-                                                                              index]
-                                                                          ? Colors
-                                                                              .grey
-                                                                              .shade600
-                                                                          : Colors
-                                                                              .white),
+                                                                Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
+                                                                  children: [
+                                                                    Text(
+                                                                      clienteNombre,
+                                                                      style: GoogleFonts.manrope(
+                                                                          fontSize: 14
+                                                                              .sp,
+                                                                          color: selected[index]
+                                                                              ? Colors.grey.shade600
+                                                                              : Colors.white
+
+                                                                          //Colors.grey.shade600
+
+                                                                          ),
+                                                                    ),
+                                                                    Text(
+                                                                      "S/.${total.toStringAsFixed(2)}",
+                                                                      style: GoogleFonts.manrope(
+                                                                          fontSize: 14
+                                                                              .sp,
+                                                                          color: selected[index]
+                                                                              ? const Color.fromARGB(255, 45, 45, 45)
+                                                                              : Colors.white,
+                                                                          fontWeight: FontWeight.bold),
+                                                                    ),
+                                                                    Text(
+                                                                      pedido
+                                                                          .emittedTime
+                                                                          .toString()
+                                                                          .split(
+                                                                              ' ')[0],
+                                                                      style: GoogleFonts.manrope(
+                                                                          fontSize: 14
+                                                                              .sp,
+                                                                          color: selected[index]
+                                                                              ? Colors.grey.shade600
+                                                                              : Colors.white),
+                                                                    ),
+                                                                  ],
                                                                 ),
                                                               ],
                                                             ),
                                                           ],
                                                         ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  // ID Y TIPO
-                                                  Container(
-                                                    width: 153.h,
-                                                    //color: Colors.white,
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .end,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Text(
-                                                          "ID: #${pedido.id}",
-                                                          style: GoogleFonts.manrope(
-                                                              fontSize: 14.sp,
-                                                              color: selected[
-                                                                      index]
-                                                                  ? Colors.grey
-                                                                      .shade600
-                                                                  : Colors
-                                                                      .white),
-                                                        ),
-                                                        Text(
-                                                          pedido.pedidoinfo[
-                                                              'estado'],
-                                                          style: GoogleFonts.manrope(
-                                                              fontSize: 14.sp,
-                                                              color: selected[
-                                                                      index]
-                                                                  ? const Color
-                                                                      .fromARGB(
-                                                                      255,
-                                                                      23,
-                                                                      3,
-                                                                      154)
-                                                                  : const Color
-                                                                      .fromARGB(
-                                                                      255,
-                                                                      255,
-                                                                      217,
-                                                                      0),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                        StreamBuilder(
-                                                          stream:
-                                                              Stream.periodic(
-                                                                  const Duration(
-                                                                      seconds:
-                                                                          1)),
-                                                          builder: (context,
-                                                              snapshot) {
-                                                            final tiempoRestante =
-                                                                pedido
-                                                                    .expiredTime
-                                                                    .difference(
-                                                                        DateTime
-                                                                            .now());
-
-                                                            if (tiempoRestante
-                                                                .isNegative) {
-                                                              return Text(
-                                                                'Expirado',
-                                                                style: GoogleFonts.manrope(
-                                                                    fontSize:
-                                                                        12.sp,
-                                                                    color: Colors
-                                                                        .red,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500),
-                                                              );
-                                                            }
-
-                                                            // Format remaining time as mm:ss
-                                                            final minutes =
-                                                                tiempoRestante
-                                                                    .inMinutes;
-                                                            final seconds =
-                                                                tiempoRestante
-                                                                        .inSeconds %
-                                                                    60;
-                                                            return Text(
-                                                              '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+                                                      ),
+                                                      // ID Y TIPO
+                                                      Container(
+                                                        width: 153.h,
+                                                        //color: Colors.white,
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .end,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Text(
+                                                              "ID: #${pedido.id}",
                                                               style: GoogleFonts.manrope(
                                                                   fontSize:
-                                                                      12.sp,
+                                                                      14.sp,
+                                                                  color: selected[
+                                                                          index]
+                                                                      ? Colors
+                                                                          .grey
+                                                                          .shade600
+                                                                      : Colors
+                                                                          .white),
+                                                            ),
+                                                            Text(
+                                                              pedido.pedidoinfo[
+                                                                  'estado'],
+                                                              style: GoogleFonts.manrope(
+                                                                  fontSize:
+                                                                      14.sp,
                                                                   color: selected[
                                                                           index]
                                                                       ? const Color
@@ -577,268 +514,337 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                                           23,
                                                                           3,
                                                                           154)
-                                                                      : Colors
-                                                                          .white,
+                                                                      : const Color
+                                                                          .fromARGB(
+                                                                          255,
+                                                                          255,
+                                                                          217,
+                                                                          0),
                                                                   fontWeight:
                                                                       FontWeight
-                                                                          .w500),
-                                                            );
-                                                          },
+                                                                          .bold),
+                                                            ),
+                                                            StreamBuilder(
+                                                              stream: Stream.periodic(
+                                                                  const Duration(
+                                                                      seconds:
+                                                                          1)),
+                                                              builder: (context,
+                                                                  snapshot) {
+                                                                final tiempoRestante = pedido
+                                                                    .expiredTime
+                                                                    .difference(
+                                                                        DateTime
+                                                                            .now());
+
+                                                                if (tiempoRestante
+                                                                    .isNegative) {
+                                                                  return Text(
+                                                                    'Expirado',
+                                                                    style: GoogleFonts.manrope(
+                                                                        fontSize: 12
+                                                                            .sp,
+                                                                        color: Colors
+                                                                            .red,
+                                                                        fontWeight:
+                                                                            FontWeight.w500),
+                                                                  );
+                                                                }
+
+                                                                // Format remaining time as mm:ss
+                                                                final minutes =
+                                                                    tiempoRestante
+                                                                        .inMinutes;
+                                                                final seconds =
+                                                                    tiempoRestante
+                                                                            .inSeconds %
+                                                                        60;
+                                                                return Text(
+                                                                  '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+                                                                  style: GoogleFonts.manrope(
+                                                                      fontSize:
+                                                                          12.sp,
+                                                                      color: selected[
+                                                                              index]
+                                                                          ? const Color
+                                                                              .fromARGB(
+                                                                              255,
+                                                                              23,
+                                                                              3,
+                                                                              154)
+                                                                          : Colors
+                                                                              .white,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500),
+                                                                );
+                                                              },
+                                                            ),
+                                                          ],
                                                         ),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                    ],
                                                   ),
+                                                  SizedBox(
+                                                    height: 18.h,
+                                                  ),
+                                                  Text(
+                                                    "Dirección",
+                                                    style: GoogleFonts.manrope(
+                                                        fontSize: 14.sp,
+                                                        color: selected[index]
+                                                            ? Colors
+                                                                .grey.shade600
+                                                            : Colors.white),
+                                                  ),
+                                                  SizedBox(
+                                                    height: 8.h,
+                                                  ),
+                                                  Text(
+                                                    direccionCompleta ??
+                                                        "Cargando dirección...",
+                                                    style: GoogleFonts.manrope(
+                                                        fontSize: 14.sp,
+                                                        color: selected[index]
+                                                            ? Colors
+                                                                .grey.shade600
+                                                            : Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.w600),
+                                                  ),
+                                                  SizedBox(height: 8.h),
                                                 ],
                                               ),
-                                              SizedBox(
-                                                height: 18.h,
-                                              ),
-                                              Text(
-                                                "Dirección",
-                                                style: GoogleFonts.manrope(
-                                                    fontSize: 14.sp,
-                                                    color: selected[index]
-                                                        ? Colors.grey.shade600
-                                                        : Colors.white),
-                                              ),
-                                              SizedBox(
-                                                height: 8.h,
-                                              ),
-                                              Text(
-                                                direccionCompleta ??
-                                                    "Cargando dirección...",
-                                                style: GoogleFonts.manrope(
-                                                    fontSize: 14.sp,
-                                                    color: selected[index]
-                                                        ? Colors.grey.shade600
-                                                        : Colors.white,
-                                                    fontWeight:
-                                                        FontWeight.w600),
-                                              ),
-                                              SizedBox(height: 8.h),
-                                            ],
-                                          ),
-                                        ),
+                                            ),
 
-                                        // Contenido que se muestra/oculta
+                                            // Contenido que se muestra/oculta
 
-                                        Visibility(
-                                          visible: selected[index],
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              SizedBox(height: 20.h),
-                                              Container(
-                                                // width: double.infinity,
-                                                height: 400.h,
-                                                decoration: BoxDecoration(
-                                                    color: Colors.blue.shade100,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20)),
-                                                child: GoogleMap(
-                                                  initialCameraPosition:
-                                                      CameraPosition(
-                                                    zoom: 12,
-                                                    target: LatLng(
-                                                        pedido.ubicacion[
-                                                            'latitud'],
-                                                        pedido.ubicacion[
-                                                            'longitud']),
-                                                  ),
-                                                  /* polylines: {
+                                            Visibility(
+                                              visible: selected[index],
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  SizedBox(height: 20.h),
+                                                  Container(
+                                                    // width: double.infinity,
+                                                    height: 400.h,
+                                                    decoration: BoxDecoration(
+                                                        color: Colors
+                                                            .blue.shade100,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20)),
+                                                    child: GoogleMap(
+                                                      initialCameraPosition:
+                                                          CameraPosition(
+                                                        zoom: 12,
+                                                        target: LatLng(
+                                                            pedido.ubicacion[
+                                                                'latitud'],
+                                                            pedido.ubicacion[
+                                                                'longitud']),
+                                                      ),
+                                                      /* polylines: {
                                           Polyline(
                                               polylineId: PolylineId("IDruta"),
                                               points: polypoints,
                                               color: Colors.blue,
                                               width: 5)
                                         },*/
-                                                  markers: {
-                                                    if (_destinationIcon !=
-                                                        null)
-                                                      Marker(
-                                                          markerId: MarkerId(
-                                                              "destino"),
-                                                          icon:
-                                                              _destinationIcon!,
-                                                          position: LatLng(
-                                                              pedido.ubicacion[
-                                                                  'latitud'],
-                                                              pedido.ubicacion[
-                                                                  'longitud']))
-                                                  },
-                                                  // mapType: MapType.normal,
-                                                  style: _mapStyle,
-                                                ),
-                                              ),
-                                              SizedBox(height: 10.h),
-                                              Text(
-                                                "Lista de productos (${pedido.productos.length + pedido.promociones.length})",
-                                                style: GoogleFonts.manrope(
-                                                    fontSize: 14.sp,
-                                                    color:
-                                                        Colors.grey.shade600),
-                                              ),
-                                              SizedBox(height: 10.h),
-                                              Container(
-                                                  height: 220.h,
-                                                  color: Colors.amber,
-                                                  child: ListView.builder(
-                                                      //Sumamos las cantidades de pedidos y productos para tener un total
-                                                      itemCount: pedido
-                                                              .productos
-                                                              .length +
-                                                          pedido.promociones
-                                                              .length,
-                                                      itemBuilder:
-                                                          (context, index) {
-                                                        //colocamos valores cambiantes ya que los productos y promociones pasan por 3 condiciones uno es cuando no haya ningun producto otro es cuando no haya ninguna promociones y otra es cuando existan ambas
-                                                        dynamic item;
-                                                        String name;
-                                                        int quantity;
-                                                        //condicion para saber si hay productos
-                                                        if (index <
-                                                            pedido.productos
-                                                                .length) {
-                                                          // esto indica que hay productos
-                                                          item = pedido
-                                                              .productos[index];
-                                                          name = item.nombre;
-                                                          quantity =
-                                                              item.cantidad;
-                                                        } else {
-                                                          // en caso no hayan productos recorre las promociones
-                                                          item = pedido
-                                                                  .promociones[
-                                                              index -
-                                                                  pedido
-                                                                      .productos
-                                                                      .length];
-                                                          name = item.nombre;
-                                                          quantity =
-                                                              item.cantidad;
-                                                        }
-                                                        return Column(
-                                                          children: [
-                                                            Container(
-                                                              height: 66.h,
-                                                              child: Row(
-                                                                children: [
-                                                                  Text(
-                                                                    name,
-                                                                    style: GoogleFonts.manrope(
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .bold,
-                                                                        fontSize:
-                                                                            14.sp),
-                                                                  ),
-                                                                  SizedBox(
-                                                                    width: 20.w,
-                                                                  ),
-                                                                  Text(
-                                                                    quantity
-                                                                        .toString(),
-                                                                    style: GoogleFonts.manrope(
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .bold,
-                                                                        fontSize:
-                                                                            14.sp),
-                                                                  )
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            Divider(
-                                                              height: 0.1.h,
-                                                              color: Colors.grey
-                                                                  .shade400,
-                                                            ),
-                                                          ],
-                                                        );
-                                                      })),
-                                              SizedBox(height: 20.h),
-                                              Row(
-                                                // crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Container(
-                                                    height: 44.h,
-                                                    width: 121.w,
-                                                    child: ElevatedButton(
-                                                      onPressed: () {
-                                                        final provider = Provider
-                                                            .of<PedidosProvider2>(
-                                                                context,
-                                                                listen: false);
-
-                                                        // Emitir el evento de pedido expirado
-                                                        provider.ignorarPedido(
-                                                            pedido.toMap());
-
-                                                        // Opcional: Puedes agregar alguna retroalimentación visual
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(
-                                                                'Pedido ignorado'),
-                                                            duration:
-                                                                const Duration(
-                                                                    seconds: 2),
-                                                          ),
-                                                        );
+                                                      markers: {
+                                                        if (_destinationIcon !=
+                                                            null)
+                                                          Marker(
+                                                              markerId: MarkerId(
+                                                                  "destino"),
+                                                              icon:
+                                                                  _destinationIcon!,
+                                                              position: LatLng(
+                                                                  pedido.ubicacion[
+                                                                      'latitud'],
+                                                                  pedido.ubicacion[
+                                                                      'longitud']))
                                                       },
-                                                      style: ButtonStyle(
-                                                        shape: WidgetStatePropertyAll(
-                                                            RoundedRectangleBorder(
-                                                                side:
-                                                                    const BorderSide(
-                                                                  width: 1.0,
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          42,
-                                                                          75,
-                                                                          160,
-                                                                          1),
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            20.r))),
-                                                        backgroundColor:
-                                                            WidgetStateProperty
-                                                                .all(Colors
-                                                                    .white),
-                                                      ),
-                                                      child: Text(
-                                                        "Ignorar",
-                                                        style:
-                                                            GoogleFonts.manrope(
-                                                          fontSize: 14.sp,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: const Color
-                                                              .fromRGBO(
-                                                              42, 75, 160, 1),
-                                                        ),
-                                                      ),
+                                                      // mapType: MapType.normal,
+                                                      style: _mapStyle,
                                                     ),
                                                   ),
-                                                  SizedBox(
-                                                    width: 45.w,
+                                                  SizedBox(height: 10.h),
+                                                  Text(
+                                                    "Lista de productos (${pedido.productos.length + pedido.promociones.length})",
+                                                    style: GoogleFonts.manrope(
+                                                        fontSize: 14.sp,
+                                                        color: Colors
+                                                            .grey.shade600),
                                                   ),
+                                                  SizedBox(height: 10.h),
                                                   Container(
-                                                    height: 44.h,
-                                                    width: 121.w,
-                                                    child: ElevatedButton(
-                                                      onPressed: () async {
-                                                        await handlePedidoAcceptance(
-                                                            pedido.id,
-                                                            pedido.almacenId);
-                                                        /*
+                                                      height: 220.h,
+                                                      color: Colors.amber,
+                                                      child: ListView.builder(
+                                                          //Sumamos las cantidades de pedidos y productos para tener un total
+                                                          itemCount: pedido
+                                                                  .productos
+                                                                  .length +
+                                                              pedido.promociones
+                                                                  .length,
+                                                          itemBuilder:
+                                                              (context, index) {
+                                                            //colocamos valores cambiantes ya que los productos y promociones pasan por 3 condiciones uno es cuando no haya ningun producto otro es cuando no haya ninguna promociones y otra es cuando existan ambas
+                                                            dynamic item;
+                                                            String name;
+                                                            int quantity;
+                                                            //condicion para saber si hay productos
+                                                            if (index <
+                                                                pedido.productos
+                                                                    .length) {
+                                                              // esto indica que hay productos
+                                                              item = pedido
+                                                                      .productos[
+                                                                  index];
+                                                              name =
+                                                                  item.nombre;
+                                                              quantity =
+                                                                  item.cantidad;
+                                                            } else {
+                                                              // en caso no hayan productos recorre las promociones
+                                                              item = pedido
+                                                                      .promociones[
+                                                                  index -
+                                                                      pedido
+                                                                          .productos
+                                                                          .length];
+                                                              name =
+                                                                  item.nombre;
+                                                              quantity =
+                                                                  item.cantidad;
+                                                            }
+                                                            return Column(
+                                                              children: [
+                                                                Container(
+                                                                  height: 66.h,
+                                                                  child: Row(
+                                                                    children: [
+                                                                      Text(
+                                                                        name,
+                                                                        style: GoogleFonts.manrope(
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                            fontSize: 14.sp),
+                                                                      ),
+                                                                      SizedBox(
+                                                                        width:
+                                                                            20.w,
+                                                                      ),
+                                                                      Text(
+                                                                        quantity
+                                                                            .toString(),
+                                                                        style: GoogleFonts.manrope(
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                            fontSize: 14.sp),
+                                                                      )
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                Divider(
+                                                                  height: 0.1.h,
+                                                                  color: Colors
+                                                                      .grey
+                                                                      .shade400,
+                                                                ),
+                                                              ],
+                                                            );
+                                                          })),
+                                                  SizedBox(height: 20.h),
+                                                  Row(
+                                                    // crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    children: [
+                                                      Container(
+                                                        height: 44.h,
+                                                        width: 121.w,
+                                                        child: ElevatedButton(
+                                                          onPressed: () {
+                                                            final provider =
+                                                                Provider.of<
+                                                                        PedidosProvider2>(
+                                                                    context,
+                                                                    listen:
+                                                                        false);
+
+                                                            // Emitir el evento de pedido expirado
+                                                            provider
+                                                                .ignorarPedido(
+                                                                    pedido
+                                                                        .toMap());
+
+                                                            // Opcional: Puedes agregar alguna retroalimentación visual
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                              SnackBar(
+                                                                content: Text(
+                                                                    'Pedido ignorado'),
+                                                                duration:
+                                                                    const Duration(
+                                                                        seconds:
+                                                                            2),
+                                                              ),
+                                                            );
+                                                          },
+                                                          style: ButtonStyle(
+                                                            shape: WidgetStatePropertyAll(
+                                                                RoundedRectangleBorder(
+                                                                    side:
+                                                                        const BorderSide(
+                                                                      width:
+                                                                          1.0,
+                                                                      color: Color
+                                                                          .fromRGBO(
+                                                                              42,
+                                                                              75,
+                                                                              160,
+                                                                              1),
+                                                                    ),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            20.r))),
+                                                            backgroundColor:
+                                                                WidgetStateProperty
+                                                                    .all(Colors
+                                                                        .white),
+                                                          ),
+                                                          child: Text(
+                                                            "Ignorar",
+                                                            style: GoogleFonts
+                                                                .manrope(
+                                                              fontSize: 14.sp,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color: const Color
+                                                                  .fromRGBO(42,
+                                                                  75, 160, 1),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 45.w,
+                                                      ),
+                                                      Container(
+                                                        height: 44.h,
+                                                        width: 121.w,
+                                                        child: ElevatedButton(
+                                                          onPressed: () async {
+                                                            await handlePedidoAcceptance(
+                                                                pedido.id,
+                                                                pedido
+                                                                    .almacenId);
+                                                            /*
                                                         await provider
                                                             .aceptarPedido(
                                                                 pedido.id);
@@ -851,98 +857,102 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                             pedido.almacenId);
                                                         context.go(
                                                             '/drive/cargar');*/
-                                                      },
-                                                      style: ButtonStyle(
-                                                        shape: WidgetStatePropertyAll(
-                                                            RoundedRectangleBorder(
-                                                                side:
-                                                                    const BorderSide(
-                                                                  width: 1.0,
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          42,
-                                                                          75,
-                                                                          160,
-                                                                          1),
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
+                                                          },
+                                                          style: ButtonStyle(
+                                                            shape: WidgetStatePropertyAll(
+                                                                RoundedRectangleBorder(
+                                                                    side:
+                                                                        const BorderSide(
+                                                                      width:
+                                                                          1.0,
+                                                                      color: Color
+                                                                          .fromRGBO(
+                                                                              42,
+                                                                              75,
+                                                                              160,
+                                                                              1),
+                                                                    ),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
                                                                             20.r))),
-                                                        backgroundColor:
-                                                            WidgetStateProperty
-                                                                .all(
-                                                          const Color.fromRGBO(
-                                                              42, 75, 160, 1),
+                                                            backgroundColor:
+                                                                WidgetStateProperty
+                                                                    .all(
+                                                              const Color
+                                                                  .fromRGBO(42,
+                                                                  75, 160, 1),
+                                                            ),
+                                                          ),
+                                                          child: Text(
+                                                            "Aceptar",
+                                                            style: GoogleFonts
+                                                                .manrope(
+                                                              fontSize: 14.sp,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
-                                                      child: Text(
-                                                        "Aceptar",
-                                                        style:
-                                                            GoogleFonts.manrope(
-                                                          fontSize: 14.sp,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                    ),
+                                                    ],
                                                   ),
                                                 ],
                                               ),
-                                            ],
-                                          ),
-                                        ),
+                                            ),
 
-                                        // Muesca
-                                        IconButton(
-                                          onPressed: () async {
-                                            /*LatLng destino = LatLng(
+                                            // Muesca
+                                            IconButton(
+                                              onPressed: () async {
+                                                /*LatLng destino = LatLng(
                                       -16.410472367054158, -71.57064420197324);*/
-                                            /* List<LatLng> routePoints =
+                                                /* List<LatLng> routePoints =
                                       await getPolypoints(
                                           _currentPosition, destino);*/
-                                            setState(() {
-                                              // polypoints = routePoints;
-                                              selected[index] =
-                                                  !selected[index];
-                                            });
-                                          },
-                                          icon: Icon(
-                                            size: 28.9.sp,
-                                            color: selected[index]
-                                                ? Colors.grey.shade600
-                                                : Colors.white,
-                                            selected[index]
-                                                ? Icons
-                                                    .keyboard_arrow_up_rounded
-                                                : Icons
-                                                    .keyboard_arrow_down_sharp,
-                                          ),
+                                                setState(() {
+                                                  // polypoints = routePoints;
+                                                  selected[index] =
+                                                      !selected[index];
+                                                });
+                                              },
+                                              icon: Icon(
+                                                size: 28.9.sp,
+                                                color: selected[index]
+                                                    ? Colors.grey.shade600
+                                                    : Colors.white,
+                                                selected[index]
+                                                    ? Icons
+                                                        .keyboard_arrow_up_rounded
+                                                    : Icons
+                                                        .keyboard_arrow_down_sharp,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 10.5.h,
-                              ),
-                              Container(
-                                width: 345.w,
-                                child: Divider(
-                                  height: 10.h,
-                                  color:
-                                      const Color.fromARGB(255, 207, 233, 12),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 10.5.h,
-                              ),
-                            ],
-                          );
-                        },
-                      )),
+                                  SizedBox(
+                                    height: 10.5.h,
+                                  ),
+                                  Container(
+                                    width: 345.w,
+                                    child: Divider(
+                                      height: 10.h,
+                                      color: const Color.fromARGB(
+                                          255, 207, 233, 12),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 10.5.h,
+                                  ),
+                                ],
+                              );
+                            },
+                          ))
+                    : Text("No estas conectado a la central")),
           ));
     });
   }
