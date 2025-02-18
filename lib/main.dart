@@ -14,6 +14,8 @@ import 'package:app2025/cliente/provider/ubicacion_list_provider.dart';
 import 'package:app2025/cliente/provider/ubicacion_provider.dart';
 import 'package:app2025/cliente/provider/user_provider.dart';
 import 'package:app2025/conductor/barraconductor/barraconductor.dart';
+import 'package:app2025/conductor/providers/conexionswitch_provider.dart';
+import 'package:app2025/conductor/providers/lastpedido_provider.dart';
 
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
 
@@ -86,6 +88,9 @@ void main() async {
         ChangeNotifierProvider(create: (context) => ConductorProvider()),
         ChangeNotifierProvider(create: (context) => AlmacenProvider()),
         ChangeNotifierProvider(create: (context) => PedidosProvider2()),
+        ChangeNotifierProvider(create: (context) => LastpedidoProvider()),
+        ChangeNotifierProvider(
+            create: (context) => ConductorConnectionProvider()),
       ],
       child: const MyApp(),
     ),

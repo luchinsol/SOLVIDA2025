@@ -1,8 +1,18 @@
+import 'dart:convert';
+
 import 'package:app2025/cliente/provider/pedido_provider.dart';
+import 'package:app2025/cliente/views/pedido.dart';
+import 'package:app2025/conductor/model/clientelast_model.dart';
+import 'package:app2025/conductor/model/lastpedido_model.dart';
+import 'package:app2025/conductor/model/pedido_model.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
+import 'package:app2025/conductor/providers/conexionswitch_provider.dart';
+import 'package:app2025/conductor/providers/lastpedido_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -27,14 +37,110 @@ class _InicioDriverState extends State<InicioDriver> {
     "San Juan de Lima asd a asdf"
   ];
   bool light = false;
-
+  String microUrl = dotenv.env['MICRO_URL'] ?? '';
   bool enabled = true;
+  int cantidad = 0;
+//Inicializar con valores por defecto
+
+  String formatoFecha(DateTime fecha) {
+    return "${fecha.year}-${fecha.month.toString().padLeft(2, '0')}-${fecha.day.toString().padLeft(2, '0')}";
+  }
+
+  String formatCantidad(int cantidad) {
+    if (cantidad > 999) {
+      return "${(cantidad / 1000).toStringAsFixed(1)}K";
+    }
+    return cantidad.toString();
+  }
+
+  Future<void> getlastPedido() async {
+    try {
+      print("entrando ");
+      final conductorProvider =
+          Provider.of<ConductorProvider>(context, listen: false);
+      final pedidolastProvider =
+          Provider.of<LastpedidoProvider>(context, listen: false);
+
+      int? idconductor = conductorProvider.conductor?.id;
+      var res = await http
+          .get(Uri.parse('$microUrl/conductor_lastpedido/$idconductor'));
+
+      if (res.statusCode == 200) {
+        var data = json.decode(res.body);
+
+        // Parseamos la fecha si es necesario
+        DateTime? fecha =
+            data['fecha'] != null ? DateTime.parse(data['fecha']) : null;
+
+        // Creamos el modelo de Cliente
+        ClientelastModel cliente = ClientelastModel(
+            nombre: data['cliente']['nombre'], foto: data['cliente']['foto']);
+
+        // Creamos el modelo de Lastpedido
+        LastpedidoModel lastpedido = LastpedidoModel(
+            id: data['id'],
+            tipo: data['tipo'],
+            total: data['total'].toDouble(),
+            fecha: fecha,
+            estado: data['estado'],
+            cliente: cliente);
+
+        // Actualizamos el proveedor con el nuevo Lastpedido
+        pedidolastProvider.updateLastPedido(lastpedido);
+        print("....");
+        print("${pedidolastProvider.lastPedido?.cliente!.nombre}");
+        print("....kataaa");
+        pedidolastProvider.lastPedido?.fecha = DateTime(
+            pedidolastProvider.lastPedido!.fecha!.year,
+            pedidolastProvider.lastPedido!.fecha!.month,
+            pedidolastProvider.lastPedido!.fecha!.day);
+      } else {
+        throw Exception("Error al obtener los datos del pedido");
+      }
+    } catch (e) {
+      throw Exception("Error query $e");
+    }
+  }
+
+  Future<void> getPedidos() async {
+    try {
+      final conductorProvider =
+          Provider.of<ConductorProvider>(context, listen: false);
+      int? idconductor = conductorProvider.conductor?.id;
+
+      var res = await http.get(
+          Uri.parse('$microUrl/conductor_pedidos/$idconductor'),
+          headers: {"Content-type": "application/json"});
+
+      var data = json.decode(res.body);
+
+      if (res.statusCode == 200) {
+        var data = json.decode(res.body);
+
+        setState(() {
+          cantidad = int.parse(data['total_pedidos']);
+        });
+      }
+    } catch (e) {
+      throw Exception('Error get count $e');
+    }
+  }
+
+  @override
+  void initState() {
+    getPedidos();
+    getlastPedido();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     final conductorProvider = context.watch<ConductorProvider>();
+    final pedidolast = context.watch<LastpedidoProvider>();
     final pedidoProvider =
         Provider.of<PedidosProvider2>(context, listen: false);
+    final conexionTrabajo =
+        Provider.of<ConductorConnectionProvider>(context, listen: false);
     if (conductorProvider.conductor != null) {
       setState(() {
         enabled = false;
@@ -188,7 +294,7 @@ class _InicioDriverState extends State<InicioDriver> {
                                   baseColor: Colors.white,
                                   highlightColor: Colors.grey.shade500),
                               child: Text(
-                                  "${conductorProvider.conductor?.departamento}",
+                                  "${conductorProvider.conductor?.departamento} - ${conductorProvider.conductor?.nombre}",
                                   style: GoogleFonts.manrope(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
@@ -250,15 +356,22 @@ class _InicioDriverState extends State<InicioDriver> {
                             ),*/
                           ),
                           Switch(
-                              activeColor: Colors.amber, //.shade400,
-                              value: light,
+                              activeColor: conexionTrabajo.isConnected
+                                  ? Colors.amber
+                                  : Colors.grey, //.shade400,
+                              value: conexionTrabajo.isConnected,
                               onChanged: (bool value) {
-                                pedidoProvider.conectarSocket(
-                                    conductorProvider.conductor!.evento_id,
-                                    conductorProvider.conductor!.nombre);
                                 setState(() {
                                   light = value;
                                 });
+                                conexionTrabajo.updateConnect(value);
+
+                                if (value) {
+                                  conexionTrabajo.connect();
+                                  pedidoProvider.conectarSocket(
+                                      conductorProvider.conductor!.evento_id,
+                                      conductorProvider.conductor!.nombre);
+                                }
                               })
                         ],
                       ),
@@ -268,262 +381,282 @@ class _InicioDriverState extends State<InicioDriver> {
               ),
               //SizedBox(height:27.h),
 
-              Padding(
-                  padding: EdgeInsets.all(20.r),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              conexionTrabajo.isConnected
+                  ? Padding(
+                      padding: EdgeInsets.all(20.r),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Material(
-                            elevation: 5.r,
-                            borderRadius: BorderRadius.circular(20.r),
-                            child: Container(
-                              height: 139.h,
-                              width: 84.w,
-                              padding: EdgeInsets.only(top: 30.r),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20.r),
-                                  color: Colors.grey.shade100),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Pedidos",
-                                    style: GoogleFonts.manrope(
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  Icon(Icons.assignment_outlined),
-                                  Skeletonizer(
-                                    enabled: enabled,
-                                    effect: ShimmerEffect(
-                                        baseColor: Colors.grey.shade500,
-                                        highlightColor: Colors.grey.shade200,
-                                        duration: Duration(milliseconds: 1700)),
-                                    child: Text(
-                                      "60",
-                                      style: GoogleFonts.manrope(
-                                          fontSize: 32,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          Material(
-                            elevation: 5.r,
-                            borderRadius: BorderRadius.circular(20.r),
-                            child: Container(
-                              height: 139.h,
-                              width: 84.w,
-                              padding: EdgeInsets.only(top: 30.r),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20.r),
-                                  color: Colors.grey.shade100),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Horas",
-                                    style: GoogleFonts.manrope(
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  Icon(Icons.access_time),
-                                  Skeletonizer(
-                                    enabled: enabled,
-                                    effect: ShimmerEffect(
-                                        baseColor: Colors.grey.shade500,
-                                        highlightColor: Colors.grey.shade200,
-                                        duration: Duration(milliseconds: 1700)),
-                                    child: Text(
-                                      "60",
-                                      style: GoogleFonts.manrope(
-                                          fontSize: 32,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          Material(
-                            elevation: 5.r,
-                            borderRadius: BorderRadius.circular(20.r),
-                            child: Container(
-                              height: 139.h,
-                              width: 84.w,
-                              padding: EdgeInsets.only(top: 30.r),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20.r),
-                                  color: Colors.grey.shade100),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Distancia",
-                                    style: GoogleFonts.manrope(
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  Icon(Icons.speed_outlined),
-                                  Skeletonizer(
-                                    enabled: enabled,
-                                    effect: ShimmerEffect(
-                                        baseColor: Colors.grey.shade500,
-                                        highlightColor: Colors.grey.shade200,
-                                        duration: Duration(milliseconds: 1700)),
-                                    child: Text(
-                                      "60",
-                                      style: GoogleFonts.manrope(
-                                          fontSize: 32,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 42.h),
-                      Text(
-                        "Último pedido",
-                        style: GoogleFonts.manrope(
-                            fontSize: 20.sp, fontWeight: FontWeight.w400),
-                      ),
-                      SizedBox(height: 40.h),
-                      Skeletonizer(
-                        // ignoreContainers: true,
-                        //  containersColor: Colors.blue,
-                        effect: ShimmerEffect(
-                            baseColor: Colors.grey.shade500,
-                            highlightColor: Colors.grey.shade200,
-                            duration: Duration(milliseconds: 1700)),
-                        enabled: enabled,
-                        child: Material(
-                          elevation: 10.r,
-                          borderRadius: BorderRadius.circular(20.r),
-                          child: Container(
-                            height: 111.h,
-                            padding: EdgeInsets.all(10.r),
-                            decoration: BoxDecoration(
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Material(
+                                elevation: 5.r,
                                 borderRadius: BorderRadius.circular(20.r),
-                                color: Colors.grey.shade100),
-                            // Contenido
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  width: 153.h,
-                                  // color: Colors.green,
-                                  child: Row(
+                                child: Container(
+                                  height: 139.h,
+                                  width: 84.w,
+                                  padding: EdgeInsets.only(top: 30.r),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.r),
+                                      color: Colors.grey.shade100),
+                                  child: Column(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Container(
-                                        // color: const Color.fromARGB(255, 194, 177, 183),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            Container(
-                                              width: 45.h,
-                                              height: 45.h,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          50.r)),
-                                            ),
-                                          ],
-                                        ),
+                                      Text(
+                                        "Pedidos",
+                                        style: GoogleFonts.manrope(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w600),
                                       ),
-                                      Container(
-                                        //color: Color.fromARGB(255, 200, 216, 164),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              "Luis Gonzáles",
-                                              style: GoogleFonts.manrope(
-                                                  fontSize: 14.sp,
-                                                  color: Colors.grey.shade600),
-                                            ),
-                                            Text(
-                                              "S/.7.90",
-                                              style: GoogleFonts.manrope(
-                                                  fontSize: 14.sp,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                            Text(
-                                              "02/10/2024",
-                                              style: GoogleFonts.manrope(
-                                                  fontSize: 14.sp,
-                                                  color: Colors.grey.shade600),
-                                            )
-                                          ],
+                                      Icon(Icons.assignment_outlined),
+                                      Skeletonizer(
+                                          enabled: enabled,
+                                          effect: ShimmerEffect(
+                                              baseColor: Colors.grey.shade500,
+                                              highlightColor:
+                                                  Colors.grey.shade200,
+                                              duration:
+                                                  Duration(milliseconds: 1700)),
+                                          child: Text(
+                                            formatCantidad(cantidad),
+                                            style: GoogleFonts.manrope(
+                                                fontSize: cantidad > 999
+                                                    ? 16.sp
+                                                    : (cantidad > 99
+                                                        ? 20.sp
+                                                        : 32.sp),
+                                                fontWeight: FontWeight.bold),
+                                          ))
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Material(
+                                elevation: 5.r,
+                                borderRadius: BorderRadius.circular(20.r),
+                                child: Container(
+                                  height: 139.h,
+                                  width: 84.w,
+                                  padding: EdgeInsets.only(top: 30.r),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.r),
+                                      color: Colors.grey.shade100),
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Horas",
+                                        style: GoogleFonts.manrope(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      Icon(Icons.access_time),
+                                      Skeletonizer(
+                                        enabled: enabled,
+                                        effect: ShimmerEffect(
+                                            baseColor: Colors.grey.shade500,
+                                            highlightColor:
+                                                Colors.grey.shade200,
+                                            duration:
+                                                Duration(milliseconds: 1700)),
+                                        child: Text(
+                                          "60",
+                                          style: GoogleFonts.manrope(
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                       )
                                     ],
                                   ),
                                 ),
-                                Container(
-                                  width: 153.h,
-                                  // color: Colors.green,
+                              ),
+                              Material(
+                                elevation: 5.r,
+                                borderRadius: BorderRadius.circular(20.r),
+                                child: Container(
+                                  height: 139.h,
+                                  width: 84.w,
+                                  padding: EdgeInsets.only(top: 30.r),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.r),
+                                      color: Colors.grey.shade100),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        "ID: #7654321",
+                                        "Distancia",
                                         style: GoogleFonts.manrope(
                                             fontSize: 14.sp,
-                                            color: const Color.fromARGB(
-                                                255, 66, 66, 66)),
+                                            fontWeight: FontWeight.w600),
                                       ),
-                                      Text(
-                                        "Normal",
-                                        style: GoogleFonts.manrope(
-                                            fontSize: 14.sp,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Container(
-                                        width: 85.w,
-                                        height: 26.h,
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(6.r),
-                                            color: Colors.grey.shade300),
-                                        child: Center(
-                                          child: Text(
-                                            "Entregado",
-                                            style: GoogleFonts.manrope(
-                                                color: Color.fromARGB(
-                                                    255, 53, 41, 158)),
-                                          ),
+                                      Icon(Icons.speed_outlined),
+                                      Skeletonizer(
+                                        enabled: enabled,
+                                        effect: ShimmerEffect(
+                                            baseColor: Colors.grey.shade500,
+                                            highlightColor:
+                                                Colors.grey.shade200,
+                                            duration:
+                                                Duration(milliseconds: 1700)),
+                                        child: Text(
+                                          "60",
+                                          style: GoogleFonts.manrope(
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                       )
                                     ],
                                   ),
-                                )
-                              ],
-                            ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      )
-                    ],
-                  ))
+                          SizedBox(height: 42.h),
+                          Text(
+                            "Último pedido",
+                            style: GoogleFonts.manrope(
+                                fontSize: 20.sp, fontWeight: FontWeight.w400),
+                          ),
+                          SizedBox(height: 40.h),
+                          Skeletonizer(
+                            // ignoreContainers: true,
+                            //  containersColor: Colors.blue,
+                            effect: ShimmerEffect(
+                                baseColor: Colors.grey.shade500,
+                                highlightColor: Colors.grey.shade200,
+                                duration: Duration(milliseconds: 1700)),
+                            enabled: enabled,
+                            child: Material(
+                              elevation: 10.r,
+                              borderRadius: BorderRadius.circular(20.r),
+                              child: Container(
+                                height: 111.h,
+                                padding: EdgeInsets.all(10.r),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20.r),
+                                    color: Colors.grey.shade100),
+                                // Contenido
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      width: 153.h,
+                                      // color: Colors.green,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Container(
+                                            // color: const Color.fromARGB(255, 194, 177, 183),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                Container(
+                                                  width: 45.h,
+                                                  height: 45.h,
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      image: DecorationImage(
+                                                          image: NetworkImage(
+                                                              'https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg')),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              50.r)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            //color: Color.fromARGB(255, 200, 216, 164),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  "${pedidolast.lastPedido?.cliente!.nombre}",
+                                                  style: GoogleFonts.manrope(
+                                                      fontSize: 14.sp,
+                                                      color:
+                                                          Colors.grey.shade600),
+                                                ),
+                                                Text(
+                                                  'S/.${pedidolast.lastPedido?.total}',
+                                                  style: GoogleFonts.manrope(
+                                                      fontSize: 14.sp,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  "${formatoFecha(pedidolast.lastPedido!.fecha!)}",
+                                                  style: GoogleFonts.manrope(
+                                                      fontSize: 14.sp,
+                                                      color:
+                                                          Colors.grey.shade600),
+                                                )
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 153.h,
+                                      // color: Colors.green,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            "ID: #${pedidolast.lastPedido?.id}",
+                                            style: GoogleFonts.manrope(
+                                                fontSize: 14.sp,
+                                                color: const Color.fromARGB(
+                                                    255, 66, 66, 66)),
+                                          ),
+                                          Text(
+                                            "${pedidolast.lastPedido?.tipo}",
+                                            style: GoogleFonts.manrope(
+                                                fontSize: 14.sp,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Container(
+                                            width: 85.w,
+                                            height: 26.h,
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(6.r),
+                                                color: Colors.grey.shade300),
+                                            child: Center(
+                                              child: Text(
+                                                "${pedidolast.lastPedido?.estado}",
+                                                style: GoogleFonts.manrope(
+                                                    color: Color.fromARGB(
+                                                        255, 53, 41, 158)),
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ))
+                  : Text("Conectate a la central")
             ],
           ),
         ));
