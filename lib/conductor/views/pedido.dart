@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:app2025/conductor/config/notifications.dart';
 import 'package:app2025/conductor/config/socketcentral.dart';
+import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:app2025/conductor/providers/conexionswitch_provider.dart';
 //import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
@@ -35,14 +36,14 @@ class _DrivePedidosState extends State<DrivePedidos> {
   BitmapDescriptor? _destinationIcon;
   String _mapStyle = '';
   //final SocketService socketService = SocketService();
-  static const int _conductorId = 3;
+  //static const int _conductorId = 3;
   late PedidosProvider2 _provider;
   // Creamos un Map que actúa como caché para almacenar las direcciones
   // La llave es el ID del pedido y el valor es la dirección en texto
   Map<String, String> addresses = {};
   bool _isLoading = true; // Nuevo flag para controlar el estado de carga
   String microUrl = dotenv.env['MICRO_URL'] ?? '';
-
+  int? conductorId = 0;
   //notifactions
 
   // FUNCIONES
@@ -110,6 +111,12 @@ class _DrivePedidosState extends State<DrivePedidos> {
   void initState() {
     super.initState();
     _provider = Provider.of<PedidosProvider2>(context, listen: false);
+    final conductorProvider =
+        Provider.of<ConductorProvider>(context, listen: false);
+    setState(() {
+      conductorId = conductorProvider.conductor!.id;
+    });
+
     print('🔄 Initializing DrivePedidos state');
     _initializeAll();
     final notificationsService = NotificationsService();
@@ -128,7 +135,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
       await provider.aceptarPedido(pedidoid);
 
       // 3. Actualizar estado
-      await actualizarEstadoPedido(pedidoid, _conductorId, almacenid);
+      await actualizarEstadoPedido(pedidoid, almacenid);
 
       // 4. Navegación usando GoRouter
       if (!mounted) return;
@@ -152,8 +159,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
     }
   }
 
-  Future<void> actualizarEstadoPedido(
-      String pedidoId, int conductorId, int almacenId) async {
+  Future<void> actualizarEstadoPedido(String pedidoId, int almacenId) async {
     final url = Uri.parse('${microUrl}/pedido_estado/$pedidoId');
 
     try {
@@ -161,7 +167,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'conductor_id': conductorId,
+          'conductor_id': conductorId!,
           'estado': 'en proceso',
           'almacen_id': almacenId,
         }),
@@ -183,7 +189,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
       await Future.wait([
         _loadMarkerIcons(),
         _loadMapStyle(),
-        _provider.loadInitialData(_conductorId),
+        _provider.loadInitialData(conductorId!),
       ]);
 
       print('✅ All initialization completed');
