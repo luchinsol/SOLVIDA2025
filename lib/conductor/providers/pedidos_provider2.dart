@@ -51,7 +51,7 @@ class PedidosProvider2 extends ChangeNotifier {
 
   // 1. ESCUCHAR EVENTOS
 
-  void _initSocketListeners(String? nombre) {
+  void _initSocketListeners(String? nombre, int? almacenId) {
     print("🔄 Escuchando eventos en el socket...");
 
     //EVENTO PARA CUANDO EL CONDUCTOR SE CONECTA A TIEMPO
@@ -76,6 +76,54 @@ class PedidosProvider2 extends ChangeNotifier {
 
     _socketService.on('order_taken', (data) {
       print('✅ Orden tomada confirmada: $data');
+      if (data != null && data is Map<String, dynamic>) {
+        String pedidoId = data['id']?.toString() ?? '';
+
+        if (pedidoId.isNotEmpty) {
+          print('🎯 Procesando order_taken para pedido: $pedidoId');
+          _pedidoTomado(pedidoId);
+        } else {
+          print('⚠️ order_taken recibido sin ID de pedido válido');
+        }
+      } else {
+        print('⚠️ Datos de order_taken inválidos: $data');
+      }
+    });
+
+    _socketService.on('pedido_rotado', (data) {
+      if (data != null && data is Map<String, dynamic>) {
+        String pedidoId = data['pedidoId']?.toString() ?? '';
+        int pedidoAlmacenId = data['almacen_id'] ?? 0;
+        print("ROTACION ----------->");
+        print(pedidoAlmacenId);
+        // Solo procesar si el pedido pertenece al almacén actual
+        if (pedidoAlmacenId == almacenId) {
+          final index = _pedidos.indexWhere((p) => p.id == pedidoId);
+          if (index != -1) {
+            try {
+              final updatedPedido = _pedidos[index].copyWith(
+                emittedTime: DateTime.parse(data['emitted_time']),
+                expiredTime: DateTime.parse(data['expired_time']),
+                //rotationAttempts: data['rotationAttempts']
+              );
+
+              _pedidos[index] = updatedPedido;
+              _setupExpirationTimer(updatedPedido);
+
+              print('Pedido rotado actualizado - AlmacenID: $almacenId');
+              print('Nueva fecha de emisión: ${updatedPedido.emittedTime}');
+              print('Nueva fecha de expiración: ${updatedPedido.expiredTime}');
+
+              notifyListeners();
+            } catch (e) {
+              print('Error actualizando tiempos del pedido rotado: $e');
+            }
+          }
+        } else {
+          print(
+              'Pedido rotado ignorado - No pertenece a este almacén (${almacenId})');
+        }
+      }
     });
 
     _socketService.on('pedido_actualizado', (data) {
@@ -182,8 +230,9 @@ class PedidosProvider2 extends ChangeNotifier {
   void _setupExpirationTimer(Pedido pedido) {
     _timers[pedido.id]?.cancel();
 
-    final localExpiredTime = pedido.expiredTime.toLocal();
-    final timeUntilExpiration = localExpiredTime.difference(DateTime.now());
+    //final localExpiredTime = pedido.expiredTime.toLocal();
+    //final timeUntilExpiration = localExpiredTime.difference(DateTime.now());
+    final timeUntilExpiration = pedido.expiredTime.difference(DateTime.now());
 
     if (timeUntilExpiration.isNegative) {
       _handleExpiration(pedido.id);
@@ -354,7 +403,7 @@ class PedidosProvider2 extends ChangeNotifier {
 
         await updatePedidoEstado(pedidoId, 'aceptado');
         //_socketService.emitTakeOrder(pedidoId, pedido.almacenId);
-
+        emitTakeOrder(pedidoId, pedido.almacenId);
         _timers[pedidoId]?.cancel();
         print(_timers[pedidoId]);
         _timers.remove(pedidoId);
@@ -532,8 +581,56 @@ class PedidosProvider2 extends ChangeNotifier {
     }
   }
 
+  //PEDIDO TOMADO LOGICA
+  void _pedidoTomado(String pedidoId) {
+    try {
+      print('🔄 Manejando pedido tomado: $pedidoId');
+
+      bool pedidoExistente = _pedidos.any((p) => p.id == pedidoId);
+      print('Pedido existe en lista: $pedidoExistente');
+
+      if (pedidoExistente) {
+        _pedidos.removeWhere((p) => p.id == pedidoId);
+
+        if (_timers.containsKey(pedidoId)) {
+          print('Cancelando timer para pedido: $pedidoId');
+          _timers[pedidoId]?.cancel();
+          _timers.remove(pedidoId);
+        }
+
+        print('Notificando cambios en UI...');
+        notifyListeners();
+
+        print('🗑️ Pedido $pedidoId removido de la vista');
+      } else {
+        print('ℹ️ Pedido $pedidoId no encontrado en la lista local');
+      }
+    } catch (e) {
+      print('❌ Error al manejar pedido tomado: $e');
+    }
+  }
+
+  //PEDIDO TOMADO
+
   List<Pedido> getActivePedidos() {
+    print("PEDIDOS ACTUAL----------------------------------------->>>>");
+    print("Cantidad de pedidos: ${_pedidos.length}");
+
+    if (_pedidos.isNotEmpty) {
+      print("Estado del primer pedido: ${_pedidos[0].estado}");
+      print("Tiempo de emisión: ${_pedidos[0].emittedTime}");
+      print("Tiempo de expiración: ${_pedidos[0].expiredTime}");
+      print("¿Está aceptado?: ${_pedidosAceptados.contains(_pedidos[0].id)}");
+      print("ID del primer pedido: ${_pedidos[0].id}");
+    } else {
+      print("La lista de pedidos está vacía.");
+    }
+
+    print("Cantidad de pedidos aceptados: ${_pedidosAceptados.length}");
+    print("Pedidos aceptados: $_pedidosAceptados");
+
     final now = DateTime.now();
+
     return _pedidos
         .where((pedido) =>
             pedido.estado != 'expirado' &&
@@ -554,7 +651,7 @@ class PedidosProvider2 extends ChangeNotifier {
   void conectarSocket(BuildContext context, int? almacenId, String? nombre) {
     print("🔌 Conectando manualmente al socket...");
     _socketService.connect();
-    _initSocketListeners(nombre);
+    _initSocketListeners(nombre, almacenId);
     onHolapedido((data) {
       print("📦 Nuevo pedido recibido en el Provider: $data");
       _processPedidoData(context, data);

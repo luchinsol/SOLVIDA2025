@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:app2025/conductor/model/pedido_model.dart';
+import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:flutter/material.dart';
@@ -53,6 +54,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   bool _isExpandedProductos = false;
   Pedido? _currentPedido;
   String microUrl = dotenv.env['MICRO_URL'] ?? '';
+  int? conductorId = 0;
 
   void _expandirDraggable() {
     _draggableController.animateTo(
@@ -286,8 +288,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     });
   }
 
-  Future<void> entregarPedido(BuildContext context, String pedidoId,
-      int conductorId, int almacenId) async {
+  Future<void> entregarPedido(
+      BuildContext context, String pedidoId, int almacenId) async {
     try {
       // 1. Obtener el provider
       final pedidoProvider =
@@ -300,7 +302,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'conductor_id': conductorId,
+          'conductor_id': conductorId!,
           'estado': 'entregado',
           'almacen_id': almacenId,
         }),
@@ -329,6 +331,11 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   @override
   void initState() {
     super.initState();
+    final conductorProvider =
+        Provider.of<ConductorProvider>(context, listen: false);
+    setState(() {
+      conductorId = conductorProvider.conductor!.id;
+    });
     _loadMapStyle();
     _initializeMap();
     _loadPedidoDetails();
@@ -954,12 +961,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                     print("UI ---->> LOGS PARA DEPURAR");
                                     print(pedido2?.id);
                                     // Llamamos a la función para entregar el pedido
-                                    entregarPedido(
-                                      context,
-                                      pedido2!.id,
-                                      3, // Asegúrate de tener el conductorId en tu modelo
-                                      pedido2!.almacenId,
-                                    );
+                                    entregarPedido(context, pedido2!.id,
+                                        pedido2!.almacenId);
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
