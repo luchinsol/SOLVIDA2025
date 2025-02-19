@@ -393,7 +393,6 @@ class _InicioDriverState extends State<InicioDriver> {
                                 if (value) {
                                   conexionTrabajo.connect();
                                   pedidoProvider.conectarSocket(
-                                      context,
                                       conductorProvider.conductor!.evento_id,
                                       conductorProvider.conductor!.nombre);
                                 }

@@ -133,7 +133,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
       final provider = Provider.of<PedidosProvider2>(context, listen: false);
 
       // 2. Aceptar el pedido
-      await provider.aceptarPedido(context, pedidoid);
+      await provider.aceptarPedido(pedidoid);
 
       // 3. Actualizar estado
       await actualizarEstadoPedido(pedidoid, almacenid);
@@ -153,7 +153,11 @@ class _DrivePedidosState extends State<DrivePedidos> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al procesar el pedido'),
+          content: Text(
+            'Este Pedido Fue Tomado por Otro Conductor',
+            style: GoogleFonts.manrope(
+                fontSize: 17.sp, fontWeight: FontWeight.w300),
+          ),
           backgroundColor: Colors.red,
         ),
       );
