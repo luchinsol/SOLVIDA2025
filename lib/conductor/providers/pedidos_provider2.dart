@@ -76,6 +76,10 @@ class PedidosProvider2 extends ChangeNotifier {
 
     _socketService.on('order_taken', (data) {
       print('✅ Orden tomada confirmada: $data');
+      if (data is Map) {
+        print('Propiedades disponibles: ${data.keys.toList()}');
+      }
+      print("IMPRIMIENDO LOS RESULTADOS DE ORDER_TAKEN --------------->");
       if (data != null && data is Map<String, dynamic>) {
         String pedidoId = data['id']?.toString() ?? '';
 
@@ -144,13 +148,35 @@ class PedidosProvider2 extends ChangeNotifier {
 
   void emitTakeOrder(String orderId, int almacenId) {
     try {
+      print("EMITIENDO PEDIDO -------->");
+      _socketService.on('order_taken', (data) {
+        print("DENTRO DE ORDER TAKEN -------->");
+        if (data is Map) {
+          print('Propiedades disponibles: ${data.keys.toList()}');
+        }
+        print('✅ Orden tomada confirmada: $data');
+        if (data != null && data is Map) {
+          String pedidoId = data['id']?.toString() ?? '';
+
+          if (pedidoId.isNotEmpty) {
+            print('🎯 Procesando order_taken para pedido: $pedidoId');
+            _pedidoTomado(pedidoId);
+          } else {
+            print('⚠️ order_taken recibido sin ID de pedido válido');
+          }
+        } else {
+          print('⚠️ Datos de order_taken inválidos: $data');
+        }
+      });
+      final takeOrderData = {'orderId': orderId, 'almacenId': almacenId};
+      _socketService.emit('take_order', takeOrderData);
       if (!_processedOrderIds.contains(orderId)) {
         final takeOrderData = {'orderId': orderId, 'almacenId': almacenId};
         print("---------------------------> SOCKETTTTTTT");
         //Toma un pedido
-        _socketService.emit('take_order', takeOrderData);
-        _processedOrderIds.add(orderId);
 
+        _processedOrderIds.add(orderId);
+        _socketService.emit('take_order', takeOrderData);
         print('🚀 Pedido Tomado Emitido: $takeOrderData');
       }
     } catch (e) {
@@ -287,8 +313,8 @@ class PedidosProvider2 extends ChangeNotifier {
     }
   }
 
-  Future<bool> addPedido(BuildContext context, Map<String, dynamic> pedidoData,
-      bool showNotification) async {
+  Future<bool> addPedido(
+      Map<String, dynamic> pedidoData, bool showNotification) async {
     try {
       final pedido = Pedido.fromMap(pedidoData);
       print('Adding pedido: ${pedido.id}');
@@ -328,8 +354,7 @@ class PedidosProvider2 extends ChangeNotifier {
     }
   }
 
-  Future<void> _processPedidoData(
-      BuildContext context, Map<String, dynamic> data) async {
+  Future<void> _processPedidoData(Map<String, dynamic> data) async {
     try {
       if (data['estado'] == 'expirado') {
         _pedidos.removeWhere((p) => p.id == data['id']);
@@ -355,7 +380,7 @@ class PedidosProvider2 extends ChangeNotifier {
       );*/
 
       if (!_pedidosAceptados.contains(pedido.id)) {
-        await addPedido(context, data, true);
+        await addPedido(data, true);
       }
     } catch (e) {
       print('Error processing pedido data: $e');
@@ -380,8 +405,8 @@ class PedidosProvider2 extends ChangeNotifier {
   }
 
   //aceptar Pedido
-
-  Future<void> aceptarPedido(BuildContext context, String pedidoId,
+/*
+  Future<void> aceptarPedido(String pedidoId,
       {Map<String, dynamic>? pedidoData}) async {
     try {
       print("INGRESANDO AL PROVIDER DE PEDIDO---->> METODO ACEPTAR");
@@ -389,7 +414,7 @@ class PedidosProvider2 extends ChangeNotifier {
 
       // Si no está en la lista de pedidos pero tenemos los datos, lo agregamos primero
       if (pedidoData != null && !_pedidos.any((p) => p.id == pedidoId)) {
-        await _processPedidoData(context, pedidoData);
+        await _processPedidoData(pedidoData);
       }
 
       final index = _pedidos.indexWhere((p) => p.id == pedidoId);
@@ -422,6 +447,105 @@ class PedidosProvider2 extends ChangeNotifier {
       print('Error accepting pedido: $e');
       _pedidosAceptados.remove(pedidoId);
       //await updatePedidoEstado(pedidoId, 'pendiente');
+      rethrow;
+    }
+  }
+*/
+
+  Future<void> aceptarPedido(String pedidoId,
+      {Map<String, dynamic>? pedidoData}) async {
+    try {
+      print("INGRESANDO AL PROVIDER DE PEDIDO---->> METODO ACEPTAR");
+      print('Accepting pedido: $pedidoId');
+
+      // Si no está en la lista de pedidos pero tenemos los datos, lo agregamos primero
+      if (pedidoData != null && !_pedidos.any((p) => p.id == pedidoId)) {
+        await _processPedidoData(pedidoData);
+      }
+
+      final index = _pedidos.indexWhere((p) => p.id == pedidoId);
+
+      if (index != -1) {
+        final pedido = _pedidos[index];
+
+        // Marcar localmente como "en proceso de aceptación"
+        // Esto evita que el usuario pueda hacer clic múltiples veces
+        _pedidos[index] = pedido.copyWith(estado: 'procesando_aceptacion');
+        notifyListeners();
+
+        // Emitir toma de orden
+        emitTakeOrder(pedidoId, pedido.almacenId);
+
+        // Crear un flag para saber si se completó la operación
+        bool operationCompleted = false;
+
+        // Crear un listener temporal con un timeout
+        Timer orderTakenTimer = Timer(Duration(seconds: 5), () {
+          if (!operationCompleted) {
+            // Si pasaron 5 segundos y no recibimos respuesta, revertimos
+            print(
+                '❌ Timeout esperando confirmación order_taken para $pedidoId');
+            final revertIndex = _pedidos.indexWhere((p) => p.id == pedidoId);
+            if (revertIndex != -1) {
+              _pedidos[revertIndex] = pedido.copyWith(estado: 'pendiente');
+              notifyListeners();
+            }
+          }
+        });
+
+        // Esperamos un poco para dar tiempo al server a procesar
+        await Future.delayed(Duration(milliseconds: 300));
+
+        // Verificamos si el pedido fue confirmado por el listener global
+        // El listener global _pedidoTomado se encarga de eliminar el pedido
+        // cuando llega el evento 'order_taken'
+        bool pedidoFueConfirmado = !_pedidos.any((p) => p.id == pedidoId);
+
+        if (pedidoFueConfirmado) {
+          // Si el pedido ya no está en la lista, significa que _pedidoTomado lo procesó
+          print(
+              '✅ Pedido confirmado por el servidor y procesado por _pedidoTomado');
+
+          // Agregamos a la lista de aceptados
+          _pedidosAceptadosList.add(pedido);
+          _pedidosAceptados.add(pedidoId);
+
+          // Cancelamos el timer ya que se completó la operación
+          orderTakenTimer.cancel();
+          operationCompleted = true;
+
+          notifyListeners();
+        } else {
+          // Esperamos un poco más (total 2 segundos) para dar más tiempo
+          await Future.delayed(Duration(milliseconds: 1700));
+
+          // Verificamos nuevamente
+          pedidoFueConfirmado = !_pedidos.any((p) => p.id == pedidoId);
+
+          if (pedidoFueConfirmado) {
+            // Si ahora fue confirmado, procedemos igual
+            _pedidosAceptadosList.add(pedido);
+            _pedidosAceptados.add(pedidoId);
+            orderTakenTimer.cancel();
+            operationCompleted = true;
+            notifyListeners();
+          } else {
+            // Si aún no fue confirmado, lo consideramos un fallo
+            print('❌ No se recibió confirmación del servidor para $pedidoId');
+            final revertIndex = _pedidos.indexWhere((p) => p.id == pedidoId);
+            if (revertIndex != -1) {
+              _pedidos[revertIndex] = pedido.copyWith(estado: 'pendiente');
+            }
+            orderTakenTimer.cancel();
+            operationCompleted = true;
+            notifyListeners();
+            throw Exception('No se recibió confirmación del servidor');
+          }
+        }
+      }
+    } catch (e) {
+      print('Error accepting pedido: $e');
+      _pedidosAceptados.remove(pedidoId);
       rethrow;
     }
   }
@@ -648,13 +772,13 @@ class PedidosProvider2 extends ChangeNotifier {
   }
 
   // 5. CONEXIÓN MANUAL
-  void conectarSocket(BuildContext context, int? almacenId, String? nombre) {
+  void conectarSocket(int? almacenId, String? nombre) {
     print("🔌 Conectando manualmente al socket...");
     _socketService.connect();
     _initSocketListeners(nombre, almacenId);
     onHolapedido((data) {
       print("📦 Nuevo pedido recibido en el Provider: $data");
-      _processPedidoData(context, data);
+      _processPedidoData(data);
     });
     _initialEmit(almacenId);
   }

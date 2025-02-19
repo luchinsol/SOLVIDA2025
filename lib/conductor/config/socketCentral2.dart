@@ -17,7 +17,7 @@ class SocketService2 {
       String microUrl = dotenv.env['MICRO_PEDIDO'] ?? '';
       print("🌐 Conectando a: $microUrl");
 
-      _socket = IO.io(
+      /* _socket = IO.io(
         microUrl,
         IO.OptionBuilder()
             .setTransports(['websocket'])
@@ -26,13 +26,32 @@ class SocketService2 {
             .setReconnectionDelayMax(5000)
             .setTimeout(10000)
             .build(),
-      );
+      );*/
 
-      _socket?.onConnect((_) => print('✅ Conectado a Socket.IO'));
+      _socket = IO.io(microUrl, <String, dynamic>{
+        'transports': ['websocket'],
+        'autoConnect': true,
+        'reconnect': true,
+        'reconnectionAttempts': 10,
+        'reconnectionDelay': 2000,
+        'reconnectionDelayMax': 2000,
+        'timeout': 10000
+      });
+
+      _socket?.onConnect((_) {
+        print("CONECTADO A SOCKET.IO");
+        _socket?.on('order_taken', (data) {
+          print("*****************************Orden Tomadada");
+        });
+        _reRegistro();
+      });
       _socket?.onDisconnect((_) => print('❌ Desconectado de Socket.IO'));
       _socket?.onConnectError((error) => print('⚠️ Error de conexión: $error'));
       _socket
           ?.onError((error) => print('🚨 Error general en el socket: $error'));
+      _socket?.on("order_taken", (data) {
+        print(' IMPRIMIENDO DATA $data');
+      });
     }
 
     _socket?.connect();
@@ -48,6 +67,16 @@ class SocketService2 {
 
   void on(String eventName, Function(dynamic) callback) {
     _socket?.on(eventName, (data) => callback(data));
+  }
+
+  void _reRegistro() {
+    _socket?.on('order_taken', (data) {
+      print("*****************************Orden Tomadada");
+    });
+  }
+
+  void off(String eventName) {
+    _socket?.off(eventName);
   }
 
   void onDisconnect(Function callback) {
