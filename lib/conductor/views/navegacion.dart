@@ -389,6 +389,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        leading: Icon(
+          Icons.arrow_back_ios,
+          size: 16.sp,
+        ),
         backgroundColor: Colors.white,
         title: const Text(
           "Pedido en curso",

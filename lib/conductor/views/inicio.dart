@@ -8,6 +8,7 @@ import 'package:app2025/conductor/model/pedido_model.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:app2025/conductor/providers/conexionswitch_provider.dart';
 import 'package:app2025/conductor/providers/lastpedido_provider.dart';
+import 'package:app2025/conductor/providers/notificaciones_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
@@ -95,7 +96,25 @@ class _InicioDriverState extends State<InicioDriver> {
             pedidolastProvider.lastPedido!.fecha!.month,
             pedidolastProvider.lastPedido!.fecha!.day);
       } else {
-        throw Exception("Error al obtener los datos del pedido");
+        print(
+            "Respuesta no exitosa (${res.statusCode}), asignando valores por defecto.");
+
+        // Si la respuesta no es 200, asignamos valores por defecto
+        ClientelastModel defaultCliente = ClientelastModel(
+          nombre: "Cliente Desconocido",
+          foto: "https://example.com/default_profile.png",
+        );
+
+        LastpedidoModel defaultPedido = LastpedidoModel(
+          id: 0,
+          tipo: "Desconocido",
+          total: 0.0,
+          fecha: DateTime.now(),
+          estado: "Desconocido",
+          cliente: defaultCliente,
+        );
+
+        pedidolastProvider.updateLastPedido(defaultPedido);
       }
     } catch (e) {
       throw Exception("Error query $e");
@@ -116,10 +135,11 @@ class _InicioDriverState extends State<InicioDriver> {
 
       if (res.statusCode == 200) {
         var data = json.decode(res.body);
-
-        setState(() {
-          cantidad = int.parse(data['total_pedidos']);
-        });
+        if (mounted) {
+          setState(() {
+            cantidad = int.parse(data['total_pedidos']);
+          });
+        }
       }
     } catch (e) {
       throw Exception('Error get count $e');
@@ -135,6 +155,7 @@ class _InicioDriverState extends State<InicioDriver> {
 
   @override
   Widget build(BuildContext context) {
+    final notificacionProvider = context.watch<NotificacionesInicioProvider>();
     final conductorProvider = context.watch<ConductorProvider>();
     final pedidolast = context.watch<LastpedidoProvider>();
     final pedidoProvider =
@@ -196,17 +217,20 @@ class _InicioDriverState extends State<InicioDriver> {
                                     position: badges.BadgePosition.topEnd(
                                         top: -5, end: -0),
                                     badgeContent: Text(
-                                      '3',
+                                      "${notificacionProvider.notificaciones.length}",
                                       style: TextStyle(
-                                          color: Colors.white,
+                                          color: Colors.black,
                                           fontSize: 10.3.sp),
                                     ),
                                     badgeStyle: badges.BadgeStyle(
-                                        badgeColor: Colors.amber,
+                                        badgeColor: notificacionProvider
+                                                .notificaciones.isEmpty
+                                            ? Colors.grey.shade200
+                                            : Colors.amber,
                                         padding: EdgeInsets.all(6.8.r)),
                                     child: IconButton(
                                         onPressed: () {
-                                          context.push('/drive/notificacion');
+                                          context.go('/drive/notificacion');
                                         },
                                         icon: Icon(
                                           Icons.notifications_none,
@@ -369,6 +393,7 @@ class _InicioDriverState extends State<InicioDriver> {
                                 if (value) {
                                   conexionTrabajo.connect();
                                   pedidoProvider.conectarSocket(
+                                      context,
                                       conductorProvider.conductor!.evento_id,
                                       conductorProvider.conductor!.nombre);
                                 }
@@ -656,7 +681,29 @@ class _InicioDriverState extends State<InicioDriver> {
                           )
                         ],
                       ))
-                  : Text("Conectate a la central")
+                  : Padding(
+                      padding: EdgeInsets.all(20.r),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 300.w,
+                            height: 300.w,
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: AssetImage(
+                                        'lib/imagenes/centralgirl.png'))),
+                          ),
+                          Text(
+                            "Conéctate al servidor de pedidos",
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.manrope(
+                                fontSize: 20.sp, fontWeight: FontWeight.w400),
+                          )
+                        ],
+                      ),
+                    )
             ],
           ),
         ));

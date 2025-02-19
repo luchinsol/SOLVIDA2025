@@ -93,6 +93,10 @@ class _CalificacionState extends State<Calificacion> {
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+          leading: Icon(
+            Icons.arrow_back_ios,
+            size: 16.sp,
+          ),
           backgroundColor: Colors.white,
           title: Text(
             "Calificación",

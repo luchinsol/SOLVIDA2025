@@ -499,8 +499,44 @@ class _HistorialState extends State<Historial> {
                                   },
                                 ),
                               )
-                            : Center(child: Text("No hay pedidos en este día")))
-                : Text("Selecciona un día para ver tus pedidos"),
+                            : Center(
+                                child: Column(
+                                children: [
+                                  Container(
+                                    width: 300.w,
+                                    height: 300.w,
+                                    decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                            image: AssetImage(
+                                                'lib/imagenes/nodata.png'))),
+                                  ),
+                                  Text(
+                                    "No hay pedidos en este día",
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.manrope(
+                                        fontSize: 20.sp,
+                                        fontWeight: FontWeight.w300),
+                                  ),
+                                ],
+                              )))
+                : Column(
+                    children: [
+                      Container(
+                        width: 300.w,
+                        height: 300.w,
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image:
+                                    AssetImage('lib/imagenes/archivos.png'))),
+                      ),
+                      Text(
+                        "Selecciona un día para ver tus pedidos",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.manrope(
+                            fontSize: 20.sp, fontWeight: FontWeight.w300),
+                      ),
+                    ],
+                  ),
           ],
         ),
       ),
