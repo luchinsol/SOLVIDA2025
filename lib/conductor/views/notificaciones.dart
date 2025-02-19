@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:app2025/conductor/model/notificaciones_model.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
+import 'package:app2025/conductor/providers/notificacioncustom_provider.dart';
+import 'package:app2025/conductor/providers/notificaciones_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,6 +27,8 @@ class _NotificacionesState extends State<Notificaciones> {
   Future<dynamic> getNotificacionesAlmaid() async {
     final conductorProvider =
         Provider.of<ConductorProvider>(context, listen: false);
+    final notificacionesProvider =
+        Provider.of<NotificacionesInicioProvider>(context, listen: false);
     int? almacen_id = conductorProvider.conductor?.evento_id;
     print("---------------");
     print("$almacen_id");
@@ -42,18 +46,9 @@ class _NotificacionesState extends State<Notificaciones> {
         }
 
         var res = await http.get(
-            Uri.parse(microUrl +
-                '/notificacion/' +
-                fechaActual +
-                '/' +
-                almacen_id.toString()),
+            Uri.parse('$microUrl/notificacion/$fechaActual/$almacen_id'),
             headers: {"Authorization": "Bearer $token"});
 
-        print(microUrl +
-            '/notificacion/' +
-            fechaActual +
-            '/' +
-            almacen_id.toString());
         if (res.statusCode == 200) {
           var data = json.decode(res.body);
           List<NotificacionesModel> tempNotificaciones =
@@ -67,11 +62,10 @@ class _NotificacionesState extends State<Notificaciones> {
                 fechaenvio: i['fecha_envio']);
           }).toList();
           if (mounted) {
-            setState(() {
-              notificacionesNew = tempNotificaciones;
-            });
+            // Actualizar Provider en lugar de usar setState
+            notificacionesProvider.updateNotificaciones(tempNotificaciones);
           }
-          print("Notificaciones $notificacionesNew");
+          print("Notificaciones $notificacionesProvider");
         }
       }
     } catch (e) {
@@ -87,15 +81,20 @@ class _NotificacionesState extends State<Notificaciones> {
 
   @override
   Widget build(BuildContext context) {
+    final notificacionProvider = context.watch<NotificacionesInicioProvider>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        leading: Icon(
+          Icons.arrow_back_ios,
+          size: 16.sp,
+        ),
         backgroundColor: Colors.white,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Notificaciones (${notificacionesNew.length})",
+              "Notificaciones (${notificacionProvider.notificaciones.length})",
               style: GoogleFonts.manrope(fontSize: 16.sp),
             ),
           ],
@@ -104,9 +103,9 @@ class _NotificacionesState extends State<Notificaciones> {
       body: Padding(
         padding:
             EdgeInsets.only(top: 32.r, bottom: 20.r, left: 17.r, right: 17.r),
-        child: notificacionesNew.length > 0
+        child: notificacionProvider.notificaciones.isNotEmpty
             ? ListView.builder(
-                itemCount: notificacionesNew.length,
+                itemCount: notificacionProvider.notificaciones.length,
                 itemBuilder: (context, index) {
                   return Column(
                     children: [
@@ -135,7 +134,7 @@ class _NotificacionesState extends State<Notificaciones> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Sistema - ${notificacionesNew[index].tipo}",
+                                    "Sistema - ${notificacionProvider.notificaciones[index].tipo}",
                                     style: GoogleFonts.manrope(fontSize: 16.sp),
                                   ),
                                   SizedBox(
@@ -144,7 +143,8 @@ class _NotificacionesState extends State<Notificaciones> {
                                   Container(
                                     width: 250.w,
                                     child: Text(
-                                      notificacionesNew[index].mensaje,
+                                      notificacionProvider
+                                          .notificaciones[index].mensaje,
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                       style:
@@ -175,7 +175,25 @@ class _NotificacionesState extends State<Notificaciones> {
                 },
               )
             : Center(
-                child: Text("Sin notificaciones hoy día"),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 300.w,
+                      height: 300.w,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage('lib/imagenes/nodata.png'))),
+                    ),
+                    Text(
+                      "Hoy día no hay novedades",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.manrope(
+                          fontSize: 20.sp, fontWeight: FontWeight.w400),
+                    )
+                  ],
+                ),
               ),
       ),
     );

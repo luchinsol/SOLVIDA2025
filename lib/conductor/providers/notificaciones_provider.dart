@@ -1,13 +1,13 @@
-import 'package:app2025/conductor/model/notificaciones_model.dart';
 import 'package:flutter/material.dart';
+import 'package:app2025/conductor/model/notificaciones_model.dart';
 
-class NotificacionesProvider extends ChangeNotifier {
-  NotificacionesModel? _notify;
+class NotificacionesInicioProvider extends ChangeNotifier {
+  List<NotificacionesModel> _notificaciones = [];
 
-  NotificacionesModel? get notify => _notify;
+  List<NotificacionesModel> get notificaciones => _notificaciones;
 
-  void updateNotificacion(NotificacionesModel newNotify) {
-    _notify = newNotify;
-    notifyListeners();
+  void updateNotificaciones(List<NotificacionesModel> nuevasNotificaciones) {
+    _notificaciones = nuevasNotificaciones;
+    notifyListeners(); // Notifica a la UI para que se actualice
   }
 }

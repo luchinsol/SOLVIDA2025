@@ -1,8 +1,10 @@
 import 'package:app2025/conductor/config/notifications.dart';
+import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class Perfil extends StatefulWidget {
   const Perfil({Key? key}) : super(key: key);
@@ -13,6 +15,7 @@ class Perfil extends StatefulWidget {
 class _PerfilState extends State<Perfil> {
   @override
   Widget build(BuildContext context) {
+    final conductorProvider = context.watch<ConductorProvider>();
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -40,9 +43,9 @@ class _PerfilState extends State<Perfil> {
                   height: 26.h,
                 ),
                 Text(
-                  "Jhon G. Barreda",
+                  "${conductorProvider.conductor?.nombres} ${conductorProvider.conductor?.apellidos}",
                   style: GoogleFonts.manrope(
-                      fontSize: 16.sp,
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.w500,
                       color: Colors.white),
                 ),

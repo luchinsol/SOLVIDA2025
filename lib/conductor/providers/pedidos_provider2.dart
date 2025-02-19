@@ -5,10 +5,17 @@ import 'package:app2025/conductor/config/notifications.dart';
 import 'package:app2025/conductor/config/socketCentral2.dart';
 import 'package:app2025/conductor/model/pedido_model.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
+import 'package:app2025/conductor/providers/notificacioncustom_provider.dart';
+import 'package:app2025/conductor/providers/notificaciones_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 typedef PedidoCallback = void Function(Map<String, dynamic> data);
+final String microUrl = dotenv.env['MICRO_URL'] ?? '';
 
 class PedidosProvider2 extends ChangeNotifier {
   // Para no pasar como
@@ -22,6 +29,8 @@ class PedidosProvider2 extends ChangeNotifier {
   final List<Pedido> _pedidosAceptadosList = [];
   final Set<String> _processedOrderIds = {};
 
+  bool _llegopedido = false;
+  bool get isllego => _llegopedido;
   //bool get isLoading => _isLoading;
   //bool get isInitialized => _isInitialized;
 
@@ -185,8 +194,52 @@ class PedidosProvider2 extends ChangeNotifier {
     }
   }
 
-  Future<bool> addPedido(
-      Map<String, dynamic> pedidoData, bool showNotification) async {
+  void llegopedido(bool llego) {
+    _llegopedido = llego;
+  }
+
+  // PRIMER ENDPOINT EN MI PROVIDER
+  Future<bool> postNotificaciones(String mensaje, String tipo, String estado,
+      DateTime fecha_creacion, DateTime fecha_envio, int almacen_id) async {
+    try {
+      SharedPreferences tokenUser = await SharedPreferences.getInstance();
+      String? token = tokenUser.getString('token'); // Recupera el token
+
+      if (token == null) {
+        print("No hay token almacenado");
+        return false;
+      }
+
+      String fechaCreacionFormatted =
+          DateFormat('yyyy-MM-dd').format(fecha_creacion);
+      String fechaEnvioFormatted = DateFormat('yyyy-MM-dd').format(fecha_envio);
+      var res = await http.post(Uri.parse('$microUrl/notificacion'),
+          headers: {
+            "Content-type": "application/json",
+            "Authorization": "Bearer $token"
+          },
+          body: jsonEncode({
+            "mensaje": mensaje,
+            "tipo": tipo,
+            "estado": estado,
+            "fecha_creacion": fechaCreacionFormatted,
+            "fecha_envio": fechaEnvioFormatted,
+            "almacen_id": almacen_id
+          }));
+      print("....RESSSS");
+      print(res.statusCode);
+      if (res.statusCode == 201) {
+        return true; // Devuelve true si se creó correctamente
+      } else {
+        return false; // Devuelve false si el código no es 201
+      }
+    } catch (e) {
+      throw Exception("Error post $e");
+    }
+  }
+
+  Future<bool> addPedido(BuildContext context, Map<String, dynamic> pedidoData,
+      bool showNotification) async {
     try {
       final pedido = Pedido.fromMap(pedidoData);
       print('Adding pedido: ${pedido.id}');
@@ -197,17 +250,24 @@ class PedidosProvider2 extends ChangeNotifier {
         print('Pedido already exists or is accepted: ${pedido.id}');
         return true;
       }
+      print("....Fecha obetina");
+      print(DateFormat('yyyy-MM-dd').format(DateTime.now()));
+      String fechaC = DateFormat('yyyy-MM-dd').format(DateTime.now().toUtc());
+      bool postexitoso = await postNotificaciones(
+          pedido.clienteName,
+          pedido.estado,
+          pedido.estado,
+          DateTime.parse(fechaC),
+          pedido.expiredTime,
+          pedido.almacenId);
+      print("POST EXITOS");
+      print(postexitoso);
+      if (postexitoso) {
+        print("Exitoso POST");
+      }
 
-/*
-      if (showNotification) {
-        await _notificationsService.showOrderNotification(
-          id: int.parse(pedido.id),
-          title: 'Nuevo Pedido #${pedido.id}',
-          body:
-              'Total: \$${pedido.total.toStringAsFixed(2)}\nCliente: ${pedido.cliente?.nombre ?? 'No especificado'}',
-          payload: json.encode(pedidoData),
-        );
-      }*/
+      // AQUÍ SE MUESTRA LA NOTIFICACIÓN
+      llegopedido(showNotification);
 
       _pedidos.add(pedido);
       _setupExpirationTimer(pedido);
@@ -219,7 +279,8 @@ class PedidosProvider2 extends ChangeNotifier {
     }
   }
 
-  Future<void> _processPedidoData(Map<String, dynamic> data) async {
+  Future<void> _processPedidoData(
+      BuildContext context, Map<String, dynamic> data) async {
     try {
       if (data['estado'] == 'expirado') {
         _pedidos.removeWhere((p) => p.id == data['id']);
@@ -237,15 +298,15 @@ class PedidosProvider2 extends ChangeNotifier {
       print("----------> FLUJO INICIAL");
       print('Processing pedido: ${pedido.id}');
 
-      NotificationsService().showOrderNotification(
+      /*NotificationsService().showOrderNotification(
         id: 29999,
         title: 'Pedido #765433',
         body: 'El pedido ha sido anulado.',
         payload: 'order',
-      );
+      );*/
 
       if (!_pedidosAceptados.contains(pedido.id)) {
-        await addPedido(data, true);
+        await addPedido(context, data, true);
       }
     } catch (e) {
       print('Error processing pedido data: $e');
@@ -271,7 +332,7 @@ class PedidosProvider2 extends ChangeNotifier {
 
   //aceptar Pedido
 
-  Future<void> aceptarPedido(String pedidoId,
+  Future<void> aceptarPedido(BuildContext context, String pedidoId,
       {Map<String, dynamic>? pedidoData}) async {
     try {
       print("INGRESANDO AL PROVIDER DE PEDIDO---->> METODO ACEPTAR");
@@ -279,7 +340,7 @@ class PedidosProvider2 extends ChangeNotifier {
 
       // Si no está en la lista de pedidos pero tenemos los datos, lo agregamos primero
       if (pedidoData != null && !_pedidos.any((p) => p.id == pedidoId)) {
-        await _processPedidoData(pedidoData);
+        await _processPedidoData(context, pedidoData);
       }
 
       final index = _pedidos.indexWhere((p) => p.id == pedidoId);
@@ -490,13 +551,13 @@ class PedidosProvider2 extends ChangeNotifier {
   }
 
   // 5. CONEXIÓN MANUAL
-  void conectarSocket(int? almacenId, String? nombre) {
+  void conectarSocket(BuildContext context, int? almacenId, String? nombre) {
     print("🔌 Conectando manualmente al socket...");
     _socketService.connect();
     _initSocketListeners(nombre);
     onHolapedido((data) {
       print("📦 Nuevo pedido recibido en el Provider: $data");
-      _processPedidoData(data);
+      _processPedidoData(context, data);
     });
     _initialEmit(almacenId);
   }
