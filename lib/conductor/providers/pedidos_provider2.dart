@@ -130,6 +130,10 @@ class PedidosProvider2 extends ChangeNotifier {
       }
     });
 
+    _socketService.on('pedido_anulado', (data) {
+      print("📥 Pedido ANULADO EVENTO ANULADO: $data");
+    });
+
     _socketService.on('pedido_actualizado', (data) {
       print("📥 Pedido actualizado: $data");
     });
@@ -473,6 +477,13 @@ class PedidosProvider2 extends ChangeNotifier {
 
         // Marcar localmente como "en proceso de aceptación"
         // Esto evita que el usuario pueda hacer clic múltiples veces
+
+        List<dynamic> nuevosAlmacenes = List.from(pedido.almacenesPendientes)
+          ..removeWhere((a) => a['id'] == pedido.almacenId);
+
+        _pedidos[_pedidos.indexWhere((p) => p.id == pedidoId)] = pedido
+            .copyWith(almacenesPendientes: nuevosAlmacenes, estado: 'aceptado');
+        //
         _pedidos[index] = pedido.copyWith(estado: 'procesando_aceptacion');
         notifyListeners();
 
@@ -600,80 +611,91 @@ class PedidosProvider2 extends ChangeNotifier {
 
   void emitPedidoExpirado(Map<String, dynamic> pedidoData) {
     try {
+      print("EMITIENDO PEDIDO");
       final pendingStores = pedidoData['AlmacenesPendientes'] ?? [];
+      print("ALMACENES PENDIENTES ------------------>>>");
+      print(pendingStores);
       // Ensure the data is converted to a standard JSON format
-      if (pendingStores.isNotEmpty) {
-        final jsonData = {
-          "id": pedidoData['id'],
-          "ubicacion": pedidoData['ubicacion'],
-          "detalles": {
-            "promociones":
-                (pedidoData['detalles']['promociones'] as List).map((promo) {
-              return {
-                "id": promo['id'],
-                "nombre": promo['nombre'],
-                "descripcion": promo['descripcion'],
-                "foto": promo['foto'],
-                "valoracion": promo['valoracion'],
-                "categoria": promo['categoria'],
-                "precio": promo['precio'],
-                "descuento": promo['descuento'],
-                "total": promo['total'],
-                "cantidad": promo['cantidad'],
-                "subtotal": promo['subtotal'],
-                "productos": (promo['productos'] as List).map((prod) {
-                  return {
-                    "id": prod['id'],
-                    "nombre": prod['nombre'],
-                    "descripcion": prod['descripcion'],
-                    "foto": prod['foto'],
-                    "valoracion": prod['valoracion'],
-                    "categoria": prod['categoria'],
-                    "precio": prod['precio'],
-                    "descuento": prod['descuento'],
-                    "total": prod['total'],
-                    "cantidad": prod['cantidad'],
-                    "cantidadProductos": prod['cantidadProductos']
-                  };
-                }).toList()
-              };
-            }).toList(),
-            "productos":
-                (pedidoData['detalles']['productos'] as List).map((prod) {
-              return {
-                "id": prod['id'],
-                "nombre": prod['nombre'],
-                "descripcion": prod['descripcion'],
-                "foto": prod['foto'],
-                "valoracion": prod['valoracion'],
-                "categoria": prod['categoria'],
-                "precio": prod['precio'],
-                "descuento": prod['descuento'],
-                "subtotal": prod['subtotal'],
-                "cantidad": prod['cantidad'],
-                "total": prod['total']
-              };
-            }).toList()
-          },
-          "region_id": pedidoData['region_id'] ?? 1,
-          "almacen_id": pedidoData['almacen_id'] ?? 3,
-          "subtotal": pedidoData['subtotal'] ?? 0,
-          "descuento": pedidoData['descuento'] ?? 0,
-          "total": pedidoData['total'] ?? 0,
-          "AlmacenesPendientes": pedidoData['AlmacenesPendientes'] ?? [],
-          "Cliente": pedidoData["Cliente"],
-          "emitted_time": DateTime.now().toIso8601String(),
-          "expired_time":
-              DateTime.now().add(Duration(minutes: 1)).toIso8601String(),
-          'is_rotation': true,
-          'accepted': false,
-          'rotation_attempts': (pedidoData['rotation_attempts'] ?? 0) + 1,
-          'pedidoinfo': pedidoData['pedidoinfo'],
-        };
+      //if (pendingStores.isNotEmpty) {
+      final jsonData = {
+        "id": pedidoData['id'],
+        "ubicacion": pedidoData['ubicacion'],
+        "detalles": {
+          "promociones":
+              (pedidoData['detalles']['promociones'] as List).map((promo) {
+            return {
+              "id": promo['id'],
+              "nombre": promo['nombre'],
+              "descripcion": promo['descripcion'],
+              "foto": promo['foto'],
+              "valoracion": promo['valoracion'],
+              "categoria": promo['categoria'],
+              "precio": promo['precio'],
+              "descuento": promo['descuento'],
+              "total": promo['total'],
+              "cantidad": promo['cantidad'],
+              "subtotal": promo['subtotal'],
+              "productos": (promo['productos'] as List).map((prod) {
+                return {
+                  "id": prod['id'],
+                  "nombre": prod['nombre'],
+                  "descripcion": prod['descripcion'],
+                  "foto": prod['foto'],
+                  "valoracion": prod['valoracion'],
+                  "categoria": prod['categoria'],
+                  "precio": prod['precio'],
+                  "descuento": prod['descuento'],
+                  "total": prod['total'],
+                  "cantidad": prod['cantidad'],
+                  "cantidadProductos": prod['cantidadProductos']
+                };
+              }).toList()
+            };
+          }).toList(),
+          "productos":
+              (pedidoData['detalles']['productos'] as List).map((prod) {
+            return {
+              "id": prod['id'],
+              "nombre": prod['nombre'],
+              "descripcion": prod['descripcion'],
+              "foto": prod['foto'],
+              "valoracion": prod['valoracion'],
+              "categoria": prod['categoria'],
+              "precio": prod['precio'],
+              "descuento": prod['descuento'],
+              "subtotal": prod['subtotal'],
+              "cantidad": prod['cantidad'],
+              "total": prod['total']
+            };
+          }).toList()
+        },
+        "region_id": pedidoData['region_id'] ?? 1,
+        "almacen_id": pedidoData['almacen_id'] ?? 3,
+        "subtotal": pedidoData['subtotal'] ?? 0,
+        "descuento": pedidoData['descuento'] ?? 0,
+        "total": pedidoData['total'] ?? 0,
+        "AlmacenesPendientes": pedidoData['AlmacenesPendientes'] ?? [],
+        "Cliente": pedidoData["Cliente"],
+        "emitted_time": DateTime.now().toIso8601String(),
+        "expired_time":
+            DateTime.now().add(Duration(minutes: 1)).toIso8601String(),
+        'is_rotation': true,
+        'accepted': false,
+        'rotation_attempts': (pedidoData['rotation_attempts'] ?? 0) + 1,
+        'pedidoinfo': pedidoData['pedidoinfo'],
+      };
 
-        // Convert to JSON string
-        final jsonString = jsonEncode(jsonData);
+      // Convert to JSON string
+      final jsonString = jsonEncode(jsonData);
+      rechazarPedido(jsonString);
+      _processedOrderIds.add(pedidoData['id'].toString());
 
+      // Notificar callback
+      if (_uniqueCallback != null) {
+        _uniqueCallback!({'id': pedidoData['id'], 'estado': 'expirado'});
+      }
+
+      /*
         if (!_processedOrderIds.contains(pedidoData['id'].toString())) {
           // Rechaza un pedido
           rechazarPedido(jsonString);
@@ -682,8 +704,9 @@ class PedidosProvider2 extends ChangeNotifier {
           if (_uniqueCallback != null) {
             _uniqueCallback!({'id': pedidoData['id'], 'estado': 'expirado'});
           }
-        }
-      }
+        }*/
+
+      //}
     } catch (e) {
       print('❌ Error al procesar pedido expirado: $e');
     }
@@ -692,16 +715,17 @@ class PedidosProvider2 extends ChangeNotifier {
   //IGNORAR PEDIDO
   void ignorarPedido(Map<String, dynamic> pedidoData) {
     try {
-      // Emitir el evento al socket
       emitPedidoExpirado(pedidoData);
-      // Remover el pedido de la lista local
-      _pedidos.removeWhere((p) => p.id == pedidoData['id']);
 
-      // Limpiar recursos asociados
+      // Remover de todas las listas
+      _pedidos.removeWhere((p) => p.id == pedidoData['id']);
+      _pedidosAceptadosList.removeWhere((p) => p.id == pedidoData['id']);
+      _pedidosAceptados.remove(pedidoData['id']);
+
+      // Limpiar temporizadores
       _timers[pedidoData['id']]?.cancel();
       _timers.remove(pedidoData['id']);
 
-      // Notificar a los listeners para actualizar la UI
       notifyListeners();
     } catch (e) {
       debugPrint('Error ignorando pedido: $e');

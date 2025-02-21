@@ -625,13 +625,14 @@ class _InicioDriverState extends State<InicioDriver> {
                                                       fontWeight:
                                                           FontWeight.bold),
                                                 ),
+                                                /*
                                                 Text(
                                                   "${formatoFecha(pedidolast.lastPedido!.fecha!)}",
                                                   style: GoogleFonts.manrope(
                                                       fontSize: 14.sp,
                                                       color:
                                                           Colors.grey.shade600),
-                                                )
+                                                )*/
                                               ],
                                             ),
                                           )
