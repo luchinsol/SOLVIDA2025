@@ -97,7 +97,7 @@ class Pedido {
       'descuento': descuento,
       'total': total,
       'almacenes_pendientes': almacenesPendientes,
-      'cliente': {
+      'Cliente': {
         // Convert Cliente object to map
         'id': cliente.id,
         'usuario_id': cliente.usuario_id,

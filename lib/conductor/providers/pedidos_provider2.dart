@@ -274,7 +274,7 @@ class PedidosProvider2 extends ChangeNotifier {
   }
 
   // PRIMER ENDPOINT EN MI PROVIDER
-  Future<bool> postNotificaciones(String mensaje, String tipo, String estado,
+  Future<void> postNotificaciones(String mensaje, String tipo, String estado,
       DateTime fecha_creacion, DateTime fecha_envio, int almacen_id) async {
     try {
       SharedPreferences tokenUser = await SharedPreferences.getInstance();
@@ -282,7 +282,7 @@ class PedidosProvider2 extends ChangeNotifier {
 
       if (token == null) {
         print("No hay token almacenado");
-        return false;
+        // return false;
       }
 
       String fechaCreacionFormatted =
@@ -304,9 +304,9 @@ class PedidosProvider2 extends ChangeNotifier {
       print("....RESSSS");
       print(res.statusCode);
       if (res.statusCode == 201) {
-        return true; // Devuelve true si se creó correctamente
+        // Devuelve true si se creó correctamente
       } else {
-        return false; // Devuelve false si el código no es 201
+        // Devuelve false si el código no es 201
       }
     } catch (e) {
       throw Exception("Error post $e");
@@ -325,24 +325,27 @@ class PedidosProvider2 extends ChangeNotifier {
         print('Pedido already exists or is accepted: ${pedido.id}');
         return true;
       }
+      // LLEGA PEDIDO
+      print("....llega pedido");
+      SharedPreferences pedidoJson = await SharedPreferences.getInstance();
+      await pedidoJson.setString('pedidoJson', jsonEncode(pedido.toMap()));
+
+      print("recupero el pedido");
+      print("ESTE ES EL PEDIDO ->${pedidoJson.getString('pedidoJson')}");
+
       print("....Fecha obetina");
       print(DateFormat('yyyy-MM-dd').format(DateTime.now()));
       String fechaC = DateFormat('yyyy-MM-dd').format(DateTime.now().toUtc());
-      bool postexitoso = await postNotificaciones(
-          pedido.clienteName,
-          pedido.estado,
+      await postNotificaciones(
+          '#${pedido.id} Cliente:${pedido.cliente.nombre} ${pedido.cliente.apellidos}S/.${pedido.total.toString()} ',
+          pedido.pedidoinfo['tipo'],
           pedido.estado,
           DateTime.parse(fechaC),
-          pedido.expiredTime,
+          DateTime.parse(fechaC),
           pedido.almacenId);
       print("POST EXITOS");
-      print(postexitoso);
-      if (postexitoso) {
-        print("Exitoso POST");
-      }
 
       // AQUÍ SE MUESTRA LA NOTIFICACIÓN
-      llegopedido(showNotification);
 
       _pedidos.add(pedido);
       _setupExpirationTimer(pedido);
