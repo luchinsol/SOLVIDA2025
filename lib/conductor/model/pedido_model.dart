@@ -96,24 +96,8 @@ class Pedido {
       'subtotal': subtotal,
       'descuento': descuento,
       'total': total,
-      'almacenes_pendientes': almacenesPendientes,
-      'cliente': {
-        // Convert Cliente object to map
-        'id': cliente.id,
-        'usuario_id': cliente.usuario_id,
-        'nombre': cliente.nombre,
-        'apellidos': cliente.apellidos,
-        'ruc': cliente.ruc,
-        'fecha_nacimiento': cliente.fecha_nacimiento.toIso8601String(),
-        'fecha_creacion_cuenta':
-            cliente.fecha_creacion_cuenta.toIso8601String(),
-        'sexo': cliente.sexo,
-        'dni': cliente.dni,
-        'codigo': cliente.codigo,
-        'calificacion': cliente.calificacion,
-        'saldo_beneficios': cliente.saldo_beneficios,
-        'suscripcion': cliente.suscripcion,
-      },
+      'AlmacenesPendientes': almacenesPendientes, // Clave exacta con mayúsculas
+      'Cliente': cliente.toMap(),
       'emitted_time': emittedTime.toIso8601String(),
       'expired_time': expiredTime.toIso8601String(),
       'current_store': currentStore,
@@ -128,66 +112,9 @@ class Pedido {
     // More robust Cliente parsing
     Cliente clienteObj;
     try {
-      // Check for different possible ways the cliente data might be stored
-      dynamic clienteData = map['cliente'];
-
-      if (clienteData is Map) {
-        // Directly use the cliente map if it's already a map
-        clienteObj = Cliente(
-          id: clienteData['id'] ?? 0,
-          usuario_id: clienteData['usuario_id'] ?? 0,
-          nombre: clienteData['nombre'] ?? 'Cliente Desconocido',
-          apellidos: clienteData['apellidos'] ?? '',
-          ruc: clienteData['ruc'] ?? '',
-          fecha_nacimiento: _safeParse(clienteData['fecha_nacimiento']),
-          fecha_creacion_cuenta:
-              _safeParse(clienteData['fecha_creacion_cuenta']),
-          sexo: clienteData['sexo'] ?? '',
-          dni: clienteData['dni'] ?? '',
-          codigo: clienteData['codigo'] ?? '',
-          calificacion: clienteData['calificacion'] ?? 0,
-          saldo_beneficios: clienteData['saldo_beneficios'] ?? 0,
-          suscripcion: clienteData['suscripcion'] ?? '',
-        );
-      } else if (map.containsKey('Cliente')) {
-        // Alternative parsing if Cliente is stored under 'Cliente' key
-        dynamic alternativeClienteData = map['Cliente'];
-
-        clienteObj = Cliente(
-          id: alternativeClienteData['id'] ?? 0,
-          usuario_id: alternativeClienteData['usuario_id'] ?? 0,
-          nombre: alternativeClienteData['nombre'] ?? 'Cliente Desconocido',
-          apellidos: alternativeClienteData['apellidos'] ?? '',
-          ruc: alternativeClienteData['ruc'] ?? '',
-          fecha_nacimiento:
-              _safeParse(alternativeClienteData['fecha_nacimiento']),
-          fecha_creacion_cuenta:
-              _safeParse(alternativeClienteData['fecha_creacion_cuenta']),
-          sexo: alternativeClienteData['sexo'] ?? '',
-          dni: alternativeClienteData['dni'] ?? '',
-          codigo: alternativeClienteData['codigo'] ?? '',
-          calificacion: alternativeClienteData['calificacion'] ?? 0.0,
-          saldo_beneficios: alternativeClienteData['saldo_beneficios'] ?? 0.0,
-          suscripcion: alternativeClienteData['suscripcion'] ?? '',
-        );
-      } else {
-        // Fallback to default Cliente if no data found
-        clienteObj = Cliente(
-          id: 0,
-          usuario_id: 0,
-          nombre: 'Cliente Desconocido',
-          apellidos: '',
-          ruc: '',
-          fecha_nacimiento: DateTime.now(),
-          fecha_creacion_cuenta: DateTime.now(),
-          sexo: '',
-          dni: '',
-          codigo: '',
-          calificacion: 0.0,
-          saldo_beneficios: 0.0,
-          suscripcion: '',
-        );
-      }
+      // Verifica si el cliente está en 'Cliente' o 'cliente'
+      dynamic clienteData = map['Cliente'] ?? map['cliente'];
+      clienteObj = Cliente.fromMap(clienteData);
     } catch (e) {
       print('Error parsing Cliente: $e');
       // Fallback to default Cliente if parsing fails
@@ -220,7 +147,7 @@ class Pedido {
         descuento: _safeDouble(map['descuento'] ?? 0.0),
         total: _safeDouble(map['total'] ?? 0.0),
         almacenesPendientes:
-            map['almacenes_pendientes'] ?? map['almacenesPendientes'] ?? [],
+            map['AlmacenesPendientes'] ?? [], // Usar misma clave
         cliente: clienteObj,
         emittedTime: _safeParse(map['emitted_time'] ?? map['emittedTime']),
         expiredTime: _safeParse(map['expired_time'] ?? map['expiredTime']),

@@ -6,6 +6,7 @@ import 'package:app2025/conductor/model/pedido_model.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
+import 'package:app2025/conductor/views/cargaproductos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -55,6 +56,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   Pedido? _currentPedido;
   String microUrl = dotenv.env['MICRO_URL'] ?? '';
   int? conductorId = 0;
+  // Añade esta variable en la parte superior de tu clase de estado
+  StreamController<int>? _timerController;
+  Timer? _timer;
+  bool _isTimerRunning = false;
 
   void _expandirDraggable() {
     _draggableController.animateTo(
@@ -328,6 +333,109 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     }
   }
 
+  void _initializeTimer() {
+    if (_timerController?.isClosed ?? true) {
+      _timerController = StreamController<int>();
+    }
+
+    if (!_isTimerRunning) {
+      _isTimerRunning = true;
+      int timeLeft = 59;
+
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        timeLeft--;
+        if (!_timerController!.isClosed) {
+          _timerController!.add(timeLeft);
+        }
+
+        print('Tiempo restante: $timeLeft'); // Para depuración
+
+        if (timeLeft == 0) {
+          _timer?.cancel();
+          _isTimerRunning = false;
+
+          if (mounted) {
+            print('Temporizador expirado en: $timeLeft segundos');
+            // Debug 1: Verificar pedido antes de toMap()
+            print('🔥 _currentPedido RAW: ${_currentPedido?.toString()}');
+            print('🔥 ==== DATOS DEL CLIENTE ANTES DE EXPIRAR ====');
+            print('🔥 Cliente ID: ${_currentPedido?.cliente.id}');
+            print('🔥 Nombre: ${_currentPedido?.cliente.nombre}');
+            print('🔥 DNI: ${_currentPedido?.cliente.dni}');
+            print(
+                '🔥 Teléfono: ${_currentPedido?.cliente.codigo}'); // Asumiendo que codigo es teléfono
+
+            final pedidoData = _currentPedido?.toMap();
+
+            // Debug 2: Estructura completa del mapa
+            print('🔥 pedidoData MAP:');
+            pedidoData?.forEach((key, value) => print('$key: $value'));
+
+            // Debug 3: Almacenes pendientes específico
+            print(
+                '🔥 AlmacenesPendientes: ${pedidoData?['AlmacenesPendientes'] ?? "NO EXISTE CLAVE"}');
+            print(
+                '🔥 Tipo de AlmacenesPendientes: ${pedidoData?['AlmacenesPendientes']?.runtimeType}');
+            print('🔥 Cliente en mapa: ${pedidoData?['Cliente']}');
+
+            if (pedidoData != null) {
+              final provider =
+                  Provider.of<PedidosProvider2>(context, listen: false);
+              provider.ignorarPedido(pedidoData);
+            }
+
+            context.go('/drive');
+          }
+        }
+      });
+    }
+  }
+
+  Widget _buildTimerWidget() {
+    return StreamBuilder<int>(
+      stream: _timerController?.stream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Text(
+            '01:00',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          );
+        }
+
+        final secondsRemaining = snapshot.data!;
+
+        // En el widget _buildTimerWidget
+        if (secondsRemaining <= 0) {
+          return const Text(
+            'Tiempo expirado',
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          );
+        }
+
+        final minutes = (secondsRemaining / 60).floor();
+        final seconds = secondsRemaining % 60;
+        final color = secondsRemaining < 10 ? Colors.red : Colors.black;
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.timer, size: 16.sp, color: color),
+            SizedBox(width: 4.w),
+            Text(
+              '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+              style: GoogleFonts.manrope(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -339,6 +447,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     _loadMapStyle();
     _initializeMap();
     _loadPedidoDetails();
+    _initializeTimer();
   }
 
   void _loadPedidoDetails() {
@@ -371,8 +480,11 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
 
   @override
   void dispose() {
+    _timer?.cancel();
+    _timerController?.close();
     _animationTimer?.cancel();
     _draggableController.dispose();
+
     super.dispose();
   }
 
@@ -567,6 +679,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                           color: const Color.fromARGB(
                                               255, 66, 66, 66)),
                                     ),
+                                    _buildTimerWidget(),
                                     Text(
                                       _currentPedido?.pedidoinfo?['tipo'] ??
                                           'Tipo no disponible',

@@ -17,7 +17,7 @@ class SocketService2 {
       String microUrl = dotenv.env['MICRO_PEDIDO'] ?? '';
       print("🌐 Conectando a: $microUrl");
 
-      /* _socket = IO.io(
+      _socket = IO.io(
         microUrl,
         IO.OptionBuilder()
             .setTransports(['websocket'])
@@ -26,8 +26,9 @@ class SocketService2 {
             .setReconnectionDelayMax(5000)
             .setTimeout(10000)
             .build(),
-      );*/
+      );
 
+      /*
       _socket = IO.io(microUrl, <String, dynamic>{
         'transports': ['websocket'],
         'autoConnect': true,
@@ -36,7 +37,7 @@ class SocketService2 {
         'reconnectionDelay': 2000,
         'reconnectionDelayMax': 2000,
         'timeout': 10000
-      });
+      });*/
 
       _socket?.onConnect((_) {
         print("CONECTADO A SOCKET.IO");
