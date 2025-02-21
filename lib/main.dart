@@ -93,7 +93,8 @@ void main() async {
         ChangeNotifierProvider(create: (context) => LastpedidoProvider()),
         ChangeNotifierProvider(
             create: (context) => ConductorConnectionProvider()),
-        ChangeNotifierProvider(create: (context) => NotificationProvider()),
+        ChangeNotifierProvider(
+            create: (context) => NotificationProvider(context)),
         ChangeNotifierProvider(
             create: (context) => NotificacionesInicioProvider())
       ],

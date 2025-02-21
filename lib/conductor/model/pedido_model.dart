@@ -96,8 +96,10 @@ class Pedido {
       'subtotal': subtotal,
       'descuento': descuento,
       'total': total,
+
       'AlmacenesPendientes': almacenesPendientes, // Clave exacta con mayúsculas
       'Cliente': cliente.toMap(),
+
       'emitted_time': emittedTime.toIso8601String(),
       'expired_time': expiredTime.toIso8601String(),
       'current_store': currentStore,

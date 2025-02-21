@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:another_flushbar/flushbar.dart';
 import 'package:app2025/conductor/model/pedido_model.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
+import 'package:app2025/conductor/providers/notificacioncustom_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:app2025/conductor/views/cargaproductos.dart';
@@ -478,6 +480,165 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     });
   }
 
+  bool _expandido = false;
+  void mostrarNotificacion(BuildContext context, String mensaje) {
+    Map<String, dynamic> pedidoMap = jsonDecode(mensaje);
+    print("#########......... ${pedidoMap['detalles']['promociones'].length}");
+
+    Flushbar(
+      duration: Duration(seconds: 27),
+      flushbarPosition: FlushbarPosition.TOP,
+      margin: EdgeInsets.all(10),
+      borderRadius: BorderRadius.circular(8),
+      backgroundColor: Colors.amber.withOpacity(0.8),
+      isDismissible: true,
+      dismissDirection: FlushbarDismissDirection.HORIZONTAL,
+      mainButton: Column(
+        children: [
+          ElevatedButton(
+              style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                      const Color.fromARGB(255, 18, 29, 110))),
+              onPressed: () {
+                print(".........ACEPTE");
+              },
+              child: Text("Aceptar",
+                  style: GoogleFonts.manrope(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontSize: 12.sp))),
+        ],
+      ),
+      messageText: StatefulBuilder(
+        builder: (context, setState) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Pedido #${pedidoMap['id']}",
+                  style: GoogleFonts.manrope(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                      color: const Color.fromARGB(255, 4, 27, 159))),
+              Container(
+                width: 50.w,
+                height: 50.w,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(50.r),
+                    image: DecorationImage(
+                        image: NetworkImage(
+                            'https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg'))),
+              ),
+              SizedBox(
+                height: 10.h,
+              ),
+              Text(
+                  "Cliente:${pedidoMap['Cliente']?['nombre']} ${pedidoMap['Cliente']['apellidos']} ",
+                  style: GoogleFonts.manrope(
+                      fontWeight: FontWeight.w600,
+                      color: const Color.fromARGB(255, 4, 1, 176),
+                      fontSize: 12.sp)),
+              SizedBox(
+                height: 10.h,
+              ),
+              Text("Total: S/.${pedidoMap['total']}",
+                  style: GoogleFonts.manrope(
+                      fontWeight: FontWeight.w600,
+                      color: const Color.fromARGB(255, 4, 1, 176),
+                      fontSize: 12.sp)),
+              SizedBox(
+                height: 10.h,
+              ),
+              Text(
+                  "Dirección: ${pedidoMap['ubicacion']['distrito']} ${pedidoMap['ubicacion']['direccion']} ${pedidoMap['ubicacion']['provincia']}",
+                  style: GoogleFonts.manrope(
+                      fontWeight: FontWeight.w600,
+                      color: const Color.fromARGB(255, 4, 1, 176),
+                      fontSize: 12.sp)),
+              SizedBox(height: 5),
+              AnimatedSize(
+                duration: Duration(milliseconds: 300),
+                child: _expandido
+                    ? Container(
+                        height: 250.w,
+                        decoration: BoxDecoration(color: Colors.white),
+                        child: ListView.builder(
+                          itemCount:
+                              pedidoMap['detalles']['promociones'].length +
+                                  pedidoMap['detalles']['productos'].length,
+                          itemBuilder: (context, index) {
+                            // Obtener la cantidad de promociones
+                            int promoCount =
+                                pedidoMap['detalles']['promociones'].length;
+
+                            if (index < promoCount) {
+                              // Mostrar una promoción
+                              var promocion =
+                                  pedidoMap['detalles']['promociones'][index];
+                              return ListTile(
+                                title: Text(promocion['nombre'],
+                                    style: GoogleFonts.manrope(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                        fontSize: 14.5.sp)),
+                                subtitle: Text(
+                                    "Cantidad: ${promocion['cantidad']}",
+                                    style: GoogleFonts.manrope(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                        fontSize: 12.sp)),
+                              );
+                            } else {
+                              // Mostrar un producto después de las promociones
+                              var producto = pedidoMap['detalles']['productos']
+                                  [index - promoCount];
+                              return ListTile(
+                                title: Text(producto['nombre'],
+                                    style: GoogleFonts.manrope(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                        fontSize: 14.5.sp)),
+                                subtitle: Text(
+                                    "Cantidad: ${producto['cantidad']}",
+                                    style: GoogleFonts.manrope(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                        fontSize: 12.sp)),
+                              );
+                            }
+                          },
+                        ))
+                    : SizedBox(),
+                // : SizedBox(),
+              ),
+              SizedBox(
+                height: 15.h,
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(Colors.grey)),
+                  onPressed: () {
+                    setState(() {
+                      _expandido = !_expandido;
+                    });
+                  },
+                  child: Text(_expandido ? "Ver menos" : "Ver más",
+                      style: GoogleFonts.manrope(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color.fromARGB(255, 255, 255, 255))),
+                ),
+              )
+            ],
+          );
+        },
+      ),
+    ).show(context);
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -498,6 +659,25 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     final direccion = _currentPedido?.ubicacion?['direccion'];
     final direccionCompleta =
         '${direccion},${distrito},${provincia},${departamento}';
+    final notifyProvider = context.watch<NotificationProvider>();
+    if (notifyProvider.mensaje != null && notifyProvider.mensaje!.isNotEmpty) {
+      print("mensaje -******************** ${notifyProvider.mensaje}");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        /*NotificationOverlay.showNotification(
+            context, "Este es un mensaje de prueba");*/
+        mostrarNotificacion(context, notifyProvider.mensaje!);
+        // agregarNotificacion(context);
+        /* Flushbar(
+          title: 'Hey Ninja',
+          message:
+              'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
+          duration: Duration(seconds: 10),
+          flushbarPosition: FlushbarPosition.TOP,
+        ).show(context);*/
+        notifyProvider
+            .clearMensaje(); // Limpiar el mensaje después de mostrar la alerta
+      });
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -529,7 +709,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                         initialCameraPosition: CameraPosition(
                           target: LatLng(_currentLocation!.latitude!,
                               _currentLocation!.longitude!),
-                          zoom: 14,
+                          zoom: 16,
                         ),
                         onMapCreated: (controller) {
                           _mapController = controller;
@@ -569,7 +749,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
               builder: (BuildContext context, ScrollController controller) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 238, 238, 238).withOpacity(0.95),
+                    color: Color.fromARGB(255, 58, 41, 127).withOpacity(0.95),
                     borderRadius: BorderRadius.only(
                       topRight: Radius.circular(10.r),
                       topLeft: Radius.circular(10.r),
@@ -611,8 +791,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
-                                width: 153.h,
-                                // color: Colors.green,
+                                width: 163.w,
+                                //color: Colors.green,
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -629,6 +809,9 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                             decoration: BoxDecoration(
                                                 color: Color.fromARGB(
                                                     255, 255, 255, 255),
+                                                image: DecorationImage(
+                                                    image: NetworkImage(
+                                                        'https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg')),
                                                 borderRadius:
                                                     BorderRadius.circular(
                                                         50.r)),
@@ -645,16 +828,16 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                             MainAxisAlignment.spaceEvenly,
                                         children: [
                                           Text(
-                                            _currentPedido?.cliente.nombre ??
+                                            "${_currentPedido?.cliente.nombre} ${_currentPedido?.cliente.apellidos}" ??
                                                 'Cargando...',
                                             style: GoogleFonts.manrope(
                                                 fontSize: 14.sp,
-                                                color: Colors.grey.shade600),
+                                                color: Colors.white),
                                           ),
                                           Text(
-                                            _currentPedido?.total.toString() ??
-                                                '0.00',
+                                            "S/.${_currentPedido?.total.toString() ?? '0.00'}",
                                             style: GoogleFonts.manrope(
+                                                color: Colors.white,
                                                 fontSize: 14.sp,
                                                 fontWeight: FontWeight.bold),
                                           ),
@@ -675,15 +858,14 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                     Text(
                                       "ID: #${_currentPedido?.id?.toString()}",
                                       style: GoogleFonts.manrope(
-                                          fontSize: 14.sp,
-                                          color: const Color.fromARGB(
-                                              255, 66, 66, 66)),
+                                          fontSize: 14.sp, color: Colors.white),
                                     ),
                                     _buildTimerWidget(),
                                     Text(
                                       _currentPedido?.pedidoinfo?['tipo'] ??
                                           'Tipo no disponible',
                                       style: GoogleFonts.manrope(
+                                          color: Colors.white,
                                           fontSize: 14.sp,
                                           fontWeight: FontWeight.bold),
                                     ),
@@ -729,100 +911,101 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                         ),
 
                         // TIME LINE
-                        Row(
-                          //crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              // color: Colors.white,
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  const Icon(
-                                    Icons.access_time,
-                                    color: Color.fromRGBO(42, 75, 160, 1),
-                                  ),
-                                  SizedBox(
-                                    height: 9.5.h,
-                                  ),
-                                  Icon(Icons.circle,
-                                      color: Colors.grey.shade400, size: 8),
-                                  SizedBox(
-                                    height: 9.5.h,
-                                  ),
-                                  Icon(Icons.circle,
-                                      color: Colors.grey.shade500, size: 10),
-                                  SizedBox(
-                                    height: 9.5.h,
-                                  ),
-                                  const Icon(Icons.circle,
-                                      color: Colors.grey, size: 12),
-                                  SizedBox(
-                                    height: 9.5.h,
-                                  ),
-                                  const Icon(
-                                    Icons.place_outlined,
-                                    color: Color.fromRGBO(42, 75, 160, 1),
-                                  ),
-                                ],
+                        Container(
+                          color: Colors.white,
+                          child: Row(
+                            //crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                // color: Colors.white,
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    const Icon(
+                                      Icons.access_time,
+                                      color: Color.fromRGBO(42, 75, 160, 1),
+                                    ),
+                                    SizedBox(
+                                      height: 9.5.h,
+                                    ),
+                                    Icon(Icons.circle,
+                                        color: Colors.grey.shade400, size: 8),
+                                    SizedBox(
+                                      height: 9.5.h,
+                                    ),
+                                    Icon(Icons.circle,
+                                        color: Colors.grey.shade500, size: 10),
+                                    SizedBox(
+                                      height: 9.5.h,
+                                    ),
+                                    const Icon(Icons.circle,
+                                        color: Colors.grey, size: 12),
+                                    SizedBox(
+                                      height: 9.5.h,
+                                    ),
+                                    const Icon(
+                                      Icons.place_outlined,
+                                      color: Color.fromRGBO(42, 75, 160, 1),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            SizedBox(
-                              width: 10.w,
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  // color: Colors.amber,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Tiempo de entrega",
-                                        style: GoogleFonts.manrope(
-                                            fontSize: 12.sp,
-                                            color: Colors.grey.shade700),
-                                      ),
-                                      SizedBox(
-                                        height: 4.h,
-                                      ),
-                                      Text("15 minutos",
+                              SizedBox(
+                                width: 10.w,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Tiempo de entrega",
                                           style: GoogleFonts.manrope(
                                               fontSize: 12.sp,
-                                              fontWeight: FontWeight.w600))
-                                    ],
+                                              color: Colors.grey.shade700),
+                                        ),
+                                        SizedBox(
+                                          height: 4.h,
+                                        ),
+                                        Text("15 minutos",
+                                            style: GoogleFonts.manrope(
+                                                fontSize: 12.sp,
+                                                fontWeight: FontWeight.w600))
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                SizedBox(
-                                  height: 45.h,
-                                ),
-                                Container(
-                                  // color: Colors.amber,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Dirección",
-                                        style: GoogleFonts.manrope(
-                                            fontSize: 12.sp,
-                                            color: Colors.grey.shade700),
-                                      ),
-                                      SizedBox(
-                                        height: 4.h,
-                                      ),
-                                      Text(direccionCompleta,
+                                  SizedBox(
+                                    height: 45.h,
+                                  ),
+                                  Container(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Dirección",
                                           style: GoogleFonts.manrope(
                                               fontSize: 12.sp,
-                                              fontWeight: FontWeight.w600))
-                                    ],
-                                  ),
-                                )
-                              ],
-                            )
-                          ],
+                                              color: Colors.grey.shade700),
+                                        ),
+                                        SizedBox(
+                                          height: 4.h,
+                                        ),
+                                        Text(direccionCompleta,
+                                            style: GoogleFonts.manrope(
+                                                fontSize: 12.sp,
+                                                fontWeight: FontWeight.w600))
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
                         ),
                         SizedBox(
                           height: 21.5.h,
@@ -855,26 +1038,42 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                   Text(
                                     "Notas",
                                     style: GoogleFonts.manrope(
+                                        fontWeight: FontWeight.bold,
                                         fontSize: 13.sp,
-                                        color: Colors.grey.shade700),
+                                        color: const Color.fromARGB(
+                                            255, 255, 255, 255)),
                                   ),
-                                  IconButton(
-                                    icon: Icon(
-                                      _isExpanded
-                                          ? Icons.keyboard_arrow_up
-                                          : Icons.keyboard_arrow_down,
-                                      color: Colors.grey,
+                                  Container(
+                                    width: 35.w,
+                                    height: 35.0.w,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(50.r)),
+                                    child: IconButton(
+                                      icon: Icon(
+                                        _isExpanded
+                                            ? Icons.keyboard_arrow_up
+                                            : Icons.keyboard_arrow_down,
+                                        size: 20.sp,
+                                        color: const Color.fromARGB(
+                                            255, 9, 28, 126),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _isExpanded = !_isExpanded;
+                                        });
+                                      },
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _isExpanded = !_isExpanded;
-                                      });
-                                    },
                                   ),
                                 ],
                               ),
+                              SizedBox(
+                                height: 5.h,
+                              ),
                               if (_isExpanded)
                                 Container(
+                                  color: Colors.white,
                                   height:
                                       150, // Altura fija para que el ListView sea scrollable
                                   child: ListView(
@@ -884,7 +1083,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                                 ?.pedidoinfo['observacion'] ??
                                             "N/A",
                                         style: GoogleFonts.manrope(
-                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 13.5,
                                           color: const Color.fromARGB(
                                               255, 0, 0, 0),
                                         ),
@@ -919,23 +1119,38 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                     "Lista de productos (${(_currentPedido?.productos?.length ?? 0) + (_currentPedido?.promociones?.length ?? 0)})",
                                     style: GoogleFonts.manrope(
                                         fontSize: 13.sp,
-                                        color: Colors.grey.shade700),
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color.fromARGB(
+                                            255, 255, 255, 255)),
                                   ),
-                                  IconButton(
-                                    icon: Icon(
-                                      _isExpandedProductos
-                                          ? Icons.keyboard_arrow_up
-                                          : Icons.keyboard_arrow_down,
-                                      color: Colors.grey,
+                                  Container(
+                                    height: 35.w,
+                                    width: 35.w,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(50.r)),
+                                    child: IconButton(
+                                      icon: Icon(
+                                        _isExpandedProductos
+                                            ? Icons.keyboard_arrow_up
+                                            : Icons.keyboard_arrow_down,
+                                        color: const Color.fromARGB(
+                                            255, 28, 14, 106),
+                                        size: 20.sp,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _isExpandedProductos =
+                                              !_isExpandedProductos;
+                                        });
+                                      },
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _isExpandedProductos =
-                                            !_isExpandedProductos;
-                                      });
-                                    },
                                   ),
                                 ],
+                              ),
+                              SizedBox(
+                                height: 5.h,
                               ),
                               if (_isExpandedProductos)
                                 Container(
@@ -998,6 +1213,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                             ),
                                             Container(
                                               width: 340.w,
+                                              color: Colors.white,
                                               child: Divider(
                                                 height: 1,
                                               ),

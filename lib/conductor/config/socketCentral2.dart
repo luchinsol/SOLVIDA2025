@@ -27,18 +27,6 @@ class SocketService2 {
             .setTimeout(10000)
             .build(),
       );
-
-      /*
-      _socket = IO.io(microUrl, <String, dynamic>{
-        'transports': ['websocket'],
-        'autoConnect': true,
-        'reconnect': true,
-        'reconnectionAttempts': 10,
-        'reconnectionDelay': 2000,
-        'reconnectionDelayMax': 2000,
-        'timeout': 10000
-      });*/
-
       _socket?.onConnect((_) {
         print("CONECTADO A SOCKET.IO");
         _socket?.on('order_taken', (data) {
