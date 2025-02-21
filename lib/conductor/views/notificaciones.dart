@@ -134,7 +134,7 @@ class _NotificacionesState extends State<Notificaciones> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Sistema - ${notificacionProvider.notificaciones[index].tipo}",
+                                    "Sistema - ${notificacionProvider.notificaciones[index].tipo} - ${notificacionProvider.notificaciones[index].estado}",
                                     style: GoogleFonts.manrope(fontSize: 16.sp),
                                   ),
                                   SizedBox(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:app2025/conductor/model/notificaciones_model.dart';
 
+// NOTIFICACIONES PARA LA VISTA DE NOTIFICACIONES Y CAMPANA
+
 class NotificacionesInicioProvider extends ChangeNotifier {
   List<NotificacionesModel> _notificaciones = [];
 

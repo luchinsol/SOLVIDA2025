@@ -1,13 +1,16 @@
 import 'dart:convert';
 
+import 'package:another_flushbar/flushbar.dart';
 import 'package:app2025/cliente/provider/pedido_provider.dart';
 import 'package:app2025/cliente/views/pedido.dart';
+
 import 'package:app2025/conductor/model/clientelast_model.dart';
 import 'package:app2025/conductor/model/lastpedido_model.dart';
 import 'package:app2025/conductor/model/pedido_model.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:app2025/conductor/providers/conexionswitch_provider.dart';
 import 'package:app2025/conductor/providers/lastpedido_provider.dart';
+import 'package:app2025/conductor/providers/notificacioncustom_provider.dart';
 import 'package:app2025/conductor/providers/notificaciones_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -41,6 +44,9 @@ class _InicioDriverState extends State<InicioDriver> {
   String microUrl = dotenv.env['MICRO_URL'] ?? '';
   bool enabled = true;
   int cantidad = 0;
+  List<Flushbar> _notificaciones = [];
+  bool _expandido = false;
+
 //Inicializar con valores por defecto
 
   String formatoFecha(DateTime fecha) {
