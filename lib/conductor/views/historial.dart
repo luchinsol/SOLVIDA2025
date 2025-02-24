@@ -98,6 +98,10 @@ class _HistorialState extends State<Historial> {
 
     _currentDate = DateTime.now();
     _days = _generateDays(_currentDate);
+    _selectedIndex = _days.length - 1; // Selecciona hoy
+    // Carga los datos del día actual
+    String formatFecha = DateFormat('yyyy-MM-dd').format(_days[_selectedIndex]);
+    getHistorialConductor(formatFecha);
     print(_currentDate);
     print(_days);
   }
@@ -106,7 +110,7 @@ class _HistorialState extends State<Historial> {
     return List.generate(
       7,
       (index) => startDate.subtract(Duration(days: index)),
-    ).reversed.toList();
+    ); //.reversed.toList();
   }
 
   void _loadPreviousDays() {
@@ -126,7 +130,8 @@ class _HistorialState extends State<Historial> {
     print(_selectedIndex);
     print(_days[_selectedIndex]);
     DateTime diaSeleccionado = _days[index];
-    String formatFecha = DateFormat('yyyy-MM-dd').format(diaSeleccionado);
+    String formatFecha =
+        DateFormat('yyyy-MM-dd').format(diaSeleccionado.toUtc());
     getHistorialConductor(formatFecha);
   }
 
