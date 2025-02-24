@@ -373,7 +373,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                       padding: EdgeInsets.all(7.r),
                                       alignment: Alignment.topCenter,
                                       height:
-                                          selected[index] ? 990.0.h : 225.5.h,
+                                          selected[index] ? 1020.0.h : 225.5.h,
                                       decoration: BoxDecoration(
                                         border: Border.all(
                                             // color: const Color.fromRGBO(42, 75, 160, 0.575),
@@ -655,6 +655,202 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                               ],
                                             ),
                                           ),
+
+                                          // Reemplaza la sección de los botones con este código
+// (justo después del SizedBox(height: 8.h) que está debajo del texto de dirección)
+
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 5.h),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                // Botón Ignorar
+                                                SizedBox(
+                                                  height: 40.h,
+                                                  width: 110.w,
+                                                  child: ElevatedButton(
+                                                    onPressed: () {
+                                                      final provider = Provider
+                                                          .of<PedidosProvider2>(
+                                                              context,
+                                                              listen: false);
+                                                      provider.ignorarPedido(
+                                                          pedido.toMap());
+
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                            'Pedido ignorado',
+                                                            style: GoogleFonts
+                                                                .manrope(
+                                                                    fontSize:
+                                                                        14.sp),
+                                                          ),
+                                                          duration:
+                                                              const Duration(
+                                                                  seconds: 2),
+                                                        ),
+                                                      );
+                                                    },
+                                                    style: ButtonStyle(
+                                                      shape:
+                                                          MaterialStateProperty
+                                                              .all(
+                                                        RoundedRectangleBorder(
+                                                          side:
+                                                              const BorderSide(
+                                                            width: 1.0,
+                                                            color:
+                                                                Color.fromRGBO(
+                                                                    42,
+                                                                    75,
+                                                                    160,
+                                                                    1),
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      15.r),
+                                                        ),
+                                                      ),
+                                                      backgroundColor:
+                                                          MaterialStateProperty
+                                                              .all(
+                                                                  Colors.white),
+                                                    ),
+                                                    child: Text(
+                                                      "Ignorar",
+                                                      style:
+                                                          GoogleFonts.manrope(
+                                                        fontSize: 14.sp,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: const Color
+                                                            .fromRGBO(
+                                                            42, 75, 160, 1),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                // Botón Aceptar
+                                                SizedBox(
+                                                  height: 40.h,
+                                                  width: 110.w,
+                                                  child: ElevatedButton(
+                                                    onPressed: () async {
+                                                      try {
+                                                        await handlePedidoAcceptance(
+                                                          pedido.id,
+                                                          pedido.almacenId,
+                                                        );
+                                                      } catch (e) {
+                                                        if (!mounted) return;
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              'Error al aceptar el pedido: $e',
+                                                              style: GoogleFonts
+                                                                  .manrope(
+                                                                      fontSize:
+                                                                          14.sp),
+                                                            ),
+                                                            backgroundColor:
+                                                                Colors.red,
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                    style: ButtonStyle(
+                                                      shape:
+                                                          MaterialStateProperty
+                                                              .all(
+                                                        RoundedRectangleBorder(
+                                                          side:
+                                                              const BorderSide(
+                                                            width: 1.0,
+                                                            color:
+                                                                Color.fromRGBO(
+                                                                    42,
+                                                                    75,
+                                                                    160,
+                                                                    1),
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      15.r),
+                                                        ),
+                                                      ),
+                                                      backgroundColor:
+                                                          MaterialStateProperty
+                                                              .all(
+                                                        const Color.fromRGBO(
+                                                            42, 75, 160, 1),
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      "Aceptar",
+                                                      style:
+                                                          GoogleFonts.manrope(
+                                                        fontSize: 13.sp,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          /*
+                                          Padding(
+      padding: EdgeInsets.symmetric(vertical: 10.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Botón Ignorar
+          ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(Colors.white),
+        side: WidgetStateProperty.all(BorderSide(
+          color: Color.fromRGBO(42, 75, 160, 1),
+          width: 1.0,
+        )),
+      child: Text(
+        "Ignorar",
+        style: TextStyle(color: Color.fromRGBO(42, 75, 160, 1)),
+      onPressed: () {...},
+    ),
+          
+          // Botón Aceptar
+          ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          selected[index] 
+            ? Color.fromRGBO(42, 75, 160, 1)
+            : Colors.white),
+        side: WidgetStateProperty.all(BorderSide(
+          color: Color.fromRGBO(42, 75, 160, 1),
+          width: 1.0,
+        )),
+      child: Text(
+        "Aceptar",
+        style: TextStyle(
+          color: selected[index] ? Colors.white : Color.fromRGBO(42, 75, 160, 1)),
+      onPressed: () {...},
+    ),
+        ],
+      ),
+    ),
+  */
 
                                           // Contenido que se muestra/oculta
 
