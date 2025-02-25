@@ -45,6 +45,11 @@ class PedidosProvider2 extends ChangeNotifier {
   Pedido? get ultimoPedidoAceptado =>
       _pedidosAceptadosList.isNotEmpty ? _pedidosAceptadosList.last : null;
 
+  final StreamController<String> _pedidoAnuladoStreamController =
+      StreamController<String>.broadcast();
+  Stream<String> get pedidoAnuladoStream =>
+      _pedidoAnuladoStreamController.stream;
+
   PedidosProvider2() {
     print("📡 Inicializando PedidosProvider2...");
     //_socketService.connect();
@@ -143,6 +148,9 @@ class PedidosProvider2 extends ChangeNotifier {
         print('⚠️ ID de pedido anulado no válido');
         return;
       }
+
+      // Emitir el evento al stream antes de modificar las listas
+      _pedidoAnuladoStreamController.add(pedidoId);
 
       // Remover de todas las listas
       _removePedidoFromAllLists(pedidoId);
@@ -822,6 +830,21 @@ class PedidosProvider2 extends ChangeNotifier {
     _timers.remove(pedidoId);
   }
 
+  //FUNCION PARA MI BOTON DE IGNORAR PEDIDO
+  void ignorarPedidoBoton(Map<String, dynamic> pedidoMap) {
+    final String pedidoId = pedidoMap['id']?.toString() ?? '';
+
+    if (pedidoId.isEmpty) {
+      print('⚠️ Error: ID de pedido vacío al intentar ignorar');
+      return;
+    }
+
+    // Usar el método privado para remover de todas las listas
+    _removePedidoFromAllLists(pedidoId);
+
+    print('🚫 Pedido $pedidoId ignorado exitosamente');
+  }
+
   void limpiarAnulados() {
     _pedidosAnulados.clear();
     notifyListeners();
@@ -861,6 +884,7 @@ class PedidosProvider2 extends ChangeNotifier {
   void dispose() {
     print("🔌 Cerrando conexión de Socket...");
     _socketService.disconnect();
+    _pedidoAnuladoStreamController.close();
     super.dispose();
   }
 

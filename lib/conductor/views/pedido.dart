@@ -129,39 +129,77 @@ class _DrivePedidosState extends State<DrivePedidos> {
   // Versión mejorada de handlePedidoAcceptance
   Future<void> handlePedidoAcceptance(
       dynamic pedidoid, dynamic almacenid) async {
+    // Mostrar un diálogo de carga antes de iniciar el proceso
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible:
+            false, // El usuario no puede cerrar el diálogo tocando fuera
+        builder: (BuildContext dialogContext) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Center(
+              child: Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 20),
+                    Text(
+                      'Procesando pedido...',
+                      style: GoogleFonts.manrope(fontSize: 16.sp),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     try {
-      // 1. Obtener el provider
+      // Obtener el provider
       final provider = Provider.of<PedidosProvider2>(context, listen: false);
 
-      // 2. Aceptar el pedido
+      // Realizar la aceptación del pedido
       await provider.aceptarPedido(pedidoid);
 
-      // 3. Actualizar estado
+      // Actualizar el estado
       await actualizarEstadoPedido(pedidoid, almacenid);
 
-      // 4. Navegación usando GoRouter
-      if (!mounted) return;
+      // Cerrar el diálogo de carga si el widget está montado
+      if (mounted) {
+        Navigator.of(context).pop(); // Cerrar el diálogo de carga
 
-      // Usar BuildContext.go() dentro de un Future delayed para asegurar que la navegación ocurra
-      Future.delayed(Duration.zero, () {
-        if (mounted) {
-          GoRouter.of(context).push('/drive/navegar');
-        }
-      });
+        // Navegar a la siguiente pantalla
+        GoRouter.of(context).go('/drive/cargar');
+      }
     } catch (e) {
       print('Error al manejar la aceptación del pedido: $e');
-      if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Este Pedido Fue Tomado por Otro Conductor',
-            style: GoogleFonts.manrope(
-                fontSize: 17.sp, fontWeight: FontWeight.w300),
+      // Cerrar el diálogo de carga si sigue abierto
+      if (mounted) {
+        Navigator.of(context).pop(); // Cerrar el diálogo de carga
+
+        // Mostrar el error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Este Pedido Fue Tomado por Otro Conductor',
+              style: GoogleFonts.manrope(
+                  fontSize: 16.sp, fontWeight: FontWeight.w300),
+            ),
+            backgroundColor: Colors.red,
           ),
-          backgroundColor: Colors.red,
-        ),
-      );
+        );
+      }
     }
   }
 
@@ -786,25 +824,9 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                           .of<PedidosProvider2>(
                                                               context,
                                                               listen: false);
-                                                      provider.ignorarPedido(
-                                                          pedido.toMap());
-
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(
-                                                            'Pedido ignorado',
-                                                            style: GoogleFonts
-                                                                .manrope(
-                                                                    fontSize:
-                                                                        14.sp),
-                                                          ),
-                                                          duration:
-                                                              const Duration(
-                                                                  seconds: 2),
-                                                        ),
-                                                      );
+                                                      provider
+                                                          .ignorarPedidoBoton(
+                                                              pedido.toMap());
                                                     },
                                                     style: ButtonStyle(
                                                       shape:
@@ -1145,23 +1167,11 @@ class _DrivePedidosState extends State<DrivePedidos> {
 
                                                           // Emitir el evento de pedido expirado
                                                           provider
-                                                              .ignorarPedido(
+                                                              .ignorarPedidoBoton(
                                                                   pedido
                                                                       .toMap());
 
                                                           // Opcional: Puedes agregar alguna retroalimentación visual
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(
-                                                                  'Pedido ignorado'),
-                                                              duration:
-                                                                  const Duration(
-                                                                      seconds:
-                                                                          2),
-                                                            ),
-                                                          );
                                                         },
                                                         style: ButtonStyle(
                                                           shape: WidgetStatePropertyAll(

@@ -134,6 +134,8 @@ class Pedido {
         calificacion: 0.0,
         saldo_beneficios: 0.0,
         suscripcion: '',
+        telefono: '',
+        email: '',
       );
     }
 
@@ -177,6 +179,8 @@ class Pedido {
         calificacion: 0,
         saldo_beneficios: 0,
         suscripcion: '',
+        telefono: '',
+        email: '',
       );
     }
 
@@ -194,6 +198,8 @@ class Pedido {
       calificacion: clienteMap['calificacion'] ?? 0,
       saldo_beneficios: clienteMap['saldo_beneficios'] ?? 0,
       suscripcion: clienteMap['suscripcion'] ?? '',
+      telefono: clienteMap['telefono'] ?? '',
+      email: clienteMap['email'] ?? '',
     );
   }
 
@@ -277,6 +283,8 @@ class Pedido {
   // Helpful getter methods
   String get clienteName => '${cliente.nombre} ${cliente.apellidos}'.trim();
   String get clienteDNI => cliente.dni;
+  String get clienteTelefono => cliente.telefono;
+  String get clienteEmail => cliente.email;
 
   // Method to get total number of products
   int get totalProductos => productos.length;

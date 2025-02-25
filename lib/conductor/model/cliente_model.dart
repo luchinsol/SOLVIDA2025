@@ -14,6 +14,8 @@ class Cliente {
   final double calificacion;
   final double saldo_beneficios;
   final String suscripcion;
+  final String telefono;
+  final String email;
 
   Cliente({
     required this.id,
@@ -29,6 +31,8 @@ class Cliente {
     required dynamic calificacion,
     required dynamic saldo_beneficios,
     required this.suscripcion,
+    this.telefono = '',
+    this.email = '',
   })  : calificacion = (calificacion is int)
             ? calificacion.toDouble()
             : (calificacion as double),
@@ -52,6 +56,8 @@ class Cliente {
       'calificacion': calificacion,
       'saldo_beneficios': saldo_beneficios,
       'suscripcion': suscripcion,
+      'telefono': telefono,
+      'email': email,
     };
   }
 
@@ -71,6 +77,8 @@ class Cliente {
       calificacion: map['calificacion'] ?? 0.0,
       saldo_beneficios: map['saldo_beneficios'] ?? 0.0,
       suscripcion: map['suscripcion'] ?? '',
+      telefono: map['telefono'] ?? '',
+      email: map['email'] ?? '',
     );
   }
 
