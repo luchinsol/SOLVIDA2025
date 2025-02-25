@@ -15,7 +15,6 @@ class ConductorModel {
   int? evento_id;
   String? foto_perfil;
   String? nombre;
-  String? nivel;
 
   ConductorModel(
       {required this.id,
@@ -33,6 +32,5 @@ class ConductorModel {
       required this.provincia,
       required this.evento_id,
       this.foto_perfil,
-      required this.nombre,
-      required this.nivel});
+      required this.nombre});
 }

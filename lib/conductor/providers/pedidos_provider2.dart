@@ -567,9 +567,6 @@ class PedidosProvider2 extends ChangeNotifier {
           if (pedidoFueConfirmado) {
             // Si ahora fue confirmado, procedemos igual
             _pedidosAceptadosList.add(pedido);
-
-            // USO SHAREPREFERENCES PARA ALMACENAR EL PEDIDO CUANDO CIERRE LA APP
-
             _pedidosAceptados.add(pedidoId);
             orderTakenTimer.cancel();
             operationCompleted = true;
