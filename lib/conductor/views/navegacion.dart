@@ -941,7 +941,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     _timerController?.close();
     _animationTimer?.cancel();
     _draggableController.dispose();
-    _pedidoAnuladoSubscription?.cancel();    WidgetsBinding.instance.removeObserver(this);
+    _pedidoAnuladoSubscription?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -1242,9 +1243,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                             child: Center(
                                               child: IconButton(
                                                   onPressed: () {
-                                                    _makePhoneCall(_currentPedido!
-                                                          .cliente.telefono ??
-                                                      "+51123");
+                                                    _makePhoneCall(
+                                                        _currentPedido!.cliente
+                                                                .telefono ??
+                                                            "+51123");
                                                   },
                                                   icon: Icon(
                                                     size: 17.sp,
@@ -1600,38 +1602,36 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
 
                           // BOTONES
 
-
-                        SizedBox(
-                          height: 21.5.h,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              height: 56, // Altura del botón
-                              width: 143, // Ancho del botón
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // Acción al presionar el botón
-                                  _showCancelDialog(context);
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor: WidgetStateProperty.all(
-                                    const Color.fromRGBO(
-                                        255, 255, 255, 1), // Color de fondo
-                                  ),
-                                  shape: WidgetStateProperty.all(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          20.r), // Bordes rectos
-                                      side: const BorderSide(
-                                        color: Color.fromRGBO(
-                                            42, 75, 160, 1), // Color del borde
-                                        width: 1.0, // Ancho del borde
-
+                          SizedBox(
+                            height: 21.5.h,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                height: 56, // Altura del botón
+                                width: 143, // Ancho del botón
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    // Acción al presionar el botón
+                                    _showCancelDialog(context);
+                                  },
+                                  style: ButtonStyle(
+                                      backgroundColor: WidgetStateProperty.all(
+                                        const Color.fromRGBO(
+                                            255, 255, 255, 1), // Color de fondo
                                       ),
-                                    ),
-                                  ),
+                                      shape: WidgetStateProperty.all(
+                                        RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              20.r), // Bordes rectos
+                                          side: const BorderSide(
+                                            color: Color.fromRGBO(42, 75, 160,
+                                                1), // Color del borde
+                                            width: 1.0, // Ancho del borde
+                                          ),
+                                        ),
+                                      )),
                                   child: Text(
                                     "Cancelar",
                                     style: GoogleFonts.manrope(
@@ -1696,7 +1696,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                     ),
                                   ),
                                 ),
-                              ),
+                              )
                             ],
                           ),
                           SizedBox(
