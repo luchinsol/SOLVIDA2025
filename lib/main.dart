@@ -46,6 +46,7 @@ import 'package:app2025/cliente/inicios/recoverypass.dart';
 import 'package:app2025/cliente/inicios/tiporegister.dart';
 import 'package:app2025/cliente/inicios/register2.dart';
 import 'package:app2025/cliente/inicios/updatepass.dart';
+import 'package:app2025/conductor/views/pedidodemo.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -118,6 +119,7 @@ final GoRouter _router = GoRouter(
       builder: (BuildContext context, GoRouterState state) {
         //NotificationsService().silenceNotifications(true);
         //return const AdminDriver();
+        // return const PedidoWidget();
         return const Bienvenida();
         //return const Demos();
         //return const NavegacionPedido2(); // Pantalla principal con navegación curva
