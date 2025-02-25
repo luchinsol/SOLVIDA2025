@@ -66,6 +66,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   bool _isTimerRunning = false;
   bool _showAnulacionDialog = false;
   bool _hasHandledAnulacion = false;
+  bool _expandido = false;
 
   void _showCancelarPedido() {
     showDialog(
@@ -177,7 +178,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("¡Destino alcanzado!"),
+          title: Text("¡Destino alcanzado!",
+              style: GoogleFonts.manrope(fontWeight: FontWeight.bold)),
           content: const Text("Has llegado a tu destino."),
           actions: [
             TextButton(
@@ -612,13 +614,15 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     });
   }
 
-  bool _expandido = false;
+// notificación
   void mostrarNotificacion(BuildContext context, String mensaje) {
     Map<String, dynamic> pedidoMap = jsonDecode(mensaje);
     print("#########......... ${pedidoMap['detalles']['promociones'].length}");
 
+    String estadoPedido = pedidoMap['pedidoinfo']['estado'];
+
     Flushbar(
-      duration: Duration(seconds: 27),
+      duration: Duration(seconds: 20),
       flushbarPosition: FlushbarPosition.TOP,
       margin: EdgeInsets.all(10),
       borderRadius: BorderRadius.circular(8),
@@ -684,6 +688,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
               ),
               Text(
                   "Dirección: ${pedidoMap['ubicacion']['distrito']} ${pedidoMap['ubicacion']['direccion']} ${pedidoMap['ubicacion']['provincia']}",
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                   style: GoogleFonts.manrope(
                       fontWeight: FontWeight.w600,
                       color: const Color.fromARGB(255, 4, 1, 176),
@@ -878,13 +884,13 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 202, 202, 202),
         appBar: AppBar(
           leading: Icon(
             Icons.arrow_back_ios,
             size: 16.sp,
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
           title: const Text(
             "Pedido en curso",
             style: TextStyle(color: Colors.black, fontSize: 16),
@@ -1119,6 +1125,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                           // TIME LINE
                           Container(
                             color: Colors.white,
+                            // height: 150.h,
                             child: Row(
                               //crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -1189,6 +1196,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                       height: 45.h,
                                     ),
                                     Container(
+                                      width: 1.sw / 1.4,
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -1203,6 +1211,9 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                             height: 4.h,
                                           ),
                                           Text(direccionCompleta,
+                                              textAlign: TextAlign.justify,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
                                               style: GoogleFonts.manrope(
                                                   fontSize: 12.sp,
                                                   fontWeight: FontWeight.w600))

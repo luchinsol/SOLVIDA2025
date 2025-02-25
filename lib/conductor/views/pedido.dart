@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:app2025/conductor/config/notifications.dart';
 import 'package:app2025/conductor/config/socketcentral.dart';
+import 'package:app2025/conductor/model/pedido_model.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:app2025/conductor/providers/conexionswitch_provider.dart';
 import 'package:app2025/conductor/providers/notificacioncustom_provider.dart';
@@ -244,6 +245,61 @@ class _DrivePedidosState extends State<DrivePedidos> {
     );
   }
 
+  void _mostrarMapa(BuildContext context, Pedido pedido) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            height: 1.sh / 2,
+            child: Column(
+              children: [
+                Text(
+                  "Pedido #${pedido.id}",
+                  style: GoogleFonts.manrope(
+                      fontSize: 18.sp, fontWeight: FontWeight.bold),
+                ),
+                Container(
+                  height: 400, // Ajusta según necesites
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: GoogleMap(
+                      key: ValueKey(
+                          pedido.id), // 🔑 Evita recreaciones innecesarias
+                      initialCameraPosition: CameraPosition(
+                        zoom: 16,
+                        target: LatLng(
+                          pedido.ubicacion['latitud'],
+                          pedido.ubicacion['longitud'],
+                        ),
+                      ),
+                      markers: {
+                        Marker(
+                          markerId: MarkerId("destino"),
+                          position: LatLng(
+                            pedido.ubicacion['latitud'],
+                            pedido.ubicacion['longitud'],
+                          ),
+                        ),
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _initializeData() {
     if (!mounted) return;
 
@@ -280,7 +336,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
       }
       print('🔄 UI - Pedidos activos: ${activePedidos.length}'); // Debug
 
-      if (selected.length != activePedidos.length) {
+      /*if (selected.length != activePedidos.length) {
         selected = List.generate(activePedidos.length, (_) => false);
         colorDeploy = List.generate(
             activePedidos.length,
@@ -288,6 +344,14 @@ class _DrivePedidosState extends State<DrivePedidos> {
                   Colors.white,
                   const Color.fromRGBO(42, 75, 160, 1),
                 ]);
+      }*/
+      if (selected.length < activePedidos.length) {
+        // Agregar solo nuevos pedidos sin resetear los existentes
+        selected.addAll(List.generate(
+            activePedidos.length - selected.length, (_) => false));
+        colorDeploy.addAll(List.generate(
+            activePedidos.length - colorDeploy.length,
+            (_) => [Colors.white, const Color.fromRGBO(42, 75, 160, 1)]));
       }
 
       return Scaffold(
@@ -370,10 +434,12 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                     elevation: 5.r,
                                     borderRadius: BorderRadius.circular(20.r),
                                     child: AnimatedContainer(
+                                      key: ValueKey(activePedidos[index]
+                                          .id), // Asigna una clave única
                                       padding: EdgeInsets.all(7.r),
                                       alignment: Alignment.topCenter,
                                       height:
-                                          selected[index] ? 1020.0.h : 225.5.h,
+                                          selected[index] ? 600.0.h : 282.5.h,
                                       decoration: BoxDecoration(
                                         border: Border.all(
                                             // color: const Color.fromRGBO(42, 75, 160, 0.575),
@@ -398,7 +464,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                         children: [
                                           // Cabecera: Siempre visible
                                           Container(
-                                            height: 145.h,
+                                            height: 155.h,
                                             //color: Colors.green,
                                             child: Column(
                                               crossAxisAlignment:
@@ -650,6 +716,9 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                           : Colors.white,
                                                       fontWeight:
                                                           FontWeight.w600),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 2,
                                                 ),
                                                 SizedBox(height: 8.h),
                                               ],
@@ -658,18 +727,59 @@ class _DrivePedidosState extends State<DrivePedidos> {
 
                                           // Reemplaza la sección de los botones con este código
 // (justo después del SizedBox(height: 8.h) que está debajo del texto de dirección)
-
+                                          SizedBox(
+                                            height: 10.h,
+                                          ),
                                           Padding(
                                             padding: EdgeInsets.symmetric(
                                                 vertical: 5.h),
                                             child: Row(
                                               mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
-                                                // Botón Ignorar
-                                                SizedBox(
+                                                Container(
                                                   height: 40.h,
-                                                  width: 110.w,
+                                                  width: 80.w,
+                                                  child: ElevatedButton(
+                                                      onPressed: () {
+                                                        _mostrarMapa(
+                                                            context, pedido);
+                                                      },
+                                                      style: ButtonStyle(
+                                                        shape:
+                                                            MaterialStateProperty
+                                                                .all(
+                                                          RoundedRectangleBorder(
+                                                            side:
+                                                                const BorderSide(
+                                                              width: 1.0,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      42,
+                                                                      75,
+                                                                      160,
+                                                                      1),
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        15.r),
+                                                          ),
+                                                        ),
+                                                        backgroundColor:
+                                                            MaterialStateProperty
+                                                                .all(Colors
+                                                                    .white),
+                                                      ),
+                                                      child: Icon(
+                                                          Icons.location_pin)),
+                                                ),
+
+                                                // Botón Ignorar
+                                                Container(
+                                                  height: 40.h,
+                                                  width: 130.w,
                                                   child: ElevatedButton(
                                                     onPressed: () {
                                                       final provider = Provider
@@ -738,9 +848,9 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                 ),
 
                                                 // Botón Aceptar
-                                                SizedBox(
+                                                Container(
                                                   height: 40.h,
-                                                  width: 110.w,
+                                                  width: 130.w,
                                                   child: ElevatedButton(
                                                     onPressed: () async {
                                                       try {
@@ -777,9 +887,9 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                             width: 1.0,
                                                             color:
                                                                 Color.fromRGBO(
-                                                                    42,
-                                                                    75,
-                                                                    160,
+                                                                    255,
+                                                                    255,
+                                                                    255,
                                                                     1),
                                                           ),
                                                           borderRadius:
@@ -861,7 +971,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 SizedBox(height: 20.h),
-                                                Container(
+                                                /*Container(
                                                   // width: double.infinity,
                                                   height: 400.h,
                                                   decoration: BoxDecoration(
@@ -877,43 +987,57 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                               CircularProgressIndicator(
                                                                   color: Colors
                                                                       .blue))
-                                                      : GoogleMap(
-                                                          initialCameraPosition:
-                                                              CameraPosition(
-                                                            zoom: 16,
-                                                            target: LatLng(
-                                                                pedido.ubicacion[
-                                                                    'latitud'],
-                                                                pedido.ubicacion[
-                                                                    'longitud']),
+                                                      : Container(
+                                                          color: Colors.black,
+                                                          padding:
+                                                              EdgeInsets.all(
+                                                                  3.r),
+                                                          height: selected[
+                                                                  index]
+                                                              ? 300
+                                                              : 200, // Un tamaño fijo para el mapa
+                                                          child: GoogleMap(
+                                                            key: ValueKey(
+                                                                activePedidos[
+                                                                        index]
+                                                                    .id),
+                                                            initialCameraPosition:
+                                                                CameraPosition(
+                                                              zoom: 16,
+                                                              target: LatLng(
+                                                                  pedido.ubicacion[
+                                                                      'latitud'],
+                                                                  pedido.ubicacion[
+                                                                      'longitud']),
+                                                            ),
+                                                            /* polylines: {
+                                                                                                  Polyline(
+                                                                                                      polylineId: PolylineId("IDruta"),
+                                                                                                      points: polypoints,
+                                                                                                      color: Colors.blue,
+                                                                                                      width: 5)
+                                                                                                },*/
+                                                            markers: {
+                                                              if (_destinationIcon !=
+                                                                  null)
+                                                                Marker(
+                                                                    markerId:
+                                                                        MarkerId(
+                                                                            "destino"),
+                                                                    icon:
+                                                                        _destinationIcon!,
+                                                                    position: LatLng(
+                                                                        pedido.ubicacion[
+                                                                            'latitud'],
+                                                                        pedido.ubicacion[
+                                                                            'longitud']))
+                                                            },
+                                                            // mapType: MapType.normal,
+                                                            style: _mapStyle,
                                                           ),
-                                                          /* polylines: {
-                                          Polyline(
-                                              polylineId: PolylineId("IDruta"),
-                                              points: polypoints,
-                                              color: Colors.blue,
-                                              width: 5)
-                                        },*/
-                                                          markers: {
-                                                            if (_destinationIcon !=
-                                                                null)
-                                                              Marker(
-                                                                  markerId:
-                                                                      MarkerId(
-                                                                          "destino"),
-                                                                  icon:
-                                                                      _destinationIcon!,
-                                                                  position: LatLng(
-                                                                      pedido.ubicacion[
-                                                                          'latitud'],
-                                                                      pedido.ubicacion[
-                                                                          'longitud']))
-                                                          },
-                                                          // mapType: MapType.normal,
-                                                          style: _mapStyle,
                                                         ),
                                                 ),
-                                                SizedBox(height: 10.h),
+                                                SizedBox(height: 10.h),*/
                                                 Text(
                                                   "Lista de productos (${pedido.productos.length + pedido.promociones.length})",
                                                   style: GoogleFonts.manrope(
@@ -1001,6 +1125,8 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                           );
                                                         })),
                                                 SizedBox(height: 20.h),
+                                                // AQUI LOS BOTONES ANTGUOS
+                                                /*
                                                 Row(
                                                   // crossAxisAlignment: CrossAxisAlignment.start,
                                                   mainAxisAlignment:
@@ -1137,6 +1263,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                     ),
                                                   ],
                                                 ),
+                                             */
                                               ],
                                             ),
                                           ),

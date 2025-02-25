@@ -333,7 +333,22 @@ class _AdminDriverState extends State<AdminDriver> {
                           ],
                         ),
                       ),
-
+                      SizedBox(
+                        height: 10.h,
+                      ),
+                      chipsPedidos.pedidos.isEmpty
+                          ? Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : Text(
+                              "Cantidad: ${chipsPedidos.pedidos.length}",
+                              style: GoogleFonts.manrope(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                      SizedBox(
+                        height: 5.0.h,
+                      ),
                       // LISTA DE PEDIDOS
                       Padding(
                           padding: EdgeInsets.all(20.r),
@@ -346,11 +361,12 @@ class _AdminDriverState extends State<AdminDriver> {
                                     child: CircularProgressIndicator(),
                                   )
                                 : ListView.builder(
+                                    reverse: false,
                                     padding: EdgeInsets.zero,
                                     itemCount: chipsPedidos.pedidos.length,
                                     itemBuilder: (context, index) {
                                       return Material(
-                                        elevation: 10.r,
+                                        elevation: 1.r,
                                         color: Colors.white.withOpacity(0.0),
                                         borderRadius:
                                             BorderRadius.circular(20.r),
@@ -520,7 +536,8 @@ class _AdminDriverState extends State<AdminDriver> {
                           child: Image.asset('lib/imagenes/nuevecito.png')),
                       const SizedBox(height: 20),
                       Text(
-                        "Sol vida no esta bien",
+                        "¡Ups! Solvida no puede\n conectarse en este momento.",
+                        textAlign: TextAlign.center,
                         style: GoogleFonts.manrope(
                             color: Colors.black,
                             fontSize: 18,
@@ -528,12 +545,12 @@ class _AdminDriverState extends State<AdminDriver> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        " Estamos resolviendo el problema, esperamos tu comprensión",
+                        " Estamos trabajando para solucionarlo. 🚧",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.manrope(
                             fontSize: 16.sp,
-                            fontWeight: FontWeight.w300,
-                            color: Color.fromARGB(255, 55, 27, 139)),
+                            fontWeight: FontWeight.w600,
+                            color: Color.fromARGB(255, 26, 1, 98)),
                       ),
                       const SizedBox(height: 20),
                     ],
