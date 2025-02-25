@@ -495,6 +495,102 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     }
   }
 
+  void _showCancelDialog(BuildContext context) {
+    // Create a TextEditingController if it doesn't exist
+    final _observacionController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (BuildContext dialogContext) {
+        // Use a separate context for the dialog
+        return AlertDialog(
+          title: Text("Cancelar Pedido #${_currentPedido?.id}",
+              style: GoogleFonts.manrope(fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Ingrese el motivo de cancelación:",
+                style: GoogleFonts.manrope(),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: _observacionController,
+                decoration: InputDecoration(
+                  hintText: "Ej: Problemas de tráfico, clima...",
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Use the dialog context
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text("Cancelar",
+                  style: GoogleFonts.manrope(color: Colors.red)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromRGBO(42, 75, 160, 1.0)),
+              onPressed: () async {
+                if (_observacionController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Debe ingresar un motivo")));
+                  return;
+                }
+
+                // Cierra el diálogo usando el contexto del diálogo primero
+                Navigator.of(dialogContext).pop();
+
+                try {
+                  final response = await http.put(
+                    Uri.parse(
+                        '${microUrl}/pedido_anulado/${_currentPedido?.id}'),
+                    headers: {'Content-Type': 'application/json'},
+                    body: jsonEncode({
+                      'observacion': _observacionController.text,
+                    }),
+                  );
+
+                  if (response.statusCode == 200) {
+                    // Usa el contexto original para la navegación
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      // Navega después de que el frame se haya completado
+                      context.go('/drive');
+
+                      // Muestra el mensaje de éxito
+                      Flushbar(
+                        message: "Pedido cancelado correctamente",
+                        duration: Duration(seconds: 3),
+                      ).show(context);
+                    });
+                  } else {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Error: ${response.body}")));
+                    });
+                  }
+                } catch (e) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error al cancelar: $e")));
+                  });
+                }
+              },
+              child: Text("Confirmar",
+                  style: GoogleFonts.manrope(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildTimerWidget() {
     return StreamBuilder<int>(
       stream: _timerController?.stream,
@@ -1441,34 +1537,35 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
 
                           // BOTONES
 
-                          SizedBox(
-                            height: 21.5.h,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                height: 56, // Altura del botón
-                                width: 143, // Ancho del botón
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    // Acción al presionar el botón
-                                    _showCancelarPedido();
-                                  },
-                                  style: ButtonStyle(
-                                    backgroundColor: WidgetStateProperty.all(
-                                      const Color.fromRGBO(
-                                          255, 255, 255, 1), // Color de fondo
-                                    ),
-                                    shape: WidgetStateProperty.all(
-                                      RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            20.r), // Bordes rectos
-                                        side: const BorderSide(
-                                          color: Color.fromRGBO(42, 75, 160,
-                                              1), // Color del borde
-                                          width: 1.0, // Ancho del borde
-                                        ),
+
+                        SizedBox(
+                          height: 21.5.h,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              height: 56, // Altura del botón
+                              width: 143, // Ancho del botón
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  // Acción al presionar el botón
+                                  _showCancelDialog(context);
+                                },
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStateProperty.all(
+                                    const Color.fromRGBO(
+                                        255, 255, 255, 1), // Color de fondo
+                                  ),
+                                  shape: WidgetStateProperty.all(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          20.r), // Bordes rectos
+                                      side: const BorderSide(
+                                        color: Color.fromRGBO(
+                                            42, 75, 160, 1), // Color del borde
+                                        width: 1.0, // Ancho del borde
+
                                       ),
                                     ),
                                   ),
