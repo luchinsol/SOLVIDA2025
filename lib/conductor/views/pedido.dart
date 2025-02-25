@@ -144,7 +144,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
       // Usar BuildContext.go() dentro de un Future delayed para asegurar que la navegación ocurra
       Future.delayed(Duration.zero, () {
         if (mounted) {
-          GoRouter.of(context).go('/drive/cargar');
+          GoRouter.of(context).push('/drive/navegar');
         }
       });
     } catch (e) {
@@ -665,27 +665,26 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 SizedBox(height: 20.h),
-                                                (latitud == null ||
-                                                        longitud == null)
-                                                    ? Center(
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                                color: Colors
-                                                                    .blue))
-                                                    : Container(
-                                                        // width: double.infinity,
-                                                        height: 400.h,
-                                                        decoration: BoxDecoration(
-                                                            color: Colors
-                                                                .blue.shade100,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        20)),
-                                                        child: GoogleMap(
+                                                Container(
+                                                  // width: double.infinity,
+                                                  height: 400.h,
+                                                  decoration: BoxDecoration(
+                                                      color:
+                                                          Colors.blue.shade100,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20)),
+                                                  child: (latitud == null ||
+                                                          longitud == null)
+                                                      ? Center(
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                                  color: Colors
+                                                                      .blue))
+                                                      : GoogleMap(
                                                           initialCameraPosition:
                                                               CameraPosition(
-                                                            zoom: 12,
+                                                            zoom: 16,
                                                             target: LatLng(
                                                                 pedido.ubicacion[
                                                                     'latitud'],
@@ -717,7 +716,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                           // mapType: MapType.normal,
                                                           style: _mapStyle,
                                                         ),
-                                                      ),
+                                                ),
                                                 SizedBox(height: 10.h),
                                                 Text(
                                                   "Lista de productos (${pedido.productos.length + pedido.promociones.length})",
