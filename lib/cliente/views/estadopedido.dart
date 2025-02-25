@@ -263,20 +263,21 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
                   controller: tabController,
                   children: [
                     //LIST VIEW PENDIENTES
-                    listPedidosPendientes.isNotEmpty
+                    listPedidosPendientes.isEmpty
                         ? ListView.builder(
                             scrollDirection: Axis.vertical,
-                            itemCount: listPedidosPendientes.length,
+                            itemCount: 10,
                             itemBuilder: (context, index) {
-                              PedidoCliente pedido =
-                                  listPedidosPendientes[index];
+                              /* PedidoCliente pedido =
+                                  listPedidosPendientes[index];*/
                               return GestureDetector(
                                 onTap: () {},
                                 child: SizedBox(
-                                  height: anchoActual * 0.55,
+                                  height: anchoActual * 0.65,
                                   child: Card(
                                     surfaceTintColor: Colors.white,
-                                    color: Colors.white,
+                                    color: const Color.fromARGB(
+                                        255, 143, 123, 123),
                                     elevation: 8,
                                     margin: EdgeInsets.only(
                                       top: largoActual * 0.0068,
@@ -296,23 +297,23 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.end,
                                             children: [
-                                              Container(
+                                              /*Container(
                                                 height: largoActual * 0.07,
                                                 width: anchoActual * 0.15,
                                                 decoration: BoxDecoration(
-                                                    color: pedido.colorRecibido,
+                                                    color: Colors.black, //pedido.colorRecibido,
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             80)),
                                                 child: Lottie.asset(
                                                     pedido.iconoRecibido),
-                                              ),
+                                              ),*/
                                               Container(
                                                 width: anchoActual * 0.15,
                                                 color: Colors.transparent,
                                                 child: Lottie.asset(linea),
                                               ),
-                                              Container(
+                                              /*Container(
                                                 height: largoActual * 0.07,
                                                 width: anchoActual * 0.15,
                                                 decoration: BoxDecoration(
@@ -322,13 +323,13 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
                                                             50)),
                                                 child: Lottie.asset(
                                                     pedido.iconoProceso),
-                                              ),
+                                              ),*/
                                               Container(
                                                 width: anchoActual * 0.15,
                                                 color: Colors.transparent,
                                                 child: Lottie.asset(linea),
                                               ),
-                                              Container(
+                                              /* Container(
                                                 height: largoActual * 0.07,
                                                 width: anchoActual * 0.15,
                                                 decoration: BoxDecoration(
@@ -339,40 +340,48 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
                                                             50)),
                                                 child: Lottie.asset(
                                                     pedido.iconoEntregado),
-                                              ),
+                                              ),*/
                                             ],
                                           ),
                                           SizedBox(
                                             height: largoActual * 0.02,
                                           ),
                                           Text(
-                                            pedido.mensaje,
+                                            "s",
+                                            // pedido.mensaje ,
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                                 fontSize: largoActual * 0.013,
                                                 color: colorLetra),
                                           ),
                                           Text(
-                                            "Fecha: ${mesyAnio(pedido.fecha).day}/${mesyAnio(pedido.fecha).month}/${mesyAnio(pedido.fecha).year}",
+                                            "Fecha:"
+                                            // ${mesyAnio(pedido.fecha).day}/${mesyAnio(pedido.fecha).month}/${mesyAnio(pedido.fecha).year}" ??
+                                            ,
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                                 fontSize: largoActual * 0.013,
                                                 color: colorLetra),
                                           ),
                                           Text(
-                                            "Total: ${pedido.total}",
+                                            "Total:", // ${pedido.total}",
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                                 fontSize: largoActual * 0.013,
                                                 color: colorLetra),
                                           ),
                                           Text(
-                                            "Dirección: ${pedido.direccion}",
+                                            "Dirección:",
+                                            //${pedido.direccion}"
+
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                                 fontSize: largoActual * 0.013,
                                                 color: colorLetra),
                                           ),
+                                          ElevatedButton(
+                                              onPressed: () {},
+                                              child: Text("Anular pedido"))
                                         ],
                                       ),
                                     ),

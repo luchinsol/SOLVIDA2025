@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:app2025/conductor/model/pedido_model.dart';
@@ -31,7 +32,8 @@ class NavegacionPedido extends StatefulWidget {
 }
 
 class _NavegacionPedidoState extends State<NavegacionPedido>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin
+    implements WidgetsBindingObserver {
   //VARIABLES GLOBALES
   final DraggableScrollableController _draggableController =
       DraggableScrollableController();
@@ -65,6 +67,104 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   bool _isTimerRunning = false;
   bool _showAnulacionDialog = false;
   bool _hasHandledAnulacion = false;
+  bool _expandido = false;
+
+  void _showCancelarPedido() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            shadowColor: Colors.white,
+            surfaceTintColor: Colors.white,
+            child: Container(
+              width: 1.sw / 2.5,
+              height: 1.sw / 2.5,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.r),
+                  color: const Color.fromARGB(255, 255, 255, 255)),
+              child: Padding(
+                padding: EdgeInsets.all(8.0.r),
+                child: Column(
+                  children: [
+                    Text(
+                      "Anular pedido",
+                      style: GoogleFonts.manrope(
+                          fontSize: 15.sp, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                      height: 10.h,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          width: 105.w,
+                          height: 105.w,
+                          // color: Colors.yellow,
+                          child: ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10.r)),
+                                  backgroundColor: Colors.yellow),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Icon(
+                                    Icons.car_repair,
+                                    size: 40.sp,
+                                  ),
+                                  Text(
+                                    "Falla técnica",
+                                    style: GoogleFonts.manrope(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  )
+                                ],
+                              )),
+                        ),
+                        Container(
+                          width: 105.w,
+                          height: 105.w,
+                          // color: Colors.yellow,
+                          child: ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10.r)),
+                                  backgroundColor: Colors.yellow),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Icon(
+                                    Icons.bedtime_outlined,
+                                    size: 40.sp,
+                                  ),
+                                  Text(
+                                    "Cliente no responde",
+                                    style: GoogleFonts.manrope(
+                                        fontSize: 11.sp,
+                                        fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  )
+                                ],
+                              )),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+  }
 
   void _expandirDraggable() {
     _draggableController.animateTo(
@@ -79,7 +179,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("¡Destino alcanzado!"),
+          title: Text("¡Destino alcanzado!",
+              style: GoogleFonts.manrope(fontWeight: FontWeight.bold)),
           content: const Text("Has llegado a tu destino."),
           actions: [
             TextButton(
@@ -345,7 +446,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
 
     if (!_isTimerRunning) {
       _isTimerRunning = true;
-      int timeLeft = 59;
+      int timeLeft = 6300;
 
       _timer?.cancel();
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -516,7 +617,9 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
 
         final minutes = (secondsRemaining / 60).floor();
         final seconds = secondsRemaining % 60;
-        final color = secondsRemaining < 10 ? Colors.red : Colors.black;
+        final color = secondsRemaining < 10
+            ? Colors.red
+            : const Color.fromARGB(255, 220, 235, 2);
 
         return Row(
           mainAxisSize: MainAxisSize.min,
@@ -540,6 +643,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final conductorProvider =
         Provider.of<ConductorProvider>(context, listen: false);
     setState(() {
@@ -625,13 +729,15 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     });
   }
 
-  bool _expandido = false;
+// notificación
   void mostrarNotificacion(BuildContext context, String mensaje) {
     Map<String, dynamic> pedidoMap = jsonDecode(mensaje);
     print("#########......... ${pedidoMap['detalles']['promociones'].length}");
 
+    String estadoPedido = pedidoMap['pedidoinfo']['estado'];
+
     Flushbar(
-      duration: Duration(seconds: 27),
+      duration: Duration(seconds: 20),
       flushbarPosition: FlushbarPosition.TOP,
       margin: EdgeInsets.all(10),
       borderRadius: BorderRadius.circular(8),
@@ -716,6 +822,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
               ),
               Text(
                   "Dirección: ${pedidoMap['ubicacion']['distrito']} ${pedidoMap['ubicacion']['direccion']} ${pedidoMap['ubicacion']['provincia']}",
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                   style: GoogleFonts.manrope(
                       fontWeight: FontWeight.w600,
                       color: const Color.fromARGB(255, 4, 1, 176),
@@ -803,13 +911,37 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     ).show(context);
   }
 
+  void _mostrarAlertaVolverAEntregar() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("¡Atención!"),
+        content: Text("No olvides marcar el pedido como entregado."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Aquí puedes mostrar una alerta o reenfocar la vista en la app.
+      _mostrarAlertaVolverAEntregar();
+    }
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
     _timerController?.close();
     _animationTimer?.cancel();
     _draggableController.dispose();
-    _pedidoAnuladoSubscription?.cancel();
+    _pedidoAnuladoSubscription?.cancel();    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -864,557 +996,610 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
             .clearMensaje(); // Limpiar el mensaje después de mostrar la alerta
       });
     }
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        leading: Icon(
-          Icons.arrow_back_ios,
-          size: 16.sp,
+    return PopScope(
+      canPop: false, //IMPIDE AL USUARIO RETROCEDER
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          bool salir = await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("Advertencia",
+                      style: GoogleFonts.manrope(fontWeight: FontWeight.w600)),
+                  content: Text(
+                      "Si retrocedes, perderás tu pedido. ¿Deseas continuar?",
+                      style: GoogleFonts.manrope(fontWeight: FontWeight.w600)),
+                  actions: [
+                    TextButton(
+                      onPressed: () => context.pop(false), // No salir
+                      child: const Text("Cancelar"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        context.pop(true);
+                      },
+                      child: const Text("Salir"),
+                    ),
+                  ],
+                ),
+              ) ??
+              false;
+
+          if (salir) {
+            GoRouter.of(context).pop(); // Vuelve atrás con go_router
+          }
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color.fromARGB(255, 202, 202, 202),
+        appBar: AppBar(
+          leading: Icon(
+            Icons.arrow_back_ios,
+            size: 16.sp,
+          ),
+          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+          title: const Text(
+            "Pedido en curso",
+            style: TextStyle(color: Colors.black, fontSize: 16),
+          ),
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.black),
         ),
-        backgroundColor: Colors.white,
-        title: const Text(
-          "Pedido en curso",
-          style: TextStyle(color: Colors.black, fontSize: 16),
-        ),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: Stack(
-        children: [
-          // Mapa de Google
-          _currentLocation == null
-              ? Center(child: CircularProgressIndicator())
-              : Padding(
-                  padding: const EdgeInsets.only(
-                      top: 10.0, left: 10, right: 10, bottom: 0),
-                  child: Container(
-                    height: 615.h,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10.r),
-                      child: GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: LatLng(_currentLocation!.latitude!,
-                              _currentLocation!.longitude!),
-                          zoom: 16,
+        body: Stack(
+          children: [
+            // Mapa de Google
+            _currentLocation == null
+                ? Center(child: CircularProgressIndicator())
+                : Padding(
+                    padding: const EdgeInsets.only(
+                        top: 10.0, left: 10, right: 10, bottom: 0),
+                    child: Container(
+                      height: 615.h,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10.r),
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: LatLng(_currentLocation!.latitude!,
+                                _currentLocation!.longitude!),
+                            zoom: 16,
+                          ),
+                          onMapCreated: (controller) {
+                            _mapController = controller;
+                            _mapController?.setMapStyle(_mapStyle);
+                          },
+                          polylines: {
+                            Polyline(
+                              polylineId: const PolylineId("route"),
+                              points: _polypoints,
+                              color: Colors.blue,
+                              width: 5,
+                            ),
+                          },
+                          markers: {
+                            if (_startMarker != null) _startMarker!,
+                            if (_carMarker != null) _carMarker!,
+                            Marker(
+                              markerId: const MarkerId("destination"),
+                              position: _destination,
+                              icon: _destinationIcon ??
+                                  BitmapDescriptor.defaultMarker,
+                            ),
+                          },
+                          mapType: MapType.normal,
                         ),
-                        onMapCreated: (controller) {
-                          _mapController = controller;
-                          _mapController?.setMapStyle(_mapStyle);
-                        },
-                        polylines: {
-                          Polyline(
-                            polylineId: const PolylineId("route"),
-                            points: _polypoints,
-                            color: Colors.blue,
-                            width: 5,
-                          ),
-                        },
-                        markers: {
-                          if (_startMarker != null) _startMarker!,
-                          if (_carMarker != null) _carMarker!,
-                          Marker(
-                            markerId: const MarkerId("destination"),
-                            position: _destination,
-                            icon: _destinationIcon ??
-                                BitmapDescriptor.defaultMarker,
-                          ),
-                        },
-                        mapType: MapType.normal,
                       ),
                     ),
                   ),
-                ),
-          // DraggableScrollableSheet
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: DraggableScrollableSheet(
-              controller: _draggableController,
-              initialChildSize: 0.21, // Tamaño inicial
-              minChildSize: 0.21, // Tamaño mínimo
-              maxChildSize: 0.85, // Tamaño máximo
-              builder: (BuildContext context, ScrollController controller) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 58, 41, 127).withOpacity(0.95),
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(10.r),
-                      topLeft: Radius.circular(10.r),
+            // DraggableScrollableSheet
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: DraggableScrollableSheet(
+                controller: _draggableController,
+                initialChildSize: 0.21, // Tamaño inicial
+                minChildSize: 0.21, // Tamaño mínimo
+                maxChildSize: 0.85, // Tamaño máximo
+                builder: (BuildContext context, ScrollController controller) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Color.fromARGB(255, 58, 41, 127).withOpacity(0.95),
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(10.r),
+                        topLeft: Radius.circular(10.r),
+                      ),
                     ),
-                  ),
-                  child: Skeletonizer(
-                    enabled: false,
-                    effect: ShimmerEffect(
-                        baseColor: Colors.white,
-                        highlightColor: Colors.grey.shade500),
-                    child: ListView(
-                      controller: controller, // Vinculamos el controlador
-                      padding: EdgeInsets.all(16.0),
-                      children: [
-                        // Indicador para deslizar
-                        Center(
-                          child: Container(
-                            margin: EdgeInsets.only(bottom: 16),
-                            width: 75.w,
-                            height: 3.h,
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 155, 155, 155),
-                              borderRadius: BorderRadius.circular(10),
+                    child: Skeletonizer(
+                      enabled: false,
+                      effect: ShimmerEffect(
+                          baseColor: Colors.white,
+                          highlightColor: Colors.grey.shade500),
+                      child: ListView(
+                        controller: controller, // Vinculamos el controlador
+                        padding: EdgeInsets.all(16.0),
+                        children: [
+                          // Indicador para deslizar
+                          Center(
+                            child: Container(
+                              margin: EdgeInsets.only(bottom: 16),
+                              width: 75.w,
+                              height: 3.h,
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 155, 155, 155),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                           ),
-                        ),
 
-                        // TARJETA
+                          // TARJETA
 
-                        Container(
-                          height: 111.h,
-                          padding: EdgeInsets.all(10.r),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.r),
-                            //  color: const Color.fromARGB(255, 255, 255, 255)
-                          ),
-                          // Contenido
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                width: 163.w,
-                                //color: Colors.green,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Container(
-                                      // color: const Color.fromARGB(255, 194, 177, 183),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Container(
-                                            width: 45.h,
-                                            height: 45.h,
-                                            decoration: BoxDecoration(
-                                                color: Color.fromARGB(
-                                                    255, 255, 255, 255),
-                                                image: DecorationImage(
-                                                    image: NetworkImage(
-                                                        'https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg')),
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        50.r)),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      //color: Color.fromARGB(255, 200, 216, 164),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Text(
-                                            "${_currentPedido?.cliente.nombre} ${_currentPedido?.cliente.apellidos}" ??
-                                                'Cargando...',
-                                            style: GoogleFonts.manrope(
-                                                fontSize: 14.sp,
-                                                color: Colors.white),
-                                          ),
-                                          Text(
-                                            "S/.${_currentPedido?.total.toString() ?? '0.00'}",
-                                            style: GoogleFonts.manrope(
-                                                color: Colors.white,
-                                                fontSize: 14.sp,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                width: 153.h,
-                                // color: Colors.green,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "ID: #${_currentPedido?.id?.toString()}",
-                                      style: GoogleFonts.manrope(
-                                          fontSize: 14.sp, color: Colors.white),
-                                    ),
-                                    _buildTimerWidget(),
-                                    Text(
-                                      _currentPedido?.pedidoinfo?['tipo'] ??
-                                          'Tipo no disponible',
-                                      style: GoogleFonts.manrope(
-                                          color: Colors.white,
-                                          fontSize: 14.sp,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Material(
-                                      elevation: 10.r,
-                                      borderRadius: BorderRadius.circular(50.r),
-                                      child: Container(
-                                          width: 35.w,
-                                          height: 35.w,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(50.r),
-                                            color:
-                                                Color.fromRGBO(42, 75, 160, 1),
-                                          ),
-                                          child: Center(
-                                            child: IconButton(
-                                                onPressed: () {
-                                                  _makePhoneCall(_currentPedido!
-                                                          .cliente.telefono ??
-                                                      "+51123");
-                                                },
-                                                icon: Icon(
-                                                  size: 17.sp,
-                                                  Icons.call_sharp,
-                                                  color: Colors.white,
-                                                )),
-                                          )),
-                                    )
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          height: 21.5.h,
-                        ),
-                        Divider(
-                          height: 2.5.h,
-                          color: Colors.grey,
-                        ),
-                        SizedBox(
-                          height: 21.5.h,
-                        ),
-
-                        // TIME LINE
-                        Container(
-                          color: Colors.white,
-                          child: Row(
-                            //crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                // color: Colors.white,
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    const Icon(
-                                      Icons.access_time,
-                                      color: Color.fromRGBO(42, 75, 160, 1),
-                                    ),
-                                    SizedBox(
-                                      height: 9.5.h,
-                                    ),
-                                    Icon(Icons.circle,
-                                        color: Colors.grey.shade400, size: 8),
-                                    SizedBox(
-                                      height: 9.5.h,
-                                    ),
-                                    Icon(Icons.circle,
-                                        color: Colors.grey.shade500, size: 10),
-                                    SizedBox(
-                                      height: 9.5.h,
-                                    ),
-                                    const Icon(Icons.circle,
-                                        color: Colors.grey, size: 12),
-                                    SizedBox(
-                                      height: 9.5.h,
-                                    ),
-                                    const Icon(
-                                      Icons.place_outlined,
-                                      color: Color.fromRGBO(42, 75, 160, 1),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(
-                                width: 10.w,
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Tiempo de entrega",
-                                          style: GoogleFonts.manrope(
-                                              fontSize: 12.sp,
-                                              color: Colors.grey.shade700),
-                                        ),
-                                        SizedBox(
-                                          height: 4.h,
-                                        ),
-                                        Text("15 minutos",
-                                            style: GoogleFonts.manrope(
-                                                fontSize: 12.sp,
-                                                fontWeight: FontWeight.w600))
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 45.h,
-                                  ),
-                                  Container(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Dirección",
-                                          style: GoogleFonts.manrope(
-                                              fontSize: 12.sp,
-                                              color: Colors.grey.shade700),
-                                        ),
-                                        SizedBox(
-                                          height: 4.h,
-                                        ),
-                                        Text(direccionCompleta,
-                                            style: GoogleFonts.manrope(
-                                                fontSize: 12.sp,
-                                                fontWeight: FontWeight.w600))
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          height: 21.5.h,
-                        ),
-                        Divider(
-                          height: 2.5.h,
-                          color: Colors.grey,
-                        ),
-                        SizedBox(
-                          height: 6.5.h,
-                        ),
-
-                        // Elementos de la lista
-
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          height: _isExpanded ? 230.h : 60.h,
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-
-                              //  borderRadius: BorderRadius.circular(10),
-                              border: Border(bottom: BorderSide(width: 0.50))),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Notas",
-                                    style: GoogleFonts.manrope(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13.sp,
-                                        color: const Color.fromARGB(
-                                            255, 255, 255, 255)),
-                                  ),
-                                  Container(
-                                    width: 35.w,
-                                    height: 35.0.w,
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(50.r)),
-                                    child: IconButton(
-                                      icon: Icon(
-                                        _isExpanded
-                                            ? Icons.keyboard_arrow_up
-                                            : Icons.keyboard_arrow_down,
-                                        size: 20.sp,
-                                        color: const Color.fromARGB(
-                                            255, 9, 28, 126),
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _isExpanded = !_isExpanded;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 5.h,
-                              ),
-                              if (_isExpanded)
+                          Container(
+                            height: 119.h,
+                            padding: EdgeInsets.all(10.r),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20.r),
+                              //  color: const Color.fromARGB(255, 255, 255, 255)
+                            ),
+                            // Contenido
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
                                 Container(
-                                  color: Colors.white,
-                                  height:
-                                      150, // Altura fija para que el ListView sea scrollable
-                                  child: ListView(
+                                  width: 163.w,
+                                  //color: Colors.green,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        // color: const Color.fromARGB(255, 194, 177, 183),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            Container(
+                                              width: 45.h,
+                                              height: 45.h,
+                                              decoration: BoxDecoration(
+                                                  color: Color.fromARGB(
+                                                      255, 255, 255, 255),
+                                                  image: DecorationImage(
+                                                      image: NetworkImage(
+                                                          'https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg')),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          50.r)),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        //color: Color.fromARGB(255, 200, 216, 164),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            Text(
+                                              "${_currentPedido?.cliente.nombre} ${_currentPedido?.cliente.apellidos}" ??
+                                                  'Cargando...',
+                                              style: GoogleFonts.manrope(
+                                                  fontSize: 14.sp,
+                                                  color: Colors.white),
+                                            ),
+                                            Text(
+                                              "S/.${_currentPedido?.total.toString() ?? '0.00'}",
+                                              style: GoogleFonts.manrope(
+                                                  color: Colors.white,
+                                                  fontSize: 14.sp,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  width: 153.h,
+                                  //color: Colors.green,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        _currentPedido
-                                                ?.pedidoinfo['observacion'] ??
-                                            "N/A",
+                                        "ID: #${_currentPedido?.id?.toString()}",
                                         style: GoogleFonts.manrope(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 13.5,
-                                          color: const Color.fromARGB(
-                                              255, 0, 0, 0),
-                                        ),
+                                            fontSize: 14.sp,
+                                            color: Colors.white),
+                                      ),
+
+                                      // CRONÓMETRO DE ENTREGA
+                                      _buildTimerWidget(),
+
+                                      Text(
+                                        _currentPedido?.pedidoinfo?['tipo'] ??
+                                            'Tipo no disponible',
+                                        style: GoogleFonts.manrope(
+                                            color: Colors.white,
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+
+                                      // USO MATERIAL PARA HACER LA ELEVACIÓN DE ESTE WIDGET
+                                      Material(
+                                        elevation: 10.r,
+                                        borderRadius:
+                                            BorderRadius.circular(50.r),
+                                        child: Container(
+                                            width: 35.w,
+                                            height: 35.w,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(50.r),
+                                              color: Color.fromRGBO(
+                                                  42, 75, 160, 1),
+                                            ),
+                                            child: Center(
+                                              child: IconButton(
+                                                  onPressed: () {
+                                                    _makePhoneCall(_currentPedido!
+                                                          .cliente.telefono ??
+                                                      "+51123");
+                                                  },
+                                                  icon: Icon(
+                                                    size: 17.sp,
+                                                    Icons.call_sharp,
+                                                    color: Colors.white,
+                                                  )),
+                                            )),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 21.5.h,
+                          ),
+                          Divider(
+                            height: 2.5.h,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(
+                            height: 21.5.h,
+                          ),
+
+                          // TIME LINE
+                          Container(
+                            color: Colors.white,
+                            // height: 150.h,
+                            child: Row(
+                              //crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  // color: Colors.white,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      const Icon(
+                                        Icons.access_time,
+                                        color: Color.fromRGBO(42, 75, 160, 1),
+                                      ),
+                                      SizedBox(
+                                        height: 9.5.h,
+                                      ),
+                                      Icon(Icons.circle,
+                                          color: Colors.grey.shade400, size: 8),
+                                      SizedBox(
+                                        height: 9.5.h,
+                                      ),
+                                      Icon(Icons.circle,
+                                          color: Colors.grey.shade500,
+                                          size: 10),
+                                      SizedBox(
+                                        height: 9.5.h,
+                                      ),
+                                      const Icon(Icons.circle,
+                                          color: Colors.grey, size: 12),
+                                      SizedBox(
+                                        height: 9.5.h,
+                                      ),
+                                      const Icon(
+                                        Icons.place_outlined,
+                                        color: Color.fromRGBO(42, 75, 160, 1),
                                       ),
                                     ],
                                   ),
                                 ),
-                            ],
-                          ),
-                        ),
-
-                        SizedBox(
-                          height: 6.5.h,
-                        ),
-                        // PRODUCTOS
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          height: _isExpandedProductos ? 230.h : 60.h,
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-
-                              //  borderRadius: BorderRadius.circular(10),
-                              border: Border(bottom: BorderSide(width: 0.50))),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Lista de productos (${(_currentPedido?.productos?.length ?? 0) + (_currentPedido?.promociones?.length ?? 0)})",
-                                    style: GoogleFonts.manrope(
-                                        fontSize: 13.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color.fromARGB(
-                                            255, 255, 255, 255)),
-                                  ),
-                                  Container(
-                                    height: 35.w,
-                                    width: 35.w,
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(50.r)),
-                                    child: IconButton(
-                                      icon: Icon(
-                                        _isExpandedProductos
-                                            ? Icons.keyboard_arrow_up
-                                            : Icons.keyboard_arrow_down,
-                                        color: const Color.fromARGB(
-                                            255, 28, 14, 106),
-                                        size: 20.sp,
+                                SizedBox(
+                                  width: 10.w,
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Tiempo de entrega",
+                                            style: GoogleFonts.manrope(
+                                                fontSize: 12.sp,
+                                                color: Colors.grey.shade700),
+                                          ),
+                                          SizedBox(
+                                            height: 4.h,
+                                          ),
+                                          Text("1 h. 35 minutos",
+                                              style: GoogleFonts.manrope(
+                                                  fontSize: 12.sp,
+                                                  fontWeight: FontWeight.w600))
+                                        ],
                                       ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _isExpandedProductos =
-                                              !_isExpandedProductos;
-                                        });
-                                      },
                                     ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 5.h,
-                              ),
-                              if (_isExpandedProductos)
-                                Container(
-                                    color: Colors.amber,
+                                    SizedBox(
+                                      height: 45.h,
+                                    ),
+                                    Container(
+                                      width: 1.sw / 1.4,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Dirección",
+                                            style: GoogleFonts.manrope(
+                                                fontSize: 12.sp,
+                                                color: Colors.grey.shade700),
+                                          ),
+                                          SizedBox(
+                                            height: 4.h,
+                                          ),
+                                          Text(direccionCompleta,
+                                              textAlign: TextAlign.justify,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                              style: GoogleFonts.manrope(
+                                                  fontSize: 12.sp,
+                                                  fontWeight: FontWeight.w600))
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 21.5.h,
+                          ),
+                          Divider(
+                            height: 2.5.h,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(
+                            height: 6.5.h,
+                          ),
+
+                          // Elementos de la lista
+
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            height: _isExpanded ? 230.h : 60.h,
+                            width: double.infinity,
+                            decoration: const BoxDecoration(
+
+                                //  borderRadius: BorderRadius.circular(10),
+                                border:
+                                    Border(bottom: BorderSide(width: 0.50))),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Notas",
+                                      style: GoogleFonts.manrope(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13.sp,
+                                          color: const Color.fromARGB(
+                                              255, 255, 255, 255)),
+                                    ),
+                                    Container(
+                                      width: 35.w,
+                                      height: 35.0.w,
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(50.r)),
+                                      child: IconButton(
+                                        icon: Icon(
+                                          _isExpanded
+                                              ? Icons.keyboard_arrow_up
+                                              : Icons.keyboard_arrow_down,
+                                          size: 20.sp,
+                                          color: const Color.fromARGB(
+                                              255, 9, 28, 126),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _isExpanded = !_isExpanded;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 5.h,
+                                ),
+                                if (_isExpanded)
+                                  Container(
+                                    color: Colors.white,
                                     height:
                                         150, // Altura fija para que el ListView sea scrollable
-                                    child: ListView.builder(
-                                      itemCount:
-                                          (_currentPedido?.productos?.length ??
-                                                  0) +
-                                              (_currentPedido
-                                                      ?.promociones?.length ??
-                                                  0),
-                                      itemBuilder: (context, index) {
-                                        dynamic item;
-                                        String name;
-
-                                        if (index <
-                                            (_currentPedido
-                                                    ?.productos?.length ??
-                                                0)) {
-                                          // Productos
-                                          item =
-                                              _currentPedido?.productos?[index];
-                                          name = item?.nombre ?? 'N/A';
-                                        } else {
-                                          // Promociones
-                                          item = _currentPedido?.promociones?[
-                                              index -
-                                                  (_currentPedido
-                                                          ?.productos?.length ??
-                                                      0)];
-                                          name = item?.nombre ?? 'N/A';
-                                        }
-                                        return Column(
-                                          children: [
-                                            Container(
-                                              height: 56.h,
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    "Producto",
-                                                    style: GoogleFonts.manrope(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 13.sp),
-                                                  ),
-                                                  SizedBox(
-                                                    width: 20.w,
-                                                  ),
-                                                  Text(
-                                                    name,
-                                                    style: GoogleFonts.manrope(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 13.sp),
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                            Container(
-                                              width: 340.w,
-                                              color: Colors.white,
-                                              child: Divider(
-                                                height: 1,
-                                              ),
-                                            )
-                                          ],
-                                        );
-                                      },
-                                    )),
-                            ],
+                                    child: ListView(
+                                      children: [
+                                        Text(
+                                          _currentPedido
+                                                  ?.pedidoinfo['observacion'] ??
+                                              "N/A",
+                                          style: GoogleFonts.manrope(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 13.5,
+                                            color: const Color.fromARGB(
+                                                255, 0, 0, 0),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
 
-                        // BOTONES
+                          SizedBox(
+                            height: 6.5.h,
+                          ),
+                          // PRODUCTOS
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            height: _isExpandedProductos ? 230.h : 60.h,
+                            width: double.infinity,
+                            decoration: const BoxDecoration(
+
+                                //  borderRadius: BorderRadius.circular(10),
+                                border:
+                                    Border(bottom: BorderSide(width: 0.50))),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Lista de productos (${(_currentPedido?.productos?.length ?? 0) + (_currentPedido?.promociones?.length ?? 0)})",
+                                      style: GoogleFonts.manrope(
+                                          fontSize: 13.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color.fromARGB(
+                                              255, 255, 255, 255)),
+                                    ),
+                                    Container(
+                                      height: 35.w,
+                                      width: 35.w,
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(50.r)),
+                                      child: IconButton(
+                                        icon: Icon(
+                                          _isExpandedProductos
+                                              ? Icons.keyboard_arrow_up
+                                              : Icons.keyboard_arrow_down,
+                                          color: const Color.fromARGB(
+                                              255, 28, 14, 106),
+                                          size: 20.sp,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _isExpandedProductos =
+                                                !_isExpandedProductos;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 5.h,
+                                ),
+                                if (_isExpandedProductos)
+                                  Container(
+                                      color: Colors.amber,
+                                      height:
+                                          150, // Altura fija para que el ListView sea scrollable
+                                      child: ListView.builder(
+                                        itemCount: (_currentPedido
+                                                    ?.productos?.length ??
+                                                0) +
+                                            (_currentPedido
+                                                    ?.promociones?.length ??
+                                                0),
+                                        itemBuilder: (context, index) {
+                                          dynamic item;
+                                          String name;
+
+                                          if (index <
+                                              (_currentPedido
+                                                      ?.productos?.length ??
+                                                  0)) {
+                                            // Productos
+                                            item = _currentPedido
+                                                ?.productos?[index];
+                                            name = item?.nombre ?? 'N/A';
+                                          } else {
+                                            // Promociones
+                                            item = _currentPedido?.promociones?[
+                                                index -
+                                                    (_currentPedido?.productos
+                                                            ?.length ??
+                                                        0)];
+                                            name = item?.nombre ?? 'N/A';
+                                          }
+                                          return Column(
+                                            children: [
+                                              Container(
+                                                height: 56.h,
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      "Producto",
+                                                      style:
+                                                          GoogleFonts.manrope(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 13.sp),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 20.w,
+                                                    ),
+                                                    Text(
+                                                      name,
+                                                      style:
+                                                          GoogleFonts.manrope(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 13.sp),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              Container(
+                                                width: 340.w,
+                                                color: Colors.white,
+                                                child: Divider(
+                                                  height: 1,
+                                                ),
+                                              )
+                                            ],
+                                          );
+                                        },
+                                      )),
+                              ],
+                            ),
+                          ),
+
+                          // BOTONES
+
 
                         SizedBox(
                           height: 21.5.h,
@@ -1443,88 +1628,170 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                         color: Color.fromRGBO(
                                             42, 75, 160, 1), // Color del borde
                                         width: 1.0, // Ancho del borde
+
                                       ),
                                     ),
                                   ),
-                                ),
-                                child: Text(
-                                  "Cancelar",
-                                  style: GoogleFonts.manrope(
-                                    fontSize: 14.sp, // Tamaño de texto
-                                    fontWeight: FontWeight.bold, // Negrita
-                                    color: const Color.fromRGBO(
-                                        42, 75, 160, 1), // Color del texto
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              height: 56, // Altura del botón
-                              width: 153, // Ancho del botón
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // Acción al presionar el botón
-                                  //context.push('/drive/calificar');
-                                  final pedidoProvider =
-                                      Provider.of<PedidosProvider2>(context,
-                                          listen: false);
-                                  if (pedidoProvider
-                                      .pedidosAceptados.isNotEmpty) {
-                                    final pedido2 = _currentPedido;
-                                    /*
-                                    final pedido = pedidoProvider
-                                            .pedidosAceptados[
-                                        0]; // Tomamos el primer pedido de la lista
-                                    */
-                                    print("UI ---->> LOGS PARA DEPURAR");
-                                    print(pedido2?.id);
-                                    // Llamamos a la función para entregar el pedido
-                                    entregarPedido(context, pedido2!.id,
-                                        pedido2!.almacenId);
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text(
-                                              'No hay pedidos para entregar')),
-                                    );
-                                  }
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor: WidgetStateProperty.all(
-                                    const Color.fromRGBO(
-                                        42, 75, 160, 1), // Color de fondo
-                                  ),
-                                  shape: WidgetStateProperty.all(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          20.r), // Bordes rectos
+                                  child: Text(
+                                    "Cancelar",
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 14.sp, // Tamaño de texto
+                                      fontWeight: FontWeight.bold, // Negrita
+                                      color: const Color.fromRGBO(
+                                          42, 75, 160, 1), // Color del texto
                                     ),
                                   ),
                                 ),
-                                child: Text(
-                                  "Entregar",
-                                  style: GoogleFonts.manrope(
-                                    fontSize: 14.sp, // Tamaño de texto
-                                    fontWeight: FontWeight.bold, // Negrita
-                                    color: Colors.white, // Color del texto
+                              ),
+                              Container(
+                                height: 56, // Altura del botón
+                                width: 153, // Ancho del botón
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    // Acción al presionar el botón
+                                    //context.push('/drive/calificar');
+                                    final pedidoProvider =
+                                        Provider.of<PedidosProvider2>(context,
+                                            listen: false);
+                                    if (pedidoProvider
+                                        .pedidosAceptados.isNotEmpty) {
+                                      final pedido2 = _currentPedido;
+                                      /*
+                                      final pedido = pedidoProvider
+                                              .pedidosAceptados[
+                                          0]; // Tomamos el primer pedido de la lista
+                                      */
+                                      print("UI ---->> LOGS PARA DEPURAR");
+                                      print(pedido2?.id);
+                                      // Llamamos a la función para entregar el pedido
+                                      entregarPedido(context, pedido2!.id,
+                                          pedido2!.almacenId);
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'No hay pedidos para entregar')),
+                                      );
+                                    }
+                                  },
+                                  style: ButtonStyle(
+                                    backgroundColor: WidgetStateProperty.all(
+                                      const Color.fromRGBO(
+                                          42, 75, 160, 1), // Color de fondo
+                                    ),
+                                    shape: WidgetStateProperty.all(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            20.r), // Bordes rectos
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "Entregar",
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 14.sp, // Tamaño de texto
+                                      fontWeight: FontWeight.bold, // Negrita
+                                      color: Colors.white, // Color del texto
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 40.5.h,
-                        ),
-                      ],
+                            ],
+                          ),
+                          SizedBox(
+                            height: 40.5.h,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  @override
+  void didChangeAccessibilityFeatures() {
+    // TODO: implement didChangeAccessibilityFeatures
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    // TODO: implement didChangeLocales
+  }
+
+  @override
+  void didChangeMetrics() {
+    // TODO: implement didChangeMetrics
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    // TODO: implement didChangePlatformBrightness
+  }
+
+  @override
+  void didChangeTextScaleFactor() {
+    // TODO: implement didChangeTextScaleFactor
+  }
+
+  @override
+  void didChangeViewFocus(ViewFocusEvent event) {
+    // TODO: implement didChangeViewFocus
+  }
+
+  @override
+  void didHaveMemoryPressure() {
+    // TODO: implement didHaveMemoryPressure
+  }
+
+  @override
+  Future<bool> didPopRoute() {
+    // TODO: implement didPopRoute
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> didPushRoute(String route) {
+    // TODO: implement didPushRoute
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> didPushRouteInformation(RouteInformation routeInformation) {
+    // TODO: implement didPushRouteInformation
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppExitResponse> didRequestAppExit() {
+    // TODO: implement didRequestAppExit
+    throw UnimplementedError();
+  }
+
+  @override
+  void handleCancelBackGesture() {
+    // TODO: implement handleCancelBackGesture
+  }
+
+  @override
+  void handleCommitBackGesture() {
+    // TODO: implement handleCommitBackGesture
+  }
+
+  @override
+  bool handleStartBackGesture(PredictiveBackEvent backEvent) {
+    // TODO: implement handleStartBackGesture
+    throw UnimplementedError();
+  }
+
+  @override
+  void handleUpdateBackGestureProgress(PredictiveBackEvent backEvent) {
+    // TODO: implement handleUpdateBackGestureProgress
   }
 }

@@ -163,50 +163,31 @@ class _PerfilState extends State<Perfil> {
                   elevation: 15.0.r,
                   borderRadius: BorderRadius.circular(15.r),
                   child: Container(
-                    height: 55.0.h,
-                    padding: EdgeInsets.all(12.r),
-                    decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 62, 65, 220),
-                        borderRadius: BorderRadius.circular(15.r)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.logout,
-                              color: Colors.white,
-                              size: 20.sp,
-                            ),
-                            SizedBox(
-                              width: 15.0.w,
-                            ),
-                            Text(
-                              "Cerrar sesión",
-                              style: GoogleFonts.manrope(
-                                  fontSize: 12.sp, color: Colors.white),
-                            )
-                          ],
-                        ),
-                        Container(
-                          height: 30.w,
-                          width: 30.w,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(50.r)),
-                          child: IconButton(
-                              onPressed: () {
-                                NotificationsService().disposeNotifications();
-                                context.go('/');
-                              },
-                              icon: Icon(
-                                Icons.arrow_forward_ios_outlined,
-                                size: 12.sp,
-                              )),
-                        )
-                      ],
-                    ),
-                  ),
+                      height: 55.0.h,
+                      width: 1.sw,
+                      padding: EdgeInsets.all(12.r),
+                      decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 62, 65, 220),
+                          borderRadius: BorderRadius.circular(15.r)),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            context.go('/');
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.exit_to_app),
+                              SizedBox(
+                                width: 12.w,
+                              ),
+                              Text(
+                                "Cerrar sesión",
+                                style: GoogleFonts.manrope(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ))),
                 )
               ],
             ),
