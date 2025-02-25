@@ -44,6 +44,7 @@ class _PreloginDriverState extends State<PreloginDriver> {
   late int status = 0;
   late int rol = 0;
   late int id = 0;
+  late String nivel = "NA";
 
   bool yaTieneUbicaciones = false;
   bool noTienePedidosEsNuevo = false;
@@ -99,11 +100,21 @@ class _PreloginDriverState extends State<PreloginDriver> {
           rol = data['user']['rol_id'];
           status = res.statusCode;
         });
+        if (data['driver']['nivel'] != null) {
+          setState(() {
+            nivel = data['driver']['nivel'];
+          });
+        } else {
+          setState(() {
+            nivel = "NA";
+          });
+        }
 
         // Guardar token de la respuesta
         SharedPreferences tokenUser = await SharedPreferences.getInstance();
         tokenUser.setString('token', data['token']);
         print("ENTRANDO AL MODEL ----------------------------");
+
         conductor = ConductorModel(
             id: data['driver']['id'],
             nombres: data['driver']['nombres'],
@@ -121,7 +132,8 @@ class _PreloginDriverState extends State<PreloginDriver> {
             provincia: data['driver']['provincia'],
             evento_id: data['driver']['evento_id'],
             foto_perfil: data['driver']['foto_perfil'],
-            nombre: 'almacen_${data['driver']['evento_id']}');
+            nombre: 'almacen_${data['driver']['evento_id']}',
+            nivel: nivel);
 
         print("Login exitoso:");
         //print(data);
@@ -372,7 +384,12 @@ class _PreloginDriverState extends State<PreloginDriver> {
                                         if (rol == 4) {
                                           //SI ES CONDUCTOR
                                         } else if (rol == 2) {
-                                          context.go('/drive');
+                                          print("...ROL: $rol");
+                                          if (nivel == 'admin') {
+                                            context.go('/admin');
+                                          } else {
+                                            context.go('/drive');
+                                          }
 
                                           //SI ES GERENTE
                                         } else if (rol == 3) {

@@ -14,6 +14,9 @@ import 'package:app2025/cliente/provider/ubicacion_list_provider.dart';
 import 'package:app2025/cliente/provider/ubicacion_provider.dart';
 import 'package:app2025/cliente/provider/user_provider.dart';
 import 'package:app2025/conductor/barraconductor/barraconductor.dart';
+import 'package:app2025/conductor/barraconductor/barraconductoradmin.dart';
+import 'package:app2025/conductor/providers/chipspedidos_provider.dart';
+import 'package:app2025/conductor/providers/conexionstatus_provider.dart';
 import 'package:app2025/conductor/providers/conexionswitch_provider.dart';
 import 'package:app2025/conductor/providers/lastpedido_provider.dart';
 import 'package:app2025/conductor/providers/notificacioncustom_provider.dart';
@@ -24,6 +27,7 @@ import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/providers/almacen_provider.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
+import 'package:app2025/conductor/views/admin.dart';
 
 import 'package:app2025/conductor/views/calificacion.dart';
 import 'package:app2025/conductor/views/cargaproductos.dart';
@@ -96,7 +100,10 @@ void main() async {
         ChangeNotifierProvider(
             create: (context) => NotificationProvider(context)),
         ChangeNotifierProvider(
-            create: (context) => NotificacionesInicioProvider())
+            create: (context) => NotificacionesInicioProvider()),
+        ChangeNotifierProvider(create: (context) => ConexionStatusProvider()),
+        ChangeNotifierProvider(
+            create: (context) => ChipspedidosProvider(context))
       ],
       child: const MyApp(),
     ),
@@ -110,9 +117,16 @@ final GoRouter _router = GoRouter(
       path: '/',
       builder: (BuildContext context, GoRouterState state) {
         //NotificationsService().silenceNotifications(true);
+        //return const AdminDriver();
         return const Bienvenida();
         //return const Demos();
         //return const NavegacionPedido2(); // Pantalla principal con navegación curva
+      },
+    ),
+    GoRoute(
+      path: '/admin',
+      builder: (BuildContext context, GoRouterState state) {
+        return const BarraConductorAdmin();
       },
     ),
     GoRoute(
