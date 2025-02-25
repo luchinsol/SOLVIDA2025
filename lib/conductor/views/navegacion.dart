@@ -60,6 +60,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   int? conductorId = 0;
   // Añade esta variable en la parte superior de tu clase de estado
   StreamController<int>? _timerController;
+  StreamSubscription? _pedidoAnuladoSubscription;
   Timer? _timer;
   bool _isTimerRunning = false;
   bool _showAnulacionDialog = false;
@@ -108,10 +109,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     return earthRadius * c;
   }
 
-  void _makePhoneCall() async {
+  void _makePhoneCall(String telefono) async {
     final Uri phoneUri = Uri(
       scheme: 'tel',
-      path: '+51964269494', // Reemplaza con el número al que quieras llamar
+      path: telefono, // Reemplaza con el número al que quieras llamar
     );
 
     if (await canLaunchUrl(phoneUri)) {
@@ -548,10 +549,26 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     _initializeMap();
     _loadPedidoDetails();
     _initializeTimer();
+    // Escuchar el stream de pedidos anulados
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pedidosProvider =
+          Provider.of<PedidosProvider2>(context, listen: false);
+
+      // Suscribirse al stream solo para el pedido actual
+      _pedidoAnuladoSubscription =
+          pedidosProvider.pedidoAnuladoStream.listen((pedidoId) {
+        if (pedidoId == _currentPedido && !_hasHandledAnulacion) {
+          _showPedidoAnuladoDialog(context);
+        }
+      });
+    });
   }
 
   void _showPedidoAnuladoDialog(BuildContext context) {
-    _timer?.cancel(); // Cancela el temporizador inmediatamente
+    // Verifica si el widget sigue montado antes de mostrar el diálogo
+    if (!mounted) return;
+
+    _timer?.cancel();
     _isTimerRunning = false;
     _timerController?.close();
 
@@ -560,15 +577,17 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Pedido Anulado"),
-          content: const Text(
-              "Este pedido ha sido anulado y no puede continuar con la entrega."),
+          title: Text("Pedido #${_currentPedido!.id} Anulado"),
+          content: Text(
+              "El pedido #${_currentPedido!.id} ha sido anulado y no puede continuar con la entrega."),
           actions: [
             TextButton(
               onPressed: () {
-                _hasHandledAnulacion = true;
                 Navigator.of(context).pop();
-                context.go('/drive');
+                if (mounted) {
+                  // Verificar nuevamente antes de navegar
+                  context.go('/drive');
+                }
               },
               child: const Text("Aceptar"),
             ),
@@ -627,6 +646,25 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                       const Color.fromARGB(255, 18, 29, 110))),
               onPressed: () {
                 print(".........ACEPTE");
+
+                //LOGICA DE ACEPTAR PEDIDO
+                // Llamar al método aceptarPedido del provider
+                Provider.of<PedidosProvider2>(context, listen: false)
+                    .aceptarPedido(pedidoMap['id'], pedidoData: pedidoMap)
+                    .then((_) {
+                  // Cerrar la notificación después de aceptar
+                  Navigator.of(context, rootNavigator: true).pop();
+                }).catchError((error) {
+                  // Manejo de error opcional
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text('Error al aceptar pedido: ${error.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                });
+                //FIN DE LOGICA DE ACEPTAR PEDIDO
               },
               child: Text("Aceptar",
                   style: GoogleFonts.manrope(
@@ -771,19 +809,31 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     _timerController?.close();
     _animationTimer?.cancel();
     _draggableController.dispose();
-
+    _pedidoAnuladoSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final pedidosProvider = context.watch<PedidosProvider2>();
+    bool mostrarDialogoAhora = false;
     if (_currentPedido != null &&
-        !pedidosProvider.pedidosAceptados.contains(_currentPedido!) &&
+        pedidosProvider.estaAnulado(_currentPedido!.id) &&
         !_hasHandledAnulacion) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!_showAnulacionDialog) {
-          _showAnulacionDialog = true;
+      // Solo mostraremos el diálogo si venimos de un evento real de anulación
+      // y no por un cambio de estado general en la aplicación
+      mostrarDialogoAhora = true;
+
+      // Marcar que ya manejamos esta anulación para no volver a mostrar el diálogo
+      _hasHandledAnulacion = true;
+    }
+
+    // Mostrar el diálogo después de construir el widget, pero solo si es necesario
+    if (mostrarDialogoAhora) {
+      // Usar un pequeño delay para evitar conflictos con transiciones de navegación
+      Future.delayed(Duration.zero, () {
+        if (mounted) {
+          // Verificar que el widget aún está montado
           _showPedidoAnuladoDialog(context);
         }
       });
@@ -1020,7 +1070,9 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                           child: Center(
                                             child: IconButton(
                                                 onPressed: () {
-                                                  _makePhoneCall();
+                                                  _makePhoneCall(_currentPedido!
+                                                          .cliente.telefono ??
+                                                      "+51123");
                                                 },
                                                 icon: Icon(
                                                   size: 17.sp,
