@@ -26,8 +26,10 @@ class PedidosProvider2 extends ChangeNotifier {
   final Set<String> _pedidosAceptados = {};
   bool _isInitialized = false;
   bool _isLoading = false;
+  //LISTA QE ALMACENA LOS PEDIDOS QUE SE ALMACENAN
   final List<Pedido> _pedidosAceptadosList = [];
   final Set<String> _processedOrderIds = {};
+  final Set<String> _pedidosAnulados = {};
 
   bool _llegopedido = false;
   bool get isllego => _llegopedido;
@@ -37,6 +39,8 @@ class PedidosProvider2 extends ChangeNotifier {
   List<Pedido> get pedidos => _pedidos;
 
   List<Pedido> get pedidosAceptados => List.unmodifiable(_pedidosAceptadosList);
+
+  Set<String> get pedidosAnulados => _pedidosAnulados;
 
   Pedido? get ultimoPedidoAceptado =>
       _pedidosAceptadosList.isNotEmpty ? _pedidosAceptadosList.last : null;
@@ -132,6 +136,24 @@ class PedidosProvider2 extends ChangeNotifier {
 
     _socketService.on('pedido_anulado', (data) {
       print("📥 Pedido ANULADO EVENTO ANULADO: $data");
+
+      // Extraer el ID del pedido anulado
+      final String pedidoId = data['id']?.toString() ?? '';
+      if (pedidoId.isEmpty) {
+        print('⚠️ ID de pedido anulado no válido');
+        return;
+      }
+
+      // Remover de todas las listas
+      _removePedidoFromAllLists(pedidoId);
+
+      // Notificar a los listeners para actualizar la UI
+      notifyListeners();
+
+      print('🗑️ Pedido $pedidoId removido de todas las listas');
+
+      // Emitir evento al backend con todos los datos necesarios
+      _socketService.emit("procesando_anulacion", data);
     });
 
     _socketService.on('pedido_actualizado', (data) {
@@ -522,8 +544,14 @@ class PedidosProvider2 extends ChangeNotifier {
 
           // Agregamos a la lista de aceptados
           _pedidosAceptadosList.add(pedido);
-          _pedidosAceptados.add(pedidoId);
+          print(_pedidosAceptados);
 
+          _pedidosAceptados.add(pedidoId);
+          print(_pedidosAceptadosList);
+
+          print('✅ Pedido agregado a _pedidosAceptados: $_pedidosAceptados');
+          print(
+              '✅ Pedido agregado a _pedidosAceptadosList: $_pedidosAceptadosList');
           // Cancelamos el timer ya que se completó la operación
           orderTakenTimer.cancel();
           operationCompleted = true;
@@ -583,6 +611,7 @@ class PedidosProvider2 extends ChangeNotifier {
             'Lista de IDs antes de eliminar: ${_pedidosAceptadosList.map((p) => p.id).toList()}');
         _pedidosAceptadosList.removeAt(index);
         _pedidosAceptados.remove(pedidoId);
+        _pedidosAnulados.remove(pedidoId);
         print("POSIBLE ERROR------------------------------------------");
         print('Pedido entregado y eliminado de la lista: ${pedido.id}');
         print(
@@ -762,6 +791,40 @@ class PedidosProvider2 extends ChangeNotifier {
     } catch (e) {
       print('❌ Error al manejar pedido tomado: $e');
     }
+  }
+
+  // Método público para verificar anulación
+  bool estaAnulado(String idPedido) {
+    return _pedidosAnulados.contains(idPedido);
+  }
+
+  // Método público para limpiar anulación si es necesario
+  void removerDeAnulados(String idPedido) {
+    if (_pedidosAnulados.remove(idPedido)) {
+      notifyListeners();
+    }
+  }
+
+  //FUNCION PARA ANULAR PEDIDO LOGICA
+  void _removePedidoFromAllLists(String pedidoId) {
+    _pedidos.removeWhere((p) => p.id == pedidoId);
+    _pedidosAceptadosList.removeWhere((p) => p.id == pedidoId);
+    _pedidosAceptados.remove(pedidoId);
+
+    // Agregar a anulados y notificar
+    if (!_pedidosAnulados.contains(pedidoId)) {
+      _pedidosAnulados.add(pedidoId);
+      notifyListeners(); // Esto es clave para activar el Consumer
+    }
+
+    // Limpiar timers
+    _timers[pedidoId]?.cancel();
+    _timers.remove(pedidoId);
+  }
+
+  void limpiarAnulados() {
+    _pedidosAnulados.clear();
+    notifyListeners();
   }
 
   //PEDIDO TOMADO

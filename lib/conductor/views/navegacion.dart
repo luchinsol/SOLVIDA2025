@@ -64,6 +64,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   StreamController<int>? _timerController;
   Timer? _timer;
   bool _isTimerRunning = false;
+  bool _showAnulacionDialog = false;
+  bool _hasHandledAnulacion = false;
 
   void _showCancelarPedido() {
     showDialog(
@@ -554,6 +556,34 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     _initializeTimer();
   }
 
+  void _showPedidoAnuladoDialog(BuildContext context) {
+    _timer?.cancel(); // Cancela el temporizador inmediatamente
+    _isTimerRunning = false;
+    _timerController?.close();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Pedido Anulado"),
+          content: const Text(
+              "Este pedido ha sido anulado y no puede continuar con la entrega."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _hasHandledAnulacion = true;
+                Navigator.of(context).pop();
+                context.go('/drive');
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _loadPedidoDetails() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
@@ -778,6 +808,16 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   @override
   Widget build(BuildContext context) {
     final pedidosProvider = context.watch<PedidosProvider2>();
+    if (_currentPedido != null &&
+        !pedidosProvider.pedidosAceptados.contains(_currentPedido!) &&
+        !_hasHandledAnulacion) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_showAnulacionDialog) {
+          _showAnulacionDialog = true;
+          _showPedidoAnuladoDialog(context);
+        }
+      });
+    }
     final activePedidos = pedidosProvider.getActivePedidos();
     final departamento = _currentPedido?.ubicacion?['departamento'];
     final provincia = _currentPedido?.ubicacion?['provincia'];
