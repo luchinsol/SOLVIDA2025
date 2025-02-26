@@ -1051,7 +1051,9 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     _animationTimer?.cancel();
     _draggableController.dispose();
     _pedidoAnuladoSubscription?.cancel();
-    //WidgetsBinding.instance.removeObserver(this);
+
+    WidgetsBinding.instance.removeObserver(this);
+
     super.dispose();
   }
 
@@ -1752,8 +1754,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                 child: ElevatedButton(
                                   onPressed: () {
                                     // Acción al presionar el botón
+
                                     //_showCancelDialog(context);
                                     _showCancelarPedido();
+
                                   },
                                   style: ButtonStyle(
                                       backgroundColor: WidgetStateProperty.all(
@@ -1833,7 +1837,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                     ),
                                   ),
                                 ),
-                              ),
+                              )
                             ],
                           ),
                           SizedBox(
