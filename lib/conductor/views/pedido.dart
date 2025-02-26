@@ -179,7 +179,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
         Navigator.of(context).pop(); // Cerrar el diálogo de carga
 
         // Navegar a la siguiente pantalla
-        GoRouter.of(context).go('/drive/cargar');
+        GoRouter.of(context).go('/drive/navegar');
       }
     } catch (e) {
       print('Error al manejar la aceptación del pedido: $e');
