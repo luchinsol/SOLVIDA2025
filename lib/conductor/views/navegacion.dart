@@ -68,6 +68,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   bool _showAnulacionDialog = false;
   bool _hasHandledAnulacion = false;
   bool _expandido = false;
+  String? idpedidoActualDialog = "NA";
 
   void _showCancelarPedido() {
     showDialog(
@@ -103,7 +104,61 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                           height: 105.w,
                           // color: Colors.yellow,
                           child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                try {
+                                  final response = await http.put(
+                                    Uri.parse(
+                                        '${microUrl}/pedido_anulado/${_currentPedido?.id}'),
+                                    headers: {
+                                      'Content-Type': 'application/json'
+                                    },
+                                    body: jsonEncode({
+                                      'observacion': 'Falla técnica',
+                                    }),
+                                  );
+
+                                  if (response.statusCode == 200) {
+                                    // Cerrar el diálogo
+                                    Navigator.of(context).pop();
+
+                                    // Usa el contexto original para la navegación
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      // Navega después de que el frame se haya completado
+                                      context.go('/drive');
+
+                                      // Muestra el mensaje de éxito
+                                      Flushbar(
+                                        message:
+                                            "Pedido cancelado correctamente",
+                                        duration: Duration(seconds: 3),
+                                      ).show(context);
+                                    });
+                                  } else {
+                                    // Cerrar el diálogo
+                                    Navigator.of(context).pop();
+
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text(
+                                                  "Error: ${response.body}")));
+                                    });
+                                  }
+                                } catch (e) {
+                                  // Cerrar el diálogo
+                                  Navigator.of(context).pop();
+
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                "Error de conexión: ${e.toString()}")));
+                                  });
+                                }
+                              },
                               style: ElevatedButton.styleFrom(
                                   shape: RoundedRectangleBorder(
                                       borderRadius:
@@ -132,7 +187,61 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                           height: 105.w,
                           // color: Colors.yellow,
                           child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                try {
+                                  final response = await http.put(
+                                    Uri.parse(
+                                        '${microUrl}/pedido_anulado/${_currentPedido?.id}'),
+                                    headers: {
+                                      'Content-Type': 'application/json'
+                                    },
+                                    body: jsonEncode({
+                                      'observacion': 'Cliente no responde',
+                                    }),
+                                  );
+
+                                  if (response.statusCode == 200) {
+                                    // Cerrar el diálogo
+                                    Navigator.of(context).pop();
+
+                                    // Usa el contexto original para la navegación
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      // Navega después de que el frame se haya completado
+                                      context.go('/drive');
+
+                                      // Muestra el mensaje de éxito
+                                      Flushbar(
+                                        message:
+                                            "Pedido cancelado correctamente",
+                                        duration: Duration(seconds: 3),
+                                      ).show(context);
+                                    });
+                                  } else {
+                                    // Cerrar el diálogo
+                                    Navigator.of(context).pop();
+
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text(
+                                                  "Error: ${response.body}")));
+                                    });
+                                  }
+                                } catch (e) {
+                                  // Cerrar el diálogo
+                                  Navigator.of(context).pop();
+
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                "Error de conexión: ${e.toString()}")));
+                                  });
+                                }
+                              },
                               style: ElevatedButton.styleFrom(
                                   shape: RoundedRectangleBorder(
                                       borderRadius:
@@ -651,7 +760,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     });
     _loadMapStyle();
     _initializeMap();
-    _loadPedidoDetails();
+    // _loadPedidoDetails();
     _initializeTimer();
     // Escuchar el stream de pedidos anulados
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -659,16 +768,16 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
           Provider.of<PedidosProvider2>(context, listen: false);
 
       // Suscribirse al stream solo para el pedido actual
-      _pedidoAnuladoSubscription =
+      /* _pedidoAnuladoSubscription =
           pedidosProvider.pedidoAnuladoStream.listen((pedidoId) {
         if (pedidoId == _currentPedido && !_hasHandledAnulacion) {
           _showPedidoAnuladoDialog(context);
         }
-      });
+      });*/
     });
   }
 
-  void _showPedidoAnuladoDialog(BuildContext context) {
+  void _showPedidoAnuladoDialog(String id) {
     // Verifica si el widget sigue montado antes de mostrar el diálogo
     if (!mounted) return;
 
@@ -681,13 +790,13 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Pedido #${_currentPedido!.id} Anulado"),
+          title: Text("Pedido #${id} Anulado"),
           content: Text(
-              "El pedido #${_currentPedido!.id} ha sido anulado y no puede continuar con la entrega."),
+              "El pedido #${id} ha sido anulado y no puede continuar con la entrega."),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                context.pop();
                 if (mounted) {
                   // Verificar nuevamente antes de navegar
                   context.go('/drive');
@@ -707,7 +816,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
         final pedidosProvider =
             Provider.of<PedidosProvider2>(context, listen: false);
         //final activePedidos = pedidosProvider.getActivePedidos();
-        final pedidoAceptado = pedidosProvider.ultimoPedidoAceptado;
+        final pedidoAceptado = pedidosProvider.primerPedidoAceptado;
         print("-----------------------> VISTA NAVEGACION");
 
         print("MEJORA ------>");
@@ -941,23 +1050,51 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     _timerController?.close();
     _animationTimer?.cancel();
     _draggableController.dispose();
-    _pedidoAnuladoSubscription?.cancel();    WidgetsBinding.instance.removeObserver(this);
+    _pedidoAnuladoSubscription?.cancel();
+    //WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final pedidosProvider = context.watch<PedidosProvider2>();
+    final pedidosProvider =
+        Provider.of<PedidosProvider2>(context, listen: true);
+    _currentPedido = pedidosProvider.primerPedidoAceptado;
+    setState(() {
+      idpedidoActualDialog = _currentPedido?.id;
+    });
+
+    // Suscribirse al stream solo para el pedido actual
+    /*_pedidoAnuladoSubscription =
+        pedidosProvider.pedidoAnuladoStream.listen((pedidoId) {
+      if (pedidoId == _currentPedido && !_hasHandledAnulacion) {
+        print("1NUMERO UNOOOOOOOOOOOOOOO ----->>>>>>>>>>>>>>>>>>>");
+        _showPedidoAnuladoDialog(context);
+      }
+    });*/
+
     bool mostrarDialogoAhora = false;
-    if (_currentPedido != null &&
-        pedidosProvider.estaAnulado(_currentPedido!.id) &&
-        !_hasHandledAnulacion) {
+
+    print("....NAV CURRENT $_currentPedido");
+    print("VARIABLES ANTES DE LA FUNCION -------------------->*******");
+    print(_currentPedido);
+    // print(pedidosProvider.estaAnulado(_currentPedido!.id));
+    print(_hasHandledAnulacion);
+
+    if (_currentPedido == null &&
+        (!_hasHandledAnulacion &&
+            pedidosProvider.estaAnulado(pedidosProvider.idecito))) {
+      print("*******------DENTRO DE LA VERIFICACION DEL FUNCION ---->>>");
+      print(_currentPedido);
+      print(_hasHandledAnulacion);
       // Solo mostraremos el diálogo si venimos de un evento real de anulación
       // y no por un cambio de estado general en la aplicación
-      mostrarDialogoAhora = true;
+      setState(() {
+        mostrarDialogoAhora = true;
 
-      // Marcar que ya manejamos esta anulación para no volver a mostrar el diálogo
-      _hasHandledAnulacion = true;
+        // Marcar que ya manejamos esta anulación para no volver a mostrar el diálogo
+        _hasHandledAnulacion = true;
+      });
     }
 
     // Mostrar el diálogo después de construir el widget, pero solo si es necesario
@@ -965,12 +1102,14 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       // Usar un pequeño delay para evitar conflictos con transiciones de navegación
       Future.delayed(Duration.zero, () {
         if (mounted) {
+          print(
+              "1NUMERO DOSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS ----->>>>>>>>>>>>>>>>>>>");
           // Verificar que el widget aún está montado
-          _showPedidoAnuladoDialog(context);
+          _showPedidoAnuladoDialog(pedidosProvider.idecito);
         }
       });
     }
-    final activePedidos = pedidosProvider.getActivePedidos();
+    // final activePedidos = pedidosProvider.getActivePedidos();
     final departamento = _currentPedido?.ubicacion?['departamento'];
     final provincia = _currentPedido?.ubicacion?['provincia'];
     final distrito = _currentPedido?.ubicacion?['distrito'];
@@ -1242,9 +1381,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                             child: Center(
                                               child: IconButton(
                                                   onPressed: () {
-                                                    _makePhoneCall(_currentPedido!
-                                                          .cliente.telefono ??
-                                                      "+51123");
+                                                    _makePhoneCall(
+                                                        _currentPedido!.cliente
+                                                                .telefono ??
+                                                            "+51123");
                                                   },
                                                   icon: Icon(
                                                     size: 17.sp,
@@ -1600,38 +1740,37 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
 
                           // BOTONES
 
-
-                        SizedBox(
-                          height: 21.5.h,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              height: 56, // Altura del botón
-                              width: 143, // Ancho del botón
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // Acción al presionar el botón
-                                  _showCancelDialog(context);
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor: WidgetStateProperty.all(
-                                    const Color.fromRGBO(
-                                        255, 255, 255, 1), // Color de fondo
-                                  ),
-                                  shape: WidgetStateProperty.all(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          20.r), // Bordes rectos
-                                      side: const BorderSide(
-                                        color: Color.fromRGBO(
-                                            42, 75, 160, 1), // Color del borde
-                                        width: 1.0, // Ancho del borde
-
+                          SizedBox(
+                            height: 21.5.h,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                height: 56, // Altura del botón
+                                width: 143, // Ancho del botón
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    // Acción al presionar el botón
+                                    //_showCancelDialog(context);
+                                    _showCancelarPedido();
+                                  },
+                                  style: ButtonStyle(
+                                      backgroundColor: WidgetStateProperty.all(
+                                        const Color.fromRGBO(
+                                            255, 255, 255, 1), // Color de fondo
                                       ),
-                                    ),
-                                  ),
+                                      shape: WidgetStateProperty.all(
+                                        RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              20.r), // Bordes rectos
+                                          side: const BorderSide(
+                                            color: Color.fromRGBO(42, 75, 160,
+                                                1), // Color del borde
+                                            width: 1.0, // Ancho del borde
+                                          ),
+                                        ),
+                                      )),
                                   child: Text(
                                     "Cancelar",
                                     style: GoogleFonts.manrope(
@@ -1650,10 +1789,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                   onPressed: () {
                                     // Acción al presionar el botón
                                     //context.push('/drive/calificar');
-                                    final pedidoProvider =
-                                        Provider.of<PedidosProvider2>(context,
-                                            listen: false);
-                                    if (pedidoProvider
+
+                                    if (pedidosProvider
                                         .pedidosAceptados.isNotEmpty) {
                                       final pedido2 = _currentPedido;
                                       /*

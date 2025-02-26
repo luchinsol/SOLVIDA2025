@@ -30,11 +30,13 @@ class PedidosProvider2 extends ChangeNotifier {
   final List<Pedido> _pedidosAceptadosList = [];
   final Set<String> _processedOrderIds = {};
   final Set<String> _pedidosAnulados = {};
-
+  String _idPedidoActual = "na";
   bool _llegopedido = false;
   bool get isllego => _llegopedido;
   //bool get isLoading => _isLoading;
   //bool get isInitialized => _isInitialized;
+
+  String get idecito => _idPedidoActual;
 
   List<Pedido> get pedidos => _pedidos;
 
@@ -42,8 +44,8 @@ class PedidosProvider2 extends ChangeNotifier {
 
   Set<String> get pedidosAnulados => _pedidosAnulados;
 
-  Pedido? get ultimoPedidoAceptado =>
-      _pedidosAceptadosList.isNotEmpty ? _pedidosAceptadosList.last : null;
+  Pedido? get primerPedidoAceptado =>
+      _pedidosAceptadosList.isNotEmpty ? _pedidosAceptadosList.first : null;
 
   final StreamController<String> _pedidoAnuladoStreamController =
       StreamController<String>.broadcast();
@@ -59,6 +61,11 @@ class PedidosProvider2 extends ChangeNotifier {
   }
 
   // 1. ESCUCHAR EVENTOS
+
+  // metodo aux
+  void setIdecito(String newId) {
+    _idPedidoActual = newId;
+  }
 
   void _initSocketListeners(String? nombre, int? almacenId) {
     print("🔄 Escuchando eventos en el socket...");
@@ -150,7 +157,7 @@ class PedidosProvider2 extends ChangeNotifier {
       }
 
       // Emitir el evento al stream antes de modificar las listas
-      _pedidoAnuladoStreamController.add(pedidoId);
+      //_pedidoAnuladoStreamController.add(pedidoId);
 
       // Remover de todas las listas
       _removePedidoFromAllLists(pedidoId);
@@ -409,6 +416,8 @@ class PedidosProvider2 extends ChangeNotifier {
       print("----------> FLUJO INICIAL");
       print('Processing pedido: ${pedido.id}');
 
+      setIdecito(pedido.id);
+
       /*NotificationsService().showOrderNotification(
         id: 29999,
         title: 'Pedido #765433',
@@ -575,9 +584,6 @@ class PedidosProvider2 extends ChangeNotifier {
           if (pedidoFueConfirmado) {
             // Si ahora fue confirmado, procedemos igual
             _pedidosAceptadosList.add(pedido);
-
-            // USO SHAREPREFERENCES PARA ALMACENAR EL PEDIDO CUANDO CIERRE LA APP
-
             _pedidosAceptados.add(pedidoId);
             orderTakenTimer.cancel();
             operationCompleted = true;
@@ -613,14 +619,18 @@ class PedidosProvider2 extends ChangeNotifier {
       if (index != -1) {
         // Remover el pedido de la lista de aceptados
         final pedido = _pedidosAceptadosList[index];
+        print("PEDIDO---->ENTONCTRADO$pedido");
         print(
             'Antes de eliminar - Total pedidos aceptados: ${_pedidosAceptadosList.length}');
         print(
-            'Lista de IDs antes de eliminar: ${_pedidosAceptadosList.map((p) => p.id).toList()}');
+            'Lista de IDs antes de eliminar: ${_pedidosAceptadosList.map((p) => p.id)}');
+        //pedidos
         _pedidosAceptadosList.removeAt(index);
+        // indexs
         _pedidosAceptados.remove(pedidoId);
+        // index anul
         _pedidosAnulados.remove(pedidoId);
-        print("POSIBLE ERROR------------------------------------------");
+        /* print("POSIBLE ERROR------------------------------------------");
         print('Pedido entregado y eliminado de la lista: ${pedido.id}');
         print(
             'Después de eliminar - Total pedidos aceptados: ${_pedidosAceptadosList.length}');
@@ -631,7 +641,7 @@ class PedidosProvider2 extends ChangeNotifier {
         print('-------------------------->>>>>>>>>>>>><<<<-----------------');
         print(
             'Total pedidos aceptados restantes: ${_pedidosAceptadosList.length}');
-        print('-----------------------------------<<<<<<---------------<<<<');
+        print('-----------------------------------<<<<<<---------------<<<<');*/
         if (_pedidosAceptadosList.isNotEmpty) {
           print('Siguiente pedido en la lista: ${_pedidosAceptadosList[0].id}');
         } else {
@@ -818,7 +828,7 @@ class PedidosProvider2 extends ChangeNotifier {
     _pedidos.removeWhere((p) => p.id == pedidoId);
     _pedidosAceptadosList.removeWhere((p) => p.id == pedidoId);
     _pedidosAceptados.remove(pedidoId);
-
+    notifyListeners();
     // Agregar a anulados y notificar
     if (!_pedidosAnulados.contains(pedidoId)) {
       _pedidosAnulados.add(pedidoId);
