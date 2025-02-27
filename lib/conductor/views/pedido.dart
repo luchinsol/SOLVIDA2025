@@ -130,41 +130,42 @@ class _DrivePedidosState extends State<DrivePedidos> {
   Future<void> handlePedidoAcceptance(
       dynamic pedidoid, dynamic almacenid) async {
     // Mostrar un diálogo de carga antes de iniciar el proceso
-    if (mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible:
-            false, // El usuario no puede cerrar el diálogo tocando fuera
-        builder: (BuildContext dialogContext) {
-          return Dialog(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            child: Center(
-              child: Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 20),
-                    Text(
-                      'Procesando pedido...',
-                      style: GoogleFonts.manrope(fontSize: 16.sp),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
 
     try {
+      /*if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible:
+              false, // El usuario no puede cerrar el diálogo tocando fuera
+          builder: (BuildContext dialogContext) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 20),
+                      Text(
+                        'Procesando pedido...',
+                        style: GoogleFonts.manrope(fontSize: 16.sp),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      }*/
+
       // Obtener el provider
       final provider = Provider.of<PedidosProvider2>(context, listen: false);
 
@@ -175,17 +176,18 @@ class _DrivePedidosState extends State<DrivePedidos> {
       await actualizarEstadoPedido(pedidoid, almacenid);
 
       // Cerrar el diálogo de carga si el widget está montado
-      if (mounted) {
+      /*if (mounted) {
         Navigator.of(context).pop(); // Cerrar el diálogo de carga
 
         // Navegar a la siguiente pantalla
-        GoRouter.of(context).go('/drive/navegar');
-      }
+       
+      }*/
+      GoRouter.of(context).go('/drive/navegar');
     } catch (e) {
       print('Error al manejar la aceptación del pedido: $e');
 
       // Cerrar el diálogo de carga si sigue abierto
-      if (mounted) {
+      /*if (mounted) {
         Navigator.of(context).pop(); // Cerrar el diálogo de carga
 
         // Mostrar el error
@@ -199,7 +201,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
             backgroundColor: Colors.red,
           ),
         );
-      }
+      }*/
     }
   }
 
@@ -875,29 +877,10 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                   width: 130.w,
                                                   child: ElevatedButton(
                                                     onPressed: () async {
-                                                      try {
-                                                        await handlePedidoAcceptance(
-                                                          pedido.id,
-                                                          pedido.almacenId,
-                                                        );
-                                                      } catch (e) {
-                                                        if (!mounted) return;
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(
-                                                              'Error al aceptar el pedido: $e',
-                                                              style: GoogleFonts
-                                                                  .manrope(
-                                                                      fontSize:
-                                                                          14.sp),
-                                                            ),
-                                                            backgroundColor:
-                                                                Colors.red,
-                                                          ),
-                                                        );
-                                                      }
+                                                      await handlePedidoAcceptance(
+                                                        pedido.id,
+                                                        pedido.almacenId,
+                                                      );
                                                     },
                                                     style: ButtonStyle(
                                                       shape:
