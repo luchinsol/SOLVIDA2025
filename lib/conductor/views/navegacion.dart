@@ -776,7 +776,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     });
   }
 
-  void _showPedidoAnuladoDialog(String id) {
+  void _showPedidoAnuladoDialog() {
     // Verifica si el widget sigue montado antes de mostrar el diálogo
     if (!mounted) return;
 
@@ -789,9 +789,9 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Pedido #${id} Anulado"),
+          title: Text("Pedido Actual Anulado"),
           content: Text(
-              "El pedido #${id} ha sido anulado y no puede continuar con la entrega."),
+              "El pedido ha sido anulado y no puede continuar con la entrega."),
           actions: [
             TextButton(
               onPressed: () {
@@ -1062,9 +1062,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     // print(pedidosProvider.estaAnulado(_currentPedido!.id));
     print(_hasHandledAnulacion);
 
-    if (_currentPedido == null &&
-        (!_hasHandledAnulacion &&
-            pedidosProvider.estaAnulado(pedidosProvider.idecito))) {
+    if (_currentPedido == null && !_hasHandledAnulacion) {
       print("*******------DENTRO DE LA VERIFICACION DEL FUNCION ---->>>");
       print(_currentPedido);
       print(_hasHandledAnulacion);
@@ -1086,7 +1084,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
           print(
               "1NUMERO DOSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS ----->>>>>>>>>>>>>>>>>>>");
           // Verificar que el widget aún está montado
-          _showPedidoAnuladoDialog(pedidosProvider.idecito);
+          _showPedidoAnuladoDialog();
         }
       });
     }
@@ -1748,7 +1746,6 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
 
                                     //_showCancelDialog(context);
                                     _showCancelarPedido();
-
                                   },
                                   style: ButtonStyle(
                                       backgroundColor: WidgetStateProperty.all(
