@@ -292,7 +292,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Container(
-            height: 1.sh / 2,
+            height: 1.sh / 1.85,
             child: Column(
               children: [
                 Text(
@@ -301,7 +301,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                       fontSize: 18.sp, fontWeight: FontWeight.bold),
                 ),
                 Container(
-                  height: 400, // Ajusta según necesites
+                  height: 410.h, // Ajusta según necesites
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
@@ -477,7 +477,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                       padding: EdgeInsets.all(7.r),
                                       alignment: Alignment.topCenter,
                                       height:
-                                          selected[index] ? 600.0.h : 282.5.h,
+                                          selected[index] ? 600.0.h : 286.5.h,
                                       decoration: BoxDecoration(
                                         border: Border.all(
                                             // color: const Color.fromRGBO(42, 75, 160, 0.575),
@@ -503,7 +503,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                           // Cabecera: Siempre visible
                                           Container(
                                             height: 155.h,
-                                            //color: Colors.green,
+                                            // color: Colors.green,
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
@@ -535,6 +535,9 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                                         45.h,
                                                                     decoration:
                                                                         BoxDecoration(
+                                                                      image: DecorationImage(
+                                                                          image:
+                                                                              NetworkImage('https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg')),
                                                                       color: const Color
                                                                           .fromARGB(
                                                                           255,
@@ -546,21 +549,6 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                                               50.r),
                                                                     ),
                                                                   ),
-                                                                  /*Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment.spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            "4.5",
-                                                            style: GoogleFonts.manrope(
-                                                                fontSize: 14.sp),
-                                                          ),
-                                                          Icon(
-                                                            Icons.star_rate_rounded,
-                                                            color: Colors.amber,
-                                                          ),
-                                                        ],
-                                                      ),*/
                                                                 ],
                                                               ),
                                                               Column(
@@ -623,7 +611,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                     // ID Y TIPO
                                                     Container(
                                                       width: 153.h,
-                                                      //color: Colors.white,
+                                                      //color: Colors.grey,
                                                       child: Column(
                                                         crossAxisAlignment:
                                                             CrossAxisAlignment
@@ -635,14 +623,22 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                           Text(
                                                             "ID: #${pedido.id}",
                                                             style: GoogleFonts.manrope(
-                                                                fontSize: 14.sp,
+                                                                fontSize:
+                                                                    16.5.sp,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
                                                                 color: selected[
                                                                         index]
                                                                     ? Colors
                                                                         .grey
                                                                         .shade600
-                                                                    : Colors
-                                                                        .white),
+                                                                    : const Color
+                                                                        .fromARGB(
+                                                                        255,
+                                                                        246,
+                                                                        255,
+                                                                        118)),
                                                           ),
                                                           Text(
                                                             pedido.pedidoinfo[
@@ -704,24 +700,34 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                                   tiempoRestante
                                                                           .inSeconds %
                                                                       60;
-                                                              return Text(
-                                                                '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
-                                                                style: GoogleFonts.manrope(
-                                                                    fontSize:
-                                                                        12.sp,
-                                                                    color: selected[
-                                                                            index]
-                                                                        ? const Color
-                                                                            .fromARGB(
-                                                                            255,
-                                                                            23,
-                                                                            3,
-                                                                            154)
-                                                                        : Colors
-                                                                            .white,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500),
+                                                              return Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .end,
+                                                                children: [
+                                                                  Icon(
+                                                                    Icons
+                                                                        .timer_outlined,
+                                                                    color: Colors
+                                                                        .grey,
+                                                                  ),
+                                                                  Text(
+                                                                    '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+                                                                    style: GoogleFonts.manrope(
+                                                                        fontSize: 12
+                                                                            .sp,
+                                                                        color: selected[index]
+                                                                            ? const Color.fromARGB(
+                                                                                255,
+                                                                                23,
+                                                                                3,
+                                                                                154)
+                                                                            : Colors
+                                                                                .white,
+                                                                        fontWeight:
+                                                                            FontWeight.w500),
+                                                                  ),
+                                                                ],
                                                               );
                                                             },
                                                           ),
@@ -764,7 +770,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                           ),
 
                                           // Reemplaza la sección de los botones con este código
-// (justo después del SizedBox(height: 8.h) que está debajo del texto de dirección)
+
                                           SizedBox(
                                             height: 10.h,
                                           ),
@@ -776,6 +782,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
+                                                // Google Map
                                                 Container(
                                                   height: 40.h,
                                                   width: 80.w,
@@ -942,47 +949,6 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                               ],
                                             ),
                                           ),
-                                          /*
-                                          Padding(
-      padding: EdgeInsets.symmetric(vertical: 10.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Botón Ignorar
-          ElevatedButton(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.white),
-        side: WidgetStateProperty.all(BorderSide(
-          color: Color.fromRGBO(42, 75, 160, 1),
-          width: 1.0,
-        )),
-      child: Text(
-        "Ignorar",
-        style: TextStyle(color: Color.fromRGBO(42, 75, 160, 1)),
-      onPressed: () {...},
-    ),
-          
-          // Botón Aceptar
-          ElevatedButton(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(
-          selected[index] 
-            ? Color.fromRGBO(42, 75, 160, 1)
-            : Colors.white),
-        side: WidgetStateProperty.all(BorderSide(
-          color: Color.fromRGBO(42, 75, 160, 1),
-          width: 1.0,
-        )),
-      child: Text(
-        "Aceptar",
-        style: TextStyle(
-          color: selected[index] ? Colors.white : Color.fromRGBO(42, 75, 160, 1)),
-      onPressed: () {...},
-    ),
-        ],
-      ),
-    ),
-  */
 
                                           // Contenido que se muestra/oculta
 
@@ -993,73 +959,6 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 SizedBox(height: 20.h),
-                                                /*Container(
-                                                  // width: double.infinity,
-                                                  height: 400.h,
-                                                  decoration: BoxDecoration(
-                                                      color:
-                                                          Colors.blue.shade100,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              20)),
-                                                  child: (latitud == null ||
-                                                          longitud == null)
-                                                      ? Center(
-                                                          child:
-                                                              CircularProgressIndicator(
-                                                                  color: Colors
-                                                                      .blue))
-                                                      : Container(
-                                                          color: Colors.black,
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  3.r),
-                                                          height: selected[
-                                                                  index]
-                                                              ? 300
-                                                              : 200, // Un tamaño fijo para el mapa
-                                                          child: GoogleMap(
-                                                            key: ValueKey(
-                                                                activePedidos[
-                                                                        index]
-                                                                    .id),
-                                                            initialCameraPosition:
-                                                                CameraPosition(
-                                                              zoom: 16,
-                                                              target: LatLng(
-                                                                  pedido.ubicacion[
-                                                                      'latitud'],
-                                                                  pedido.ubicacion[
-                                                                      'longitud']),
-                                                            ),
-                                                            /* polylines: {
-                                                                                                  Polyline(
-                                                                                                      polylineId: PolylineId("IDruta"),
-                                                                                                      points: polypoints,
-                                                                                                      color: Colors.blue,
-                                                                                                      width: 5)
-                                                                                                },*/
-                                                            markers: {
-                                                              if (_destinationIcon !=
-                                                                  null)
-                                                                Marker(
-                                                                    markerId:
-                                                                        MarkerId(
-                                                                            "destino"),
-                                                                    icon:
-                                                                        _destinationIcon!,
-                                                                    position: LatLng(
-                                                                        pedido.ubicacion[
-                                                                            'latitud'],
-                                                                        pedido.ubicacion[
-                                                                            'longitud']))
-                                                            },
-                                                            // mapType: MapType.normal,
-                                                            style: _mapStyle,
-                                                          ),
-                                                        ),
-                                                ),
-                                                SizedBox(height: 10.h),*/
                                                 Text(
                                                   "Lista de productos (${pedido.productos.length + pedido.promociones.length})",
                                                   style: GoogleFonts.manrope(
@@ -1147,133 +1046,6 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                           );
                                                         })),
                                                 SizedBox(height: 20.h),
-                                                // AQUI LOS BOTONES ANTGUOS
-                                                /*
-                                                Row(
-                                                  // crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Container(
-                                                      height: 44.h,
-                                                      width: 121.w,
-                                                      child: ElevatedButton(
-                                                        onPressed: () {
-                                                          final provider = Provider
-                                                              .of<PedidosProvider2>(
-                                                                  context,
-                                                                  listen:
-                                                                      false);
-
-                                                          // Emitir el evento de pedido expirado
-                                                          provider
-                                                              .ignorarPedidoBoton(
-                                                                  pedido
-                                                                      .toMap());
-
-                                                          // Opcional: Puedes agregar alguna retroalimentación visual
-                                                        },
-                                                        style: ButtonStyle(
-                                                          shape: WidgetStatePropertyAll(
-                                                              RoundedRectangleBorder(
-                                                                  side:
-                                                                      const BorderSide(
-                                                                    width: 1.0,
-                                                                    color: Color
-                                                                        .fromRGBO(
-                                                                            42,
-                                                                            75,
-                                                                            160,
-                                                                            1),
-                                                                  ),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              20.r))),
-                                                          backgroundColor:
-                                                              WidgetStateProperty
-                                                                  .all(Colors
-                                                                      .white),
-                                                        ),
-                                                        child: Text(
-                                                          "Ignorar",
-                                                          style: GoogleFonts
-                                                              .manrope(
-                                                            fontSize: 14.sp,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            color: const Color
-                                                                .fromRGBO(
-                                                                42, 75, 160, 1),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      width: 45.w,
-                                                    ),
-                                                    Container(
-                                                      height: 44.h,
-                                                      width: 121.w,
-                                                      child: ElevatedButton(
-                                                        onPressed: () async {
-                                                          await handlePedidoAcceptance(
-                                                              pedido.id,
-                                                              pedido.almacenId);
-                                                          /*
-                                                        await provider
-                                                            .aceptarPedido(
-                                                                pedido.id);
-
-                                                        // Mostrar mensaje de éxito
-
-                                                        await actualizarEstadoPedido(
-                                                            pedido.id,
-                                                            _conductorId,
-                                                            pedido.almacenId);
-                                                        context.go(
-                                                            '/drive/cargar');*/
-                                                        },
-                                                        style: ButtonStyle(
-                                                          shape: WidgetStatePropertyAll(
-                                                              RoundedRectangleBorder(
-                                                                  side:
-                                                                      const BorderSide(
-                                                                    width: 1.0,
-                                                                    color: Color
-                                                                        .fromRGBO(
-                                                                            42,
-                                                                            75,
-                                                                            160,
-                                                                            1),
-                                                                  ),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              20.r))),
-                                                          backgroundColor:
-                                                              WidgetStateProperty
-                                                                  .all(
-                                                            const Color
-                                                                .fromRGBO(
-                                                                42, 75, 160, 1),
-                                                          ),
-                                                        ),
-                                                        child: Text(
-                                                          "Aceptar",
-                                                          style: GoogleFonts
-                                                              .manrope(
-                                                            fontSize: 14.sp,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            color: Colors.white,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                             */
                                               ],
                                             ),
                                           ),
@@ -1281,11 +1053,6 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                           // Muesca
                                           IconButton(
                                             onPressed: () async {
-                                              /*LatLng destino = LatLng(
-                                      -16.410472367054158, -71.57064420197324);*/
-                                              /* List<LatLng> routePoints =
-                                      await getPolypoints(
-                                          _currentPosition, destino);*/
                                               setState(() {
                                                 // polypoints = routePoints;
                                                 selected[index] =
@@ -1293,7 +1060,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                               });
                                             },
                                             icon: Icon(
-                                              size: 28.9.sp,
+                                              size: 23.9.sp,
                                               color: selected[index]
                                                   ? Colors.grey.shade600
                                                   : Colors.white,

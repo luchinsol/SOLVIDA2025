@@ -45,7 +45,7 @@
         <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="daily_channel_id" />
 
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyA45xOgppdm-PXYDE5r07eDlkFuPzYmI9g" />
-        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:taskAffinity="" android:theme="@style/LaunchTheme" android:showWhenLocked="true" android:turnScreenOn="true" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
+        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:screenOrientation="portrait" android:taskAffinity="" android:theme="@style/LaunchTheme" android:showWhenLocked="true" android:turnScreenOn="true" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues
@@ -75,11 +75,8 @@
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
 
         <service android:name="com.dexterous.flutterlocalnotifications.ForegroundService" android:exported="false" android:stopWithTask="false" android:foregroundServiceType="location|camera|mediaPlayback"/>
-        <service android:name="flutter.overlay.window.flutter_overlay_window.OverlayService" 
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="explanation_for_special_use"/>
+        <service android:name="flutter.overlay.window.flutter_overlay_window.OverlayService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="explanation_for_special_use"/>
         </service>
 
     </application>

@@ -174,11 +174,6 @@ class PedidosProvider2 extends ChangeNotifier {
     _socketService.on('pedido_actualizado', (data) {
       print("📥 Pedido actualizado: $data");
     });
-
-    _socketService.onDisconnect(() {
-      print('❌ Desconectado del servidor, intentando reconectar...');
-      _socketService.reconnect();
-    });
   }
 
   // 2.  EMITIR EVENTOS
@@ -908,5 +903,11 @@ class PedidosProvider2 extends ChangeNotifier {
       _processPedidoData(data);
     });
     _initialEmit(almacenId);
+  }
+
+  // 6. DESCONEXIÓN MANUAL
+  void disconnectSocket() {
+    print("❌ Desconectando manualmente del socket...");
+    _socketService.disconnect();
   }
 }

@@ -30,7 +30,7 @@ import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 import 'package:app2025/conductor/views/admin.dart';
 
 import 'package:app2025/conductor/views/calificacion.dart';
-import 'package:app2025/conductor/views/cargaproductos.dart';
+
 import 'package:app2025/conductor/views/demodrive.dart';
 import 'package:app2025/conductor/views/detalle.dart';
 import 'package:app2025/conductor/views/navegacion.dart';
@@ -50,6 +50,7 @@ import 'package:app2025/conductor/views/pedidodemo.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -60,6 +61,9 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   await dotenv.load(fileName: ".env");
   // Crear instancia del provider
   //final pedidosProvider = PedidosProvider();
@@ -173,13 +177,6 @@ final GoRouter _router = GoRouter(
               return const Calificacion(); //OrderDetailScreen(orderId: orderId);
             },
           ),
-          GoRoute(
-            path: 'cargar',
-            builder: (BuildContext context, GoRouterState state) {
-              // final orderId = state.params['id'];
-              return const Almacenes(); //OrderDetailScreen(orderId: orderId);
-            },
-          )
         ]),
     GoRoute(
         path: '/client',
@@ -285,6 +282,16 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _loadUserData();
+    saveStartTime();
+  }
+
+  Future<void> saveStartTime() async {
+    final tiempoCond = await SharedPreferences.getInstance();
+    // Verificar si ya existe una hora guardada
+    if (!tiempoCond.containsKey('startTime')) {
+      final startTime = DateTime.now().millisecondsSinceEpoch;
+      await tiempoCond.setInt('startTime', startTime);
+    }
   }
 
   Future<void> _loadUserData() async {
