@@ -9,7 +9,6 @@ import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:app2025/conductor/providers/notificacioncustom_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
-import 'package:app2025/conductor/views/cargaproductos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -213,7 +212,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   void _makePhoneCall(String telefono) async {
     final Uri phoneUri = Uri(
       scheme: 'tel',
-      path: telefono, // Reemplaza con el número al que quieras llamar
+      path: '+51$telefono', // Reemplaza con el número al que quieras llamar
     );
 
     if (await canLaunchUrl(phoneUri)) {
@@ -744,64 +743,51 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       backgroundColor: Colors.amber.withOpacity(0.8),
       isDismissible: true,
       dismissDirection: FlushbarDismissDirection.HORIZONTAL,
-      mainButton: Column(
-        children: [
-          ElevatedButton(
-              style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                      const Color.fromARGB(255, 18, 29, 110))),
-              onPressed: () {
-                print(".........ACEPTE");
+      mainButton: ElevatedButton(
+          style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(
+                  const Color.fromARGB(255, 18, 29, 110))),
+          onPressed: () {
+            print(".........ACEPTE");
 
-                //LOGICA DE ACEPTAR PEDIDO
-                // Llamar al método aceptarPedido del provider
-                Provider.of<PedidosProvider2>(context, listen: false)
-                    .aceptarPedido(pedidoMap['id'], pedidoData: pedidoMap)
-                    .then((_) {
-                  // Cerrar la notificación después de aceptar
-                  Navigator.of(context, rootNavigator: true).pop();
-                }).catchError((error) {
-                  // Manejo de error opcional
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content:
-                          Text('Error al aceptar pedido: ${error.toString()}'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                });
-                //FIN DE LOGICA DE ACEPTAR PEDIDO
-              },
-              child: Text("Aceptar",
-                  style: GoogleFonts.manrope(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      fontSize: 12.sp))),
-        ],
-      ),
+            //LOGICA DE ACEPTAR PEDIDO
+            // Llamar al método aceptarPedido del provider
+            Provider.of<PedidosProvider2>(context, listen: false)
+                .aceptarPedido(pedidoMap['id'], pedidoData: pedidoMap)
+                .then((_) {
+              // Cerrar la notificación después de aceptar
+              Navigator.of(context, rootNavigator: true).pop();
+            }).catchError((error) {
+              // Manejo de error opcional
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error al aceptar pedido: ${error.toString()}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            });
+            //FIN DE LOGICA DE ACEPTAR PEDIDO
+          },
+          child: Text("Aceptar",
+              style: GoogleFonts.manrope(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  fontSize: 12.sp))),
       messageText: StatefulBuilder(
         builder: (context, setState) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Pedido #${pedidoMap['id']}",
-                  style: GoogleFonts.manrope(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.bold,
-                      color: const Color.fromARGB(255, 4, 27, 159))),
-              Container(
-                width: 50.w,
-                height: 50.w,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(50.r),
-                    image: DecorationImage(
-                        image: NetworkImage(
-                            'https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg'))),
-              ),
-              SizedBox(
-                height: 10.h,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Pedido #${pedidoMap['id']}",
+                      style: GoogleFonts.manrope(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color.fromARGB(255, 4, 27, 159))),
+                ],
               ),
               Text(
                   "Cliente:${pedidoMap['Cliente']?['nombre']} ${pedidoMap['Cliente']['apellidos']} ",
@@ -809,17 +795,11 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                       fontWeight: FontWeight.w600,
                       color: const Color.fromARGB(255, 4, 1, 176),
                       fontSize: 12.sp)),
-              SizedBox(
-                height: 10.h,
-              ),
               Text("Total: S/.${pedidoMap['total']}",
                   style: GoogleFonts.manrope(
                       fontWeight: FontWeight.w600,
                       color: const Color.fromARGB(255, 4, 1, 176),
                       fontSize: 12.sp)),
-              SizedBox(
-                height: 10.h,
-              ),
               Text(
                   "Dirección: ${pedidoMap['ubicacion']['distrito']} ${pedidoMap['ubicacion']['direccion']} ${pedidoMap['ubicacion']['provincia']}",
                   overflow: TextOverflow.ellipsis,
@@ -828,7 +808,6 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                       fontWeight: FontWeight.w600,
                       color: const Color.fromARGB(255, 4, 1, 176),
                       fontSize: 12.sp)),
-              SizedBox(height: 5),
               AnimatedSize(
                 duration: Duration(milliseconds: 300),
                 child: _expandido
@@ -885,7 +864,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                 // : SizedBox(),
               ),
               SizedBox(
-                height: 15.h,
+                height: 13.h,
               ),
               Align(
                 alignment: Alignment.centerLeft,
@@ -1038,9 +1017,20 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
             size: 16.sp,
           ),
           backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-          title: const Text(
-            "Pedido en curso",
-            style: TextStyle(color: Colors.black, fontSize: 16),
+          title: Row(
+            children: [
+              Text(
+                "Pedido en curso:",
+                style: GoogleFonts.manrope(fontSize: 16.sp),
+              ),
+              Text(
+                " ID# ${_currentPedido?.id}",
+                style: GoogleFonts.manrope(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: const Color.fromARGB(255, 194, 144, 6)),
+              )
+            ],
           ),
           elevation: 0,
           iconTheme: const IconThemeData(color: Colors.black),
@@ -1061,7 +1051,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                           initialCameraPosition: CameraPosition(
                             target: LatLng(_currentLocation!.latitude!,
                                 _currentLocation!.longitude!),
-                            zoom: 16,
+                            zoom: 18,
                           ),
                           onMapCreated: (controller) {
                             _mapController = controller;
@@ -1114,16 +1104,17 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                           highlightColor: Colors.grey.shade500),
                       child: ListView(
                         controller: controller, // Vinculamos el controlador
-                        padding: EdgeInsets.all(16.0),
+                        padding:
+                            EdgeInsets.only(left: 5.r, right: 5.r, top: 10.r),
                         children: [
                           // Indicador para deslizar
                           Center(
                             child: Container(
                               margin: EdgeInsets.only(bottom: 16),
                               width: 75.w,
-                              height: 3.h,
+                              height: 2.5.h,
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 155, 155, 155),
+                                color: const Color.fromARGB(255, 255, 255, 255),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
@@ -1133,10 +1124,9 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
 
                           Container(
                             height: 119.h,
-                            padding: EdgeInsets.all(10.r),
+                            //padding: EdgeInsets.all(10.r),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20.r),
-                              //  color: const Color.fromARGB(255, 255, 255, 255)
                             ),
                             // Contenido
                             child: Row(
@@ -1210,8 +1200,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                       Text(
                                         "ID: #${_currentPedido?.id?.toString()}",
                                         style: GoogleFonts.manrope(
-                                            fontSize: 14.sp,
-                                            color: Colors.white),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18.sp,
+                                            color: const Color.fromARGB(
+                                                255, 253, 222, 83)),
                                       ),
 
                                       // CRONÓMETRO DE ENTREGA
@@ -1235,11 +1227,9 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                             width: 35.w,
                                             height: 35.w,
                                             decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(50.r),
-                                              color: Color.fromRGBO(
-                                                  42, 75, 160, 1),
-                                            ),
+                                                borderRadius:
+                                                    BorderRadius.circular(50.r),
+                                                color: Colors.white),
                                             child: Center(
                                               child: IconButton(
                                                   onPressed: () {
@@ -1251,7 +1241,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                                   icon: Icon(
                                                     size: 17.sp,
                                                     Icons.call_sharp,
-                                                    color: Colors.white,
+                                                    color: Color.fromRGBO(
+                                                        42, 75, 160, 1),
                                                   )),
                                             )),
                                       )

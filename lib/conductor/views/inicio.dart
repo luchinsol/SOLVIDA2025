@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:another_flushbar/flushbar.dart';
@@ -25,6 +26,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:badges/badges.dart' as badges;
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class InicioDriver extends StatefulWidget {
@@ -47,6 +49,8 @@ class _InicioDriverState extends State<InicioDriver> {
   int cantidad = 0;
   List<Flushbar> _notificaciones = [];
   bool _expandido = false;
+  int _elapsedHours = 0;
+  Timer? _timer;
 
 //Inicializar con valores por defecto
 
@@ -153,11 +157,35 @@ class _InicioDriverState extends State<InicioDriver> {
     }
   }
 
+  Future<void> _loadStartTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final startTime =
+        prefs.getInt('startTime') ?? DateTime.now().millisecondsSinceEpoch;
+
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final elapsedMillis = now - startTime;
+      final elapsedHours =
+          (elapsedMillis / (1000 * 60 * 60)).floor(); // Convertir a horas
+
+      if (mounted) {
+        setState(() => _elapsedHours = elapsedHours);
+      }
+    });
+  }
+
   @override
   void initState() {
+    _loadStartTime();
     getPedidos();
     getlastPedido();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -416,6 +444,9 @@ class _InicioDriverState extends State<InicioDriver> {
                                                   .conductor!.evento_id,
                                               conductorProvider
                                                   .conductor!.nombre);
+                                        } else {
+                                          pedidoProvider.disconnectSocket();
+                                          conexionTrabajo.disconnect();
                                         }
                                       })
                                 ],
@@ -518,7 +549,7 @@ class _InicioDriverState extends State<InicioDriver> {
                                                     duration: Duration(
                                                         milliseconds: 1700)),
                                                 child: Text(
-                                                  "60",
+                                                  "$_elapsedHours",
                                                   style: GoogleFonts.manrope(
                                                       fontSize: 32,
                                                       fontWeight:
