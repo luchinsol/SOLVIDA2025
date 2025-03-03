@@ -884,6 +884,17 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                   width: 130.w,
                                                   child: ElevatedButton(
                                                     onPressed: () async {
+                                                      showDialog(
+                                                          context: context,
+                                                          builder: (context) {
+                                                            return const Center(
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            );
+                                                          });
                                                       await handlePedidoAcceptance(
                                                         pedido.id,
                                                         pedido.almacenId,

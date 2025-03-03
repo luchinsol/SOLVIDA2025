@@ -46,6 +46,7 @@ class ChipspedidosProvider with ChangeNotifier {
           print("Datitos de mi chip");
           print(data);
           _pedidosAlmacen.clear();
+          notifyListeners();
           _pedidosAlmacen.addAll(
             (data as List).map((e) => PedidosAlmacen.fromJson(e)).toList(),
           );
@@ -54,6 +55,7 @@ class ChipspedidosProvider with ChangeNotifier {
           notifyListeners();
         }
       }
+      notifyListeners();
     } catch (error) {
       throw Exception("Error query get $error");
     }

@@ -156,8 +156,8 @@ class _AdminDriverState extends State<AdminDriver> {
 
   @override
   void initState() {
-    getPedidos();
-    getlastPedido();
+    // getPedidos();
+    // getlastPedido();
     super.initState();
   }
 
@@ -338,7 +338,9 @@ class _AdminDriverState extends State<AdminDriver> {
                       ),
                       chipsPedidos.pedidos.isEmpty
                           ? Center(
-                              child: CircularProgressIndicator(),
+                              child: CircularProgressIndicator(
+                                color: Colors.amber,
+                              ),
                             )
                           : Text(
                               "Cantidad: ${chipsPedidos.pedidos.length}",
@@ -353,12 +355,12 @@ class _AdminDriverState extends State<AdminDriver> {
                       Padding(
                           padding: EdgeInsets.all(20.r),
                           child: Container(
-                            // color: Colors.grey.shade200,
+                            color: Colors.grey.shade200,
                             padding: EdgeInsets.all(5.r),
-                            height: 1.sh / 1.9,
+                            height: 1.sh / 2.2,
                             child: chipsPedidos.pedidos.isEmpty
                                 ? Center(
-                                    child: CircularProgressIndicator(),
+                                    child: Text("No tienes pedidos ahora"),
                                   )
                                 : ListView.builder(
                                     reverse: false,
@@ -479,8 +481,7 @@ class _AdminDriverState extends State<AdminDriver> {
                                                                   66, 66, 66)),
                                                     ),
                                                     Text(
-                                                      chipsPedidos
-                                                          .pedidos[index].tipo,
+                                                      "${chipsPedidos.pedidos[index].tipo}",
                                                       style:
                                                           GoogleFonts.manrope(
                                                               fontSize: 14.sp,
@@ -500,9 +501,7 @@ class _AdminDriverState extends State<AdminDriver> {
                                                               .grey.shade300),
                                                       child: Center(
                                                         child: Text(
-                                                          chipsPedidos
-                                                              .pedidos[index]
-                                                              .estado,
+                                                          "${chipsPedidos.pedidos[index].estado}",
                                                           style: GoogleFonts
                                                               .manrope(
                                                                   color: Color

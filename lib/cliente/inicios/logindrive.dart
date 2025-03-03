@@ -82,6 +82,8 @@ class _PreloginDriverState extends State<PreloginDriver> {
 
   Future<void> loginsol(username, password, BuildContext context) async {
     try {
+      print("credenciales - $username $password");
+
       print("Enviando solicitud de login...");
       print("URL: ${microUrl + microLogin}");
 
@@ -383,7 +385,7 @@ class _PreloginDriverState extends State<PreloginDriver> {
                                         //SI ES CLIENTE
                                         if (rol == 4) {
                                           //SI ES CONDUCTOR
-                                        } else if (rol == 2) {
+                                        } else if (rol == 5) {
                                           print("...ROL: $rol");
                                           if (nivel == 'admin') {
                                             context.go('/admin');
