@@ -906,6 +906,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                   width: 130.w,
                                                   child: ElevatedButton(
                                                     onPressed: () async {
+
                                                       await Provider.of<
                                                                   PedidosProvider2>(
                                                               context,
@@ -925,6 +926,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
             */
                                                       GoRouter.of(context)
                                                           .go('drive/navegar');
+
                                                     },
                                                     style: ButtonStyle(
                                                       shape:

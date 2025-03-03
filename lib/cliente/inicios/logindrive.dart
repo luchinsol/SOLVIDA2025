@@ -82,6 +82,8 @@ class _PreloginDriverState extends State<PreloginDriver> {
 
   Future<void> loginsol(username, password, BuildContext context) async {
     try {
+      print("credenciales - $username $password");
+
       print("Enviando solicitud de login...");
       print("URL: ${microUrl + microLogin}");
 

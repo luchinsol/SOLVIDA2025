@@ -5,11 +5,11 @@ class PedidosAlmacen {
   final double descuento;
   final double total;
   final DateTime fecha;
-  final String tipo;
-  final String? foto;
-  final String estado;
-  final String observacion;
-  final String tipoPago;
+  String? tipo;
+  String? foto;
+  String? estado;
+  String? observacion;
+  String? tipoPago;
   final int? beneficiadoId;
   final int? ubicacionId;
   final int? conductorId;
@@ -22,7 +22,7 @@ class PedidosAlmacen {
     required this.descuento,
     required this.total,
     required this.fecha,
-    required this.tipo,
+    this.tipo,
     this.foto,
     required this.estado,
     required this.observacion,
