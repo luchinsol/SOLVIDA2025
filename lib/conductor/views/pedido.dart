@@ -8,6 +8,7 @@ import 'package:app2025/conductor/providers/conexionswitch_provider.dart';
 import 'package:app2025/conductor/providers/notificacioncustom_provider.dart';
 //import 'package:app2025/conductor/providers/pedidos_provider.dart';
 import 'package:app2025/conductor/providers/pedidos_provider2.dart';
+import 'package:app2025/conductor/views/navegacion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -46,6 +47,8 @@ class _DrivePedidosState extends State<DrivePedidos> {
   bool _isLoading = true; // Nuevo flag para controlar el estado de carga
   String microUrl = dotenv.env['MICRO_URL'] ?? '';
   int? conductorId = 0;
+  bool loadingAceptar = false; // Variable de estado
+
   //notifactions
 
   // FUNCIONES
@@ -132,7 +135,11 @@ class _DrivePedidosState extends State<DrivePedidos> {
     // Mostrar un diálogo de carga antes de iniciar el proceso
 
     try {
-      /*if (mounted) {
+      setState(() {
+        loadingAceptar = true;
+      });
+      /*if (mounted)
+       {
         showDialog(
           context: context,
           barrierDismissible:
@@ -182,7 +189,6 @@ class _DrivePedidosState extends State<DrivePedidos> {
         // Navegar a la siguiente pantalla
        
       }*/
-      GoRouter.of(context).go('/drive/navegar');
     } catch (e) {
       print('Error al manejar la aceptación del pedido: $e');
 
@@ -207,7 +213,9 @@ class _DrivePedidosState extends State<DrivePedidos> {
 
   Future<void> actualizarEstadoPedido(String pedidoId, int almacenId) async {
     final url = Uri.parse('${microUrl}/pedido_estado/$pedidoId');
-
+    setState(() {
+      loadingAceptar = true;
+    });
     try {
       final response = await http.put(
         url,
@@ -253,6 +261,16 @@ class _DrivePedidosState extends State<DrivePedidos> {
     }
   }
 
+  Future<void> aceptarAll(BuildContext context, idpedido, idalmacen) async {
+    try {
+      final pedidoPro = Provider.of<PedidosProvider2>(context, listen: false);
+      await pedidoPro.aceptarPedido(idpedido);
+      await actualizarEstadoPedido(idpedido, idalmacen);
+    } catch (e) {
+      throw Exception('Error methods $e');
+    }
+  }
+
   void _onPedidosChanged() {
     if (mounted) {
       _initializeData();
@@ -269,6 +287,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
     }
   }
 
+  /*
   void _showDialog(String mensaje) {
     showDialog(
       context: context,
@@ -283,7 +302,7 @@ class _DrivePedidosState extends State<DrivePedidos> {
         ],
       ),
     );
-  }
+  }*/
 
   void _mostrarMapa(BuildContext context, Pedido pedido) {
     showDialog(
@@ -363,6 +382,9 @@ class _DrivePedidosState extends State<DrivePedidos> {
 
   @override
   Widget build(BuildContext context) {
+    final conductorProvider =
+        Provider.of<ConductorProvider>(context, listen: false);
+
     final conexionTrabajo =
         Provider.of<ConductorConnectionProvider>(context, listen: false);
     return Consumer<PedidosProvider2>(builder: (context, provider, child) {
@@ -884,21 +906,27 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                   width: 130.w,
                                                   child: ElevatedButton(
                                                     onPressed: () async {
-                                                      showDialog(
-                                                          context: context,
-                                                          builder: (context) {
-                                                            return const Center(
-                                                              child:
-                                                                  CircularProgressIndicator(
-                                                                color: Colors
-                                                                    .white,
-                                                              ),
-                                                            );
-                                                          });
-                                                      await handlePedidoAcceptance(
-                                                        pedido.id,
-                                                        pedido.almacenId,
-                                                      );
+
+                                                      await Provider.of<
+                                                                  PedidosProvider2>(
+                                                              context,
+                                                              listen: false)
+                                                          .aceptarYActualizarPedido(
+                                                              pedido.id,
+                                                              pedido.almacenId,
+                                                              conductorProvider
+                                                                  .conductor!
+                                                                  .id);
+
+                                                      print(
+                                                          "ENTRANDO AL BOTON ACEPTAR******");
+/*
+                                                      context.go(
+                                                          '/drive/navegar'); // Verifica nuevamente antes de navegar
+            */
+                                                      GoRouter.of(context)
+                                                          .go('drive/navegar');
+
                                                     },
                                                     style: ButtonStyle(
                                                       shape:

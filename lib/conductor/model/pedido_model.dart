@@ -115,8 +115,12 @@ class Pedido {
     Cliente clienteObj;
     try {
       // Verifica si el cliente está en 'Cliente' o 'cliente'
-      dynamic clienteData = map['Cliente'] ?? map['cliente'];
+      dynamic clienteData = map['Cliente'];
+      print("DENTRO DE LA CLASE DE PEDIDO ***************");
+      print(clienteData);
       clienteObj = Cliente.fromMap(clienteData);
+      print("CLIENTE OBJECT **************");
+      print(clienteObj);
     } catch (e) {
       print('Error parsing Cliente: $e');
       // Fallback to default Cliente if parsing fails
@@ -160,47 +164,6 @@ class Pedido {
             map['tiempo_limite'] ?? map['tiempoLimite'] ?? map['expired_time']),
         estado: map['estado'] ?? 'pendiente',
         pedidoinfo: _convertToStringDynamicMap(map['pedidoinfo'] ?? {}));
-  }
-
-  static Cliente _parseCliente(Map<dynamic, dynamic>? clienteMap) {
-    if (clienteMap == null) {
-      // Return a default Cliente object if no data is provided
-      return Cliente(
-        id: 0,
-        usuario_id: 0,
-        nombre: 'Cliente Desconocido',
-        apellidos: '',
-        ruc: '',
-        fecha_nacimiento: DateTime.now(),
-        fecha_creacion_cuenta: DateTime.now(),
-        sexo: '',
-        dni: '',
-        codigo: '',
-        calificacion: 0,
-        saldo_beneficios: 0,
-        suscripcion: '',
-        telefono: '',
-        email: '',
-      );
-    }
-
-    return Cliente(
-      id: clienteMap['id'] ?? 0,
-      usuario_id: clienteMap['usuario_id'] ?? 0,
-      nombre: clienteMap['nombre'] ?? 'Cliente Desconocido',
-      apellidos: clienteMap['apellidos'] ?? '',
-      ruc: clienteMap['ruc'] ?? '',
-      fecha_nacimiento: _safeParse(clienteMap['fecha_nacimiento']),
-      fecha_creacion_cuenta: _safeParse(clienteMap['fecha_creacion_cuenta']),
-      sexo: clienteMap['sexo'] ?? '',
-      dni: clienteMap['dni'] ?? '',
-      codigo: clienteMap['codigo'] ?? '',
-      calificacion: clienteMap['calificacion'] ?? 0,
-      saldo_beneficios: clienteMap['saldo_beneficios'] ?? 0,
-      suscripcion: clienteMap['suscripcion'] ?? '',
-      telefono: clienteMap['telefono'] ?? '',
-      email: clienteMap['email'] ?? '',
-    );
   }
 
   static Map<String, dynamic> _convertToStringDynamicMap(dynamic map) {
@@ -282,9 +245,9 @@ class Pedido {
 
   // Helpful getter methods
   String get clienteName => '${cliente.nombre} ${cliente.apellidos}'.trim();
-  String get clienteDNI => cliente.dni;
-  String get clienteTelefono => cliente.telefono;
-  String get clienteEmail => cliente.email;
+  String? get clienteDNI => cliente.dni;
+  String? get clienteTelefono => cliente.telefono;
+  String? get clienteEmail => cliente.email;
 
   // Method to get total number of products
   int get totalProductos => productos.length;

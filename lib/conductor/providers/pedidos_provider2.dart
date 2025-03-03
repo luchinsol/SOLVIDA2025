@@ -35,6 +35,8 @@ class PedidosProvider2 extends ChangeNotifier {
   bool get isllego => _llegopedido;
   //bool get isLoading => _isLoading;
   //bool get isInitialized => _isInitialized;
+  bool _loadingAceptar = false;
+  bool get loadingAceptar => _loadingAceptar;
 
   String get idecito => _idPedidoActual;
 
@@ -349,6 +351,35 @@ class PedidosProvider2 extends ChangeNotifier {
     }
   }
 
+  //segundo endpoint
+  Future<void> actualizarEstadoPedido(
+      String pedidoId, int almacenId, int conductorId) async {
+    final url = Uri.parse('${microUrl}/pedido_estado/$pedidoId');
+    _loadingAceptar = true;
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'conductor_id': conductorId, // Usamos el parámetro
+          'estado': 'en proceso',
+          'almacen_id': almacenId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al actualizar estado: ${response.body}');
+      }
+      notifyListeners();
+    } catch (e) {
+      throw Exception('Error en la llamada al API: $e');
+    } finally {
+      _loadingAceptar = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> addPedido(
       Map<String, dynamic> pedidoData, bool showNotification) async {
     try {
@@ -502,6 +533,7 @@ class PedidosProvider2 extends ChangeNotifier {
       // Si no está en la lista de pedidos pero tenemos los datos, lo agregamos primero
       if (pedidoData != null && !_pedidos.any((p) => p.id == pedidoId)) {
         await _processPedidoData(pedidoData);
+        notifyListeners();
       }
 
       final index = _pedidos.indexWhere((p) => p.id == pedidoId);
@@ -595,12 +627,12 @@ class PedidosProvider2 extends ChangeNotifier {
             notifyListeners();
             throw Exception('No se recibió confirmación del servidor');
           }
+          notifyListeners();
         }
       }
     } catch (e) {
-      print('Error accepting pedido: $e');
       _pedidosAceptados.remove(pedidoId);
-      rethrow;
+      throw Exception('Error accepting pedido: $e');
     }
   }
 
@@ -855,33 +887,35 @@ class PedidosProvider2 extends ChangeNotifier {
     notifyListeners();
   }
 
+  //FUNCION UNIFICADA DE ENDPOINT Y PEDIDOS ACEPTAR
+  Future<void> aceptarYActualizarPedido(
+      String pedidoId, int almacenId, int conductorId) async {
+    try {
+      print("EMPEZANDO ********");
+
+      await aceptarPedido(pedidoId);
+      await actualizarEstadoPedido(pedidoId, almacenId, conductorId);
+
+      print("TERMINADO ******");
+      // conductorId como parámetro
+    } catch (e) {
+      throw Exception("$e");
+    }
+  }
+
   //PEDIDO TOMADO
 
   List<Pedido> getActivePedidos() {
-    print("PEDIDOS ACTUAL----------------------------------------->>>>");
-    print("Cantidad de pedidos: ${_pedidos.length}");
-
-    if (_pedidos.isNotEmpty) {
-      print("Estado del primer pedido: ${_pedidos[0].estado}");
-      print("Tiempo de emisión: ${_pedidos[0].emittedTime}");
-      print("Tiempo de expiración: ${_pedidos[0].expiredTime}");
-      print("¿Está aceptado?: ${_pedidosAceptados.contains(_pedidos[0].id)}");
-      print("ID del primer pedido: ${_pedidos[0].id}");
-    } else {
-      print("La lista de pedidos está vacía.");
-    }
-
-    print("Cantidad de pedidos aceptados: ${_pedidosAceptados.length}");
-    print("Pedidos aceptados: $_pedidosAceptados");
-
     final now = DateTime.now();
 
-    return _pedidos
+    List<Pedido> activePedidos = _pedidos
         .where((pedido) =>
             pedido.estado != 'expirado' &&
             pedido.expiredTime.isAfter(now) &&
             !_pedidosAceptados.contains(pedido.id))
         .toList();
+
+    return activePedidos.isNotEmpty ? activePedidos : [];
   }
 
   // 4. LIBERAR MEMORIA
