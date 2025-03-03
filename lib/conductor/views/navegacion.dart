@@ -69,6 +69,28 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   bool _expandido = false;
   String? idpedidoActualDialog = "NA";
 
+  Future<bool> _anularPedido(String observacion) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$microUrl/pedido_anulado/${_currentPedido?.id}'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'observacion': observacion,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        // Captura el error de la API
+        throw Exception("Error: ${response.body}");
+      }
+    } catch (e) {
+      // Captura cualquier error, ya sea de la API o de conexión
+      throw Exception(e.toString());
+    }
+  }
+
   void _showCancelarPedido() {
     showDialog(
         context: context,
@@ -104,59 +126,22 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                           // color: Colors.yellow,
                           child: ElevatedButton(
                               onPressed: () async {
-                                try {
-                                  final response = await http.put(
-                                    Uri.parse(
-                                        '${microUrl}/pedido_anulado/${_currentPedido?.id}'),
-                                    headers: {
-                                      'Content-Type': 'application/json'
-                                    },
-                                    body: jsonEncode({
-                                      'observacion': 'Falla técnica',
-                                    }),
-                                  );
+                                // Usar la nueva función
 
-                                  if (response.statusCode == 200) {
-                                    // Cerrar el diálogo
-                                    Navigator.of(context).pop();
+                                await _anularPedido('Falla técnica');
 
-                                    // Usa el contexto original para la navegación
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      // Navega después de que el frame se haya completado
-                                      context.go('/drive');
+                                // Cerrar el diálogo
+                                context.go('/drive');
+                                context.pop();
 
-                                      // Muestra el mensaje de éxito
-                                      Flushbar(
-                                        message:
-                                            "Pedido cancelado correctamente",
-                                        duration: Duration(seconds: 3),
-                                      ).show(context);
-                                    });
-                                  } else {
-                                    // Cerrar el diálogo
-                                    Navigator.of(context).pop();
+                                // Cerrar el diálogo
 
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                              content: Text(
-                                                  "Error: ${response.body}")));
-                                    });
-                                  }
-                                } catch (e) {
-                                  // Cerrar el diálogo
-                                  Navigator.of(context).pop();
-
+                                /*
                                   WidgetsBinding.instance
                                       .addPostFrameCallback((_) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                "Error de conexión: ${e.toString()}")));
-                                  });
-                                }
+                                        SnackBar(content: Text(e.toString())));
+                                  });*/
                               },
                               style: ElevatedButton.styleFrom(
                                   shape: RoundedRectangleBorder(
@@ -187,59 +172,31 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                           // color: Colors.yellow,
                           child: ElevatedButton(
                               onPressed: () async {
-                                try {
-                                  final response = await http.put(
-                                    Uri.parse(
-                                        '${microUrl}/pedido_anulado/${_currentPedido?.id}'),
-                                    headers: {
-                                      'Content-Type': 'application/json'
-                                    },
-                                    body: jsonEncode({
-                                      'observacion': 'Cliente no responde',
-                                    }),
-                                  );
+                                // Usar la nueva función
+                                await _anularPedido('Cliente no responde');
 
-                                  if (response.statusCode == 200) {
-                                    // Cerrar el diálogo
-                                    Navigator.of(context).pop();
+                                // Cerrar el diálogo
 
-                                    // Usa el contexto original para la navegación
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      // Navega después de que el frame se haya completado
-                                      context.go('/drive');
+                                // Navega después de que el frame se haya completado
+                                context.go('/drive');
+                                context.pop();
+                                // Muestra el mensaje de éxito
+                                /*
+                                    Flushbar(
+                                      message: "Pedido cancelado correctamente",
+                                      duration: Duration(seconds: 3),
+                                    ).show(context);
+                                  */
 
-                                      // Muestra el mensaje de éxito
-                                      Flushbar(
-                                        message:
-                                            "Pedido cancelado correctamente",
-                                        duration: Duration(seconds: 3),
-                                      ).show(context);
-                                    });
-                                  } else {
-                                    // Cerrar el diálogo
-                                    Navigator.of(context).pop();
+                                // Cerrar el diálogo
 
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                              content: Text(
-                                                  "Error: ${response.body}")));
-                                    });
-                                  }
-                                } catch (e) {
-                                  // Cerrar el diálogo
-                                  Navigator.of(context).pop();
-
+                                /*
                                   WidgetsBinding.instance
                                       .addPostFrameCallback((_) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                "Error de conexión: ${e.toString()}")));
+                                        SnackBar(content: Text(e.toString())));
                                   });
-                                }
+                                  */
                               },
                               style: ElevatedButton.styleFrom(
                                   shape: RoundedRectangleBorder(
@@ -606,6 +563,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     }
   }
 
+/*  
   void _showCancelDialog(BuildContext context) {
     // Create a TextEditingController if it doesn't exist
     final _observacionController = TextEditingController();
@@ -682,8 +640,11 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                     });
                   } else {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
+                      print("Pedido no fue ingresado");
+                      /*
                       ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("Error: ${response.body}")));
+                      */
                     });
                   }
                 } catch (e) {
@@ -701,6 +662,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       },
     );
   }
+*/
 
   Widget _buildTimerWidget() {
     return StreamBuilder<int>(
@@ -865,15 +827,16 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                 .aceptarPedido(pedidoMap['id'], pedidoData: pedidoMap)
                 .then((_) {
               // Cerrar la notificación después de aceptar
-              Navigator.of(context, rootNavigator: true).pop();
+              context.pop();
             }).catchError((error) {
               // Manejo de error opcional
-              ScaffoldMessenger.of(context).showSnackBar(
+              /*ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Error al aceptar pedido: ${error.toString()}'),
                   backgroundColor: Colors.red,
                 ),
-              );
+              );*/
+              print("error al realizar la aceptacion de pedido $error");
             });
             //FIN DE LOGICA DE ACEPTAR PEDIDO
           },

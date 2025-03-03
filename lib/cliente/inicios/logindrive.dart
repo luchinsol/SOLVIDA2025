@@ -383,7 +383,7 @@ class _PreloginDriverState extends State<PreloginDriver> {
                                         //SI ES CLIENTE
                                         if (rol == 4) {
                                           //SI ES CONDUCTOR
-                                        } else if (rol == 2) {
+                                        } else if (rol == 5) {
                                           print("...ROL: $rol");
                                           if (nivel == 'admin') {
                                             context.go('/admin');
