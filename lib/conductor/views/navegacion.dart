@@ -664,6 +664,29 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   }
 */
 
+  Future<void> cancelarPedido(String pedidoId, int almacenId) async {
+    try {
+      final url = Uri.parse('${microUrl}/pedido_estado/$pedidoId');
+
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'conductor_id': conductorId!,
+          'estado': 'pendiente',
+          'almacen_id': almacenId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al actualizar estado: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error al entregar pedido: $e');
+      // Mostrar un mensaje de error al usuario
+    }
+  }
+
   Widget _buildTimerWidget() {
     return StreamBuilder<int>(
       stream: _timerController?.stream,
@@ -1096,6 +1119,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                     ),
                     TextButton(
                       onPressed: () {
+                        pedidosProvider
+                            .ignorarPedidoBoton(_currentPedido!.toMap());
+                        cancelarPedido(
+                            _currentPedido!.id, _currentPedido!.almacenId);
                         context.pop(true);
                       },
                       child: const Text("Salir"),
