@@ -906,27 +906,59 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                   width: 130.w,
                                                   child: ElevatedButton(
                                                     onPressed: () async {
+                                                      setState(() =>
+                                                          loadingAceptar =
+                                                              true); // Activar carga
 
-                                                      await Provider.of<
-                                                                  PedidosProvider2>(
-                                                              context,
-                                                              listen: false)
-                                                          .aceptarYActualizarPedido(
-                                                              pedido.id,
-                                                              pedido.almacenId,
-                                                              conductorProvider
-                                                                  .conductor!
-                                                                  .id);
+                                                      try {
+                                                        // 1. Ejecutar aceptación y actualización
+                                                        await Provider.of<
+                                                                    PedidosProvider2>(
+                                                                context,
+                                                                listen: false)
+                                                            .aceptarYActualizarPedido(
+                                                                pedido.id,
+                                                                pedido
+                                                                    .almacenId,
+                                                                conductorProvider
+                                                                    .conductor!
+                                                                    .id);
 
-                                                      print(
-                                                          "ENTRANDO AL BOTON ACEPTAR******");
-/*
-                                                      context.go(
-                                                          '/drive/navegar'); // Verifica nuevamente antes de navegar
-            */
-                                                      GoRouter.of(context)
-                                                          .go('drive/navegar');
+                                                        // 2. Verificar si el pedido fue aceptado correctamente
+                                                        final pedidoAceptado =
+                                                            Provider.of<PedidosProvider2>(
+                                                                    context,
+                                                                    listen:
+                                                                        false)
+                                                                .pedidosAceptados
+                                                                .any((p) =>
+                                                                    p.id ==
+                                                                    pedido.id);
 
+                                                        if (pedidoAceptado &&
+                                                            mounted) {
+                                                          // 3. Navegar SOLO si fue exitoso
+                                                          GoRouter.of(context).go(
+                                                              '/drive/navegar');
+                                                        }
+                                                      } catch (e) {
+                                                        if (mounted) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  SnackBar(
+                                                            content: Text(
+                                                                'Error al aceptar pedido: $e'),
+                                                            backgroundColor:
+                                                                Colors.red,
+                                                          ));
+                                                        }
+                                                      } finally {
+                                                        if (mounted)
+                                                          setState(() =>
+                                                              loadingAceptar =
+                                                                  false);
+                                                      }
                                                     },
                                                     style: ButtonStyle(
                                                       shape:
@@ -956,16 +988,21 @@ class _DrivePedidosState extends State<DrivePedidos> {
                                                             42, 75, 160, 1),
                                                       ),
                                                     ),
-                                                    child: Text(
-                                                      "Aceptar",
-                                                      style:
-                                                          GoogleFonts.manrope(
-                                                        fontSize: 13.sp,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
+                                                    child: loadingAceptar
+                                                        ? CircularProgressIndicator(
+                                                            color: Colors.white)
+                                                        : Text(
+                                                            "Aceptar",
+                                                            style: GoogleFonts
+                                                                .manrope(
+                                                              fontSize: 13.sp,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ),
                                                   ),
                                                 ),
                                               ],

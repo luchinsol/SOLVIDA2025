@@ -891,15 +891,20 @@ class PedidosProvider2 extends ChangeNotifier {
   Future<void> aceptarYActualizarPedido(
       String pedidoId, int almacenId, int conductorId) async {
     try {
-      print("EMPEZANDO ********");
-
+      // 1. Aceptar pedido localmente
       await aceptarPedido(pedidoId);
+
+      // 2. Actualizar estado en backend
       await actualizarEstadoPedido(pedidoId, almacenId, conductorId);
 
-      print("TERMINADO ******");
-      // conductorId como parámetro
+      // 3. Forzar actualización de UI
+      notifyListeners();
     } catch (e) {
-      throw Exception("$e");
+      // Remover de lista si falla
+      _pedidosAceptados.remove(pedidoId);
+      _pedidosAceptadosList.removeWhere((p) => p.id == pedidoId);
+      notifyListeners();
+      throw e;
     }
   }
 
