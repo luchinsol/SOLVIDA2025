@@ -1,6 +1,7 @@
 import 'package:app2025/conductor/views/historial.dart';
 import 'package:app2025/conductor/views/inicio.dart';
 import 'package:app2025/conductor/views/pedido.dart';
+import 'package:app2025/conductor/views/pedido2.dart';
 import 'package:app2025/conductor/views/perfil.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -19,7 +20,7 @@ class _BarraConductorState extends State<BarraConductor> {
 
   final List<Widget> _screens = const [
     InicioDriver(),
-    DrivePedidos(),
+    DrivePedidos2(),
     Historial(),
     Perfil(),
   ];
