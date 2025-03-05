@@ -38,7 +38,7 @@
         </intent>
     </queries>
 
-    <application android:label="app2025" android:name="${applicationName}" android:icon="@mipmap/ic_launcher">
+    <application android:label="Sol Vida" android:name="${applicationName}" android:icon="@mipmap/ic_launcher">
 
         <!-- Esto es necesario para notificaciones -->
         <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_notification" />

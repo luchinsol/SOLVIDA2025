@@ -74,8 +74,9 @@ class _InicioDriverState extends State<InicioDriver> {
           Provider.of<LastpedidoProvider>(context, listen: false);
 
       int? idconductor = conductorProvider.conductor?.id;
-      var res = await http
-          .get(Uri.parse('$microUrl/conductor_lastpedido/$idconductor'));
+      var res = await http.get(
+        Uri.parse('$microUrl/conductor_lastpedido/$idconductor'),
+      );
 
       if (res.statusCode == 200) {
         var data = json.decode(res.body);
@@ -95,37 +96,18 @@ class _InicioDriverState extends State<InicioDriver> {
             total: data['total'].toDouble(),
             fecha: fecha,
             estado: data['estado'],
+            distanciakm: data['distanciakm'].toDouble(),
             cliente: cliente);
 
         // Actualizamos el proveedor con el nuevo Lastpedido
         pedidolastProvider.updateLastPedido(lastpedido);
         print("....");
-        print("${pedidolastProvider.lastPedido?.cliente!.nombre}");
+        print("${pedidolastProvider.lastPedido}");
         print("....kataaa");
         pedidolastProvider.lastPedido?.fecha = DateTime(
             pedidolastProvider.lastPedido!.fecha!.year,
             pedidolastProvider.lastPedido!.fecha!.month,
             pedidolastProvider.lastPedido!.fecha!.day);
-      } else {
-        print(
-            "Respuesta no exitosa (${res.statusCode}), asignando valores por defecto.");
-
-        // Si la respuesta no es 200, asignamos valores por defecto
-        ClientelastModel defaultCliente = ClientelastModel(
-          nombre: "Cliente Desconocido",
-          foto: "https://example.com/default_profile.png",
-        );
-
-        LastpedidoModel defaultPedido = LastpedidoModel(
-          id: 0,
-          tipo: "Desconocido",
-          total: 0.0,
-          fecha: DateTime.now(),
-          estado: "Desconocido",
-          cliente: defaultCliente,
-        );
-
-        pedidolastProvider.updateLastPedido(defaultPedido);
       }
     } catch (e) {
       throw Exception("Error query $e");
@@ -203,6 +185,9 @@ class _InicioDriverState extends State<InicioDriver> {
         enabled = false;
       });
     }
+    print("${pedidolast.lastPedido?.cliente?.nombre}");
+    print("");
+    print("cond :${conductorProvider.conductor?.nombres}");
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -594,9 +579,19 @@ class _InicioDriverState extends State<InicioDriver> {
                                                     duration: Duration(
                                                         milliseconds: 1700)),
                                                 child: Text(
-                                                  "60",
+                                                  "${pedidolast.lastPedido!.distanciakm!.toStringAsFixed(1)}",
                                                   style: GoogleFonts.manrope(
-                                                      fontSize: 32,
+                                                      fontSize: pedidolast
+                                                                  .lastPedido!
+                                                                  .distanciakm! >
+                                                              999
+                                                          ? 16.sp
+                                                          : (pedidolast
+                                                                      .lastPedido!
+                                                                      .distanciakm! >
+                                                                  99
+                                                              ? 19.sp
+                                                              : 32.sp),
                                                       fontWeight:
                                                           FontWeight.bold),
                                                 ),
@@ -623,75 +618,125 @@ class _InicioDriverState extends State<InicioDriver> {
                                         highlightColor: Colors.grey.shade200,
                                         duration: Duration(milliseconds: 1700)),
                                     enabled: enabled,
-                                    child: Material(
-                                      elevation: 10.r,
-                                      borderRadius: BorderRadius.circular(20.r),
-                                      child: Container(
-                                        height: 111.h,
-                                        padding: EdgeInsets.all(10.r),
-                                        decoration: BoxDecoration(
+                                    // TARJETA DE PEDIDO
+                                    child: pedidolast.lastPedido != null
+                                        ? Material(
+                                            elevation: 10.r,
                                             borderRadius:
                                                 BorderRadius.circular(20.r),
-                                            color: Colors.grey.shade100),
-                                        // Contenido
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Container(
-                                              width: 153.h,
-                                              // color: Colors.green,
+                                            child: Container(
+                                              height: 111.h,
+                                              padding: EdgeInsets.all(10.r),
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.r),
+                                                  color: const Color.fromARGB(
+                                                      255, 248, 248, 248)),
+                                              // Contenido
                                               child: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 children: [
                                                   Container(
-                                                    // color: const Color.fromARGB(255, 194, 177, 183),
-                                                    child: Column(
+                                                    width: 153.h,
+                                                    //color: Colors.green,
+                                                    child: Row(
                                                       mainAxisAlignment:
                                                           MainAxisAlignment
-                                                              .spaceEvenly,
+                                                              .spaceBetween,
                                                       children: [
                                                         Container(
-                                                          width: 45.h,
-                                                          height: 45.h,
-                                                          decoration: BoxDecoration(
-                                                              color:
-                                                                  Colors.white,
-                                                              image: DecorationImage(
-                                                                  image: NetworkImage(
-                                                                      'https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg')),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          50.r)),
+                                                          // color: const Color.fromARGB(255, 194, 177, 183),
+                                                          child: Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceEvenly,
+                                                            children: [
+                                                              Container(
+                                                                width: 45.h,
+                                                                height: 45.h,
+                                                                decoration: BoxDecoration(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    image: DecorationImage(
+                                                                        image: NetworkImage(
+                                                                            'https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg')),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            50.r)),
+                                                              ),
+                                                            ],
+                                                          ),
                                                         ),
+                                                        // Nombre
+                                                        Container(
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              Text(
+                                                                "Cliente:${pedidolast.lastPedido?.cliente!.nombre?.toUpperCase()}",
+                                                                style: GoogleFonts.manrope(
+                                                                    fontSize:
+                                                                        14.sp,
+                                                                    color: Colors
+                                                                        .grey
+                                                                        .shade600),
+                                                              ),
+                                                              Text(
+                                                                'S/.${pedidolast.lastPedido?.total}',
+                                                                style: GoogleFonts.manrope(
+                                                                    fontSize:
+                                                                        14.sp,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ),
+                                                              /*
+                                                Text(
+                                                  "${formatoFecha(pedidolast.lastPedido!.fecha!)}",
+                                                  style: GoogleFonts.manrope(
+                                                      fontSize: 14.sp,
+                                                      color:
+                                                          Colors.grey.shade600),
+                                                )*/
+                                                            ],
+                                                          ),
+                                                        )
                                                       ],
                                                     ),
                                                   ),
                                                   Container(
-                                                    //color: Color.fromARGB(255, 200, 216, 164),
+                                                    width: 153.h,
                                                     child: Column(
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment
-                                                              .start,
+                                                              .end,
                                                       mainAxisAlignment:
                                                           MainAxisAlignment
                                                               .spaceBetween,
                                                       children: [
                                                         Text(
-                                                          "${pedidolast.lastPedido?.cliente!.nombre}",
+                                                          "ID: #${pedidolast.lastPedido?.id}",
                                                           style: GoogleFonts
                                                               .manrope(
                                                                   fontSize:
                                                                       14.sp,
-                                                                  color: Colors
-                                                                      .grey
-                                                                      .shade600),
+                                                                  color: const Color
+                                                                      .fromARGB(
+                                                                      255,
+                                                                      66,
+                                                                      66,
+                                                                      66)),
                                                         ),
                                                         Text(
-                                                          'S/.${pedidolast.lastPedido?.total}',
+                                                          "${pedidolast.lastPedido?.tipo}",
                                                           style: GoogleFonts
                                                               .manrope(
                                                                   fontSize:
@@ -700,75 +745,64 @@ class _InicioDriverState extends State<InicioDriver> {
                                                                       FontWeight
                                                                           .bold),
                                                         ),
-                                                        /*
-                                                Text(
-                                                  "${formatoFecha(pedidolast.lastPedido!.fecha!)}",
-                                                  style: GoogleFonts.manrope(
-                                                      fontSize: 14.sp,
-                                                      color:
-                                                          Colors.grey.shade600),
-                                                )*/
+                                                        Container(
+                                                          width: 85.w,
+                                                          height: 26.h,
+                                                          decoration: BoxDecoration(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          6.r),
+                                                              color: Colors.grey
+                                                                  .shade300),
+                                                          child: Center(
+                                                            child: Text(
+                                                              "${pedidolast.lastPedido?.estado}",
+                                                              style: GoogleFonts.manrope(
+                                                                  color: Color
+                                                                      .fromARGB(
+                                                                          255,
+                                                                          53,
+                                                                          41,
+                                                                          158)),
+                                                            ),
+                                                          ),
+                                                        )
                                                       ],
                                                     ),
                                                   )
                                                 ],
                                               ),
                                             ),
-                                            Container(
-                                              width: 153.h,
-                                              // color: Colors.green,
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
+                                          )
+                                        : Material(
+                                            elevation: 10.r,
+                                            borderRadius:
+                                                BorderRadius.circular(20.r),
+                                            child: Container(
+                                              height: 111,
+                                              decoration: BoxDecoration(
+                                                  color: const Color.fromARGB(
+                                                      255, 233, 233, 233),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.r)),
+                                              child: Row(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                                                    MainAxisAlignment.center,
                                                 children: [
                                                   Text(
-                                                    "ID: #${pedidolast.lastPedido?.id}",
+                                                    "Todavía no entregaste",
                                                     style: GoogleFonts.manrope(
-                                                        fontSize: 14.sp,
-                                                        color: const Color
-                                                            .fromARGB(
-                                                            255, 66, 66, 66)),
-                                                  ),
-                                                  Text(
-                                                    "${pedidolast.lastPedido?.tipo}",
-                                                    style: GoogleFonts.manrope(
-                                                        fontSize: 14.sp,
                                                         fontWeight:
-                                                            FontWeight.bold),
+                                                            FontWeight.w600,
+                                                        fontSize: 15.sp),
                                                   ),
-                                                  Container(
-                                                    width: 85.w,
-                                                    height: 26.h,
-                                                    decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(6.r),
-                                                        color: Colors
-                                                            .grey.shade300),
-                                                    child: Center(
-                                                      child: Text(
-                                                        "${pedidolast.lastPedido?.estado}",
-                                                        style:
-                                                            GoogleFonts.manrope(
-                                                                color: Color
-                                                                    .fromARGB(
-                                                                        255,
-                                                                        53,
-                                                                        41,
-                                                                        158)),
-                                                      ),
-                                                    ),
-                                                  )
+                                                  Icon(Icons.all_inbox_outlined)
                                                 ],
                                               ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
+                                            ),
+                                          ),
                                   )
                                 ],
                               ))
