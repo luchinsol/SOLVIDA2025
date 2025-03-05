@@ -29,6 +29,7 @@ class _HistorialState extends State<Historial> {
   List<Pedido> pedidosConductor = [];
   bool cargando = true;
   bool esperando = true;
+  int _selectedIndex = -1;
 
   Future<void> getHistorialConductor(String fecha) async {
     try {
@@ -91,19 +92,11 @@ class _HistorialState extends State<Historial> {
     }
   }
 
-  int _selectedIndex = -1;
   @override
   void initState() {
     super.initState();
-
     _currentDate = DateTime.now();
     _days = _generateDays(_currentDate);
-    _selectedIndex = _days.length - 1; // Selecciona hoy
-    // Carga los datos del día actual
-    String formatFecha = DateFormat('yyyy-MM-dd').format(_days[_selectedIndex]);
-    getHistorialConductor(formatFecha);
-    print(_currentDate);
-    print(_days);
   }
 
   List<DateTime> _generateDays(DateTime startDate) {
@@ -113,22 +106,13 @@ class _HistorialState extends State<Historial> {
     ); //.reversed.toList();
   }
 
-  void _loadPreviousDays() {
-    setState(() {
-      _currentDate = _currentDate.subtract(Duration(days: 7));
-      _days = _generateDays(_currentDate);
-    });
-  }
-
   void _onDayTapped(index) {
     setState(() {
       _selectedIndex = index; // Actualiza el índice seleccionado
       cargando = true;
       esperando = true;
     });
-    print("...");
-    print(_selectedIndex);
-    print(_days[_selectedIndex]);
+
     DateTime diaSeleccionado = _days[index];
     String formatFecha =
         DateFormat('yyyy-MM-dd').format(diaSeleccionado.toUtc());
@@ -402,6 +386,9 @@ class _HistorialState extends State<Historial> {
                                                 ),
                                                 Text(
                                                   "${pedidosConductor[index1].ubicacion.distrito} ${pedidosConductor[index1].ubicacion.direccion}",
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
                                                   style: GoogleFonts.manrope(
                                                       fontSize: 12.sp,
                                                       fontWeight:
