@@ -44,6 +44,7 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
   List<PedidoCliente> listPedidosPasados = [];
   List<ProductoPedidoCliente> listProductosPedidoPendiente = [];
   List<ProductoPedidoCliente> listProductosPedidoPasados = [];
+  String microUrl = dotenv.env['MICRO_URL'] ?? '';
 
   @override
   void initState() {
@@ -179,6 +180,26 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
     for (var i = 0; i < listPedidosPendientes.length; i++) {
       await getProductos(
           listPedidosPendientes[i].id, listProductosPedidoPendiente);
+    }
+  }
+
+  Future<bool> _anularPedido(String observacion, String id) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$microUrl/pedido_anulado/${id}'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'observacion': observacion,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        throw Exception("Error: ${response.body}");
+      }
+    } catch (e) {
+      throw Exception(e.toString());
     }
   }
 
@@ -383,7 +404,11 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
                                                               87,
                                                               113,
                                                               255))),
-                                              onPressed: () {},
+                                              onPressed: () {
+                                                _anularPedido(
+                                                    "Pedido Anulado Por Cliente",
+                                                    pedido.id.toString());
+                                              },
                                               child: Text(
                                                 "Anular pedido",
                                                 style: GoogleFonts.manrope(

@@ -63,7 +63,6 @@ class _PedidoState extends State<Pedido> {
   late DateTime tiempoPeru;
   int ubicacionSelectID = 0;
   String apiUrl = dotenv.env['API_URL'] ?? '';
-  String microUrl = dotenv.env['MICRO_URL'] ?? '';
   String codigoverify = '/api/code_cliente';
   String apiPedido = '/api/pedido';
   String apiDetallePedido = '/api/detallepedido';
@@ -309,26 +308,6 @@ class _PedidoState extends State<Pedido> {
           "cantidad": cantidad,
           "promocion_id": promoID
         }));
-  }
-
-  Future<bool> _anularPedido(String observacion, String id) async {
-    try {
-      final response = await http.put(
-        Uri.parse('$microUrl/pedido_anulado/${id}'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'observacion': observacion,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        throw Exception("Error: ${response.body}");
-      }
-    } catch (e) {
-      throw Exception(e.toString());
-    }
   }
 
   Future<void> crearPedidoyDetallePedido(clienteID, tipo, subtotal, monto,
@@ -742,7 +721,6 @@ class _PedidoState extends State<Pedido> {
                                                         children: [
                                                           TextButton(
                                                               onPressed: () {
-                                                                _anularPedido("Pedido Anulado",userProvider.user!.id.toString());
                                                                 context.pop();
                                                               },
                                                               child: Text(
