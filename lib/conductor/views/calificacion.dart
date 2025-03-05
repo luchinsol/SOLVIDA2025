@@ -90,6 +90,8 @@ class _CalificacionState extends State<Calificacion> {
 
   @override
   Widget build(BuildContext context) {
+    final pedidosprovider =
+        Provider.of<PedidosProvider2>(context, listen: false);
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -128,7 +130,7 @@ class _CalificacionState extends State<Calificacion> {
                     baseColor: Colors.white,
                     highlightColor: Colors.grey.shade500),
                 child: Text(
-                  "Luis Gonzáles",
+                  '${(pedidosprovider.primerPedidoAceptado?.cliente.nombre ?? '').toUpperCase()} ${(pedidosprovider.primerPedidoAceptado?.cliente.apellidos ?? '').toUpperCase()}',
                   style: GoogleFonts.manrope(
                       fontSize: 22.5.sp, color: Colors.grey),
                 ),

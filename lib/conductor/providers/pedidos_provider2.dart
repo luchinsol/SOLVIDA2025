@@ -163,6 +163,7 @@ class PedidosProvider2 extends ChangeNotifier {
 
       // Remover de todas las listas
       _removePedidoFromAllLists(pedidoId);
+      _pedidoAnuladoStreamController.add(pedidoId);
 
       // Notificar a los listeners para actualizar la UI
       notifyListeners();
@@ -315,9 +316,16 @@ class PedidosProvider2 extends ChangeNotifier {
   Future<void> postNotificaciones(String mensaje, String tipo, String estado,
       DateTime fecha_creacion, DateTime fecha_envio, int almacen_id) async {
     try {
+      print("\n");
+      print("\n");
+      print("\n");
+      print("\n");
+      print("\n");
+      print("\n");
+      print("\n");
       SharedPreferences tokenUser = await SharedPreferences.getInstance();
       String? token = tokenUser.getString('token'); // Recupera el token
-
+      print("$token");
       if (token == null) {
         print("No hay token almacenado");
         // return false;
@@ -342,8 +350,14 @@ class PedidosProvider2 extends ChangeNotifier {
       print("....RESSSS");
       print(res.statusCode);
       if (res.statusCode == 201) {
+        print("DENTRO DEL POST NOTIFICACIONES ********");
         // Devuelve true si se creó correctamente
+
+        print("\n");
+        print("\n");
+        print("\n");
       } else {
+        print("NOT NOTIFICACIONES ********");
         // Devuelve false si el código no es 201
       }
     } catch (e) {
@@ -394,23 +408,31 @@ class PedidosProvider2 extends ChangeNotifier {
       }
       // LLEGA PEDIDO
       print("....llega pedido");
-      SharedPreferences pedidoJson = await SharedPreferences.getInstance();
-      await pedidoJson.setString('pedidoJson', jsonEncode(pedido.toMap()));
+      try {
+        SharedPreferences pedidoJson = await SharedPreferences.getInstance();
+        await pedidoJson.setString('pedidoJson', jsonEncode(pedido.toMap()));
+      } catch (e) {
+        print('Error guardando en SharedPreferences: $e');
+      }
 
       print("recupero el pedido");
-      print("ESTE ES EL PEDIDO ->${pedidoJson.getString('pedidoJson')}");
+      //print("ESTE ES EL PEDIDO ->${pedidoJson.getString('pedidoJson')}");
 
       print("....Fecha obetina");
       print(DateFormat('yyyy-MM-dd').format(DateTime.now()));
-      String fechaC = DateFormat('yyyy-MM-dd').format(DateTime.now().toUtc());
-      await postNotificaciones(
-          '#${pedido.id} Cliente:${pedido.cliente.nombre} ${pedido.cliente.apellidos}S/.${pedido.total.toString()} ',
-          pedido.pedidoinfo['tipo'],
-          pedido.estado,
-          DateTime.parse(fechaC),
-          DateTime.parse(fechaC),
-          pedido.almacenId);
-      print("POST EXITOS");
+      try {
+        String fechaC = DateFormat('yyyy-MM-dd').format(DateTime.now().toUtc());
+        await postNotificaciones(
+            '#${pedido.id} Cliente:${pedido.cliente.nombre} ${pedido.cliente.apellidos}S/.${pedido.total.toString()} ',
+            pedido.pedidoinfo['tipo'],
+            pedido.estado,
+            DateTime.parse(fechaC),
+            DateTime.parse(fechaC),
+            pedido.almacenId);
+        print("POST EXITOS");
+      } catch (e) {
+        print('Error posteando notificación: $e');
+      }
 
       // AQUÍ SE MUESTRA LA NOTIFICACIÓN
 
@@ -560,7 +582,7 @@ class PedidosProvider2 extends ChangeNotifier {
         bool operationCompleted = false;
 
         // Crear un listener temporal con un timeout
-        Timer orderTakenTimer = Timer(Duration(seconds: 5), () {
+        Timer orderTakenTimer = Timer(Duration(seconds: 10), () {
           if (!operationCompleted) {
             // Si pasaron 5 segundos y no recibimos respuesta, revertimos
             print(
@@ -683,6 +705,36 @@ class PedidosProvider2 extends ChangeNotifier {
       }
     } catch (error) {
       print("Pedido no se Entrego ${error}");
+    }
+  }
+
+  Future<void> actualizarEstadoPedidoEntregado(
+      String pedidoId, int almacenId, int conductorId) async {
+    try {
+      // 2. Actualizar en la base de datos
+      final url = Uri.parse('${microUrl}/pedido_estado/$pedidoId');
+
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'conductor_id': conductorId,
+          'estado': 'entregado',
+          'almacen_id': almacenId,
+        }),
+      );
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  Future<void> callEntregar(
+      String pedidoId, int almacenId, int conductorId) async {
+    try {
+      await actualizarEstadoPedidoEntregado(pedidoId, almacenId, conductorId);
+      await entregarPedido(pedidoId);
+    } catch (e) {
+      throw Exception(e);
     }
   }
 
@@ -904,7 +956,7 @@ class PedidosProvider2 extends ChangeNotifier {
       _pedidosAceptados.remove(pedidoId);
       _pedidosAceptadosList.removeWhere((p) => p.id == pedidoId);
       notifyListeners();
-      throw e;
+      throw Exception(e);
     }
   }
 

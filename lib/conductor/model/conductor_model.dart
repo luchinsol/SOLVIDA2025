@@ -5,7 +5,7 @@ class ConductorModel {
   DateTime fecha_nacimiento;
   String? licencia;
   String? soat;
-  double? valoracion;
+  double valoracion;
   double? latitud;
   double? longitud;
   String? estado_registro;
@@ -24,7 +24,7 @@ class ConductorModel {
       required this.fecha_nacimiento,
       required this.licencia,
       required this.soat,
-      this.valoracion,
+      this.valoracion = 0.0,
       required this.latitud,
       required this.longitud,
       required this.estado_registro,

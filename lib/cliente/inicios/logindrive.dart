@@ -125,7 +125,7 @@ class _PreloginDriverState extends State<PreloginDriver> {
                 DateTime.parse(data['driver']['fecha_nacimiento']),
             licencia: data['driver']['n_licencia'],
             soat: data['driver']['n_soat'],
-            valoracion: data['driver']['valoración'],
+            valoracion: data['driver']['valoración'].toDouble() ?? 0.0,
             latitud: data['driver']['latitud'],
             longitud: data['driver']['longitud'],
             estado_registro: data['driver']['estado_regitro'],

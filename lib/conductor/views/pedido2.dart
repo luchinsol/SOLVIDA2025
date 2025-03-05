@@ -267,114 +267,118 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
             padding: EdgeInsets.only(
                 top: 32.r, bottom: 20.r, left: 17.r, right: 17.r),
             child: Container(
-                // color: Colors.grey,
-                height: 1.sh,
-                child: Consumer<PedidosProvider2>(
-                    builder: (context, provider, child) {
-                  final pedidos = provider.getActivePedidos();
-                  print("------------lIST PROVIDER ${pedidos.length}");
-                  return ListView.builder(
-                    itemCount: pedidos.length,
-                    itemBuilder: (context, index) {
-                      final pedido = pedidos[index];
-                      final clienteNombre =
-                          pedido.cliente.nombre ?? 'Cliente sin nombre';
-                      final total = pedido.total ?? 0.0;
-                      final estado = pedido.estado ?? 'Estado pendiente';
-                      final emittedTime = pedido.emittedTime ?? DateTime.now();
-                      final latitud = pedido.ubicacion['latitud'] ?? -16;
-                      final longitud = pedido.ubicacion['longitud'] ?? -71;
-                      final departamento = pedido.ubicacion['departamento'];
-                      final provincia = pedido.ubicacion['provincia'];
-                      final distrito = pedido.ubicacion['distrito'];
-                      final direccion = pedido.ubicacion['direccion'];
-                      final direccionCompleta =
-                          '${pedido.ubicacion['direccion']}, ${pedido.ubicacion['distrito']}, ${pedido.ubicacion['provincia']}, ${pedido.ubicacion['departamento']}';
+              // color: Colors.grey,
+              height: 1.sh,
+              child: conexionTrabajo.isConnected
+                  ? Consumer<PedidosProvider2>(
+                      builder: (context, provider, child) {
+                      final pedidos = provider.getActivePedidos();
+                      print("------------lIST PROVIDER ${pedidos.length}");
+                      return ListView.builder(
+                        itemCount: pedidos.length,
+                        itemBuilder: (context, index) {
+                          final pedido = pedidos[index];
+                          final clienteNombre =
+                              pedido.cliente.nombre ?? 'Cliente sin nombre';
+                          final total = pedido.total ?? 0.0;
+                          final estado = pedido.estado ?? 'Estado pendiente';
+                          final emittedTime =
+                              pedido.emittedTime ?? DateTime.now();
+                          final latitud = pedido.ubicacion['latitud'] ?? -16;
+                          final longitud = pedido.ubicacion['longitud'] ?? -71;
+                          final departamento = pedido.ubicacion['departamento'];
+                          final provincia = pedido.ubicacion['provincia'];
+                          final distrito = pedido.ubicacion['distrito'];
+                          final direccion = pedido.ubicacion['direccion'];
+                          final direccionCompleta =
+                              '${pedido.ubicacion['direccion']}, ${pedido.ubicacion['distrito']}, ${pedido.ubicacion['provincia']}, ${pedido.ubicacion['departamento']}';
 
-                      return Column(
-                        children: [
-                          Skeletonizer(
-                            enabled: false,
-                            effect: ShimmerEffect(
-                                baseColor: Colors.white,
-                                highlightColor: Colors.grey.shade500),
-                            child: Material(
-                              elevation: 5.r,
-                              borderRadius: BorderRadius.circular(20.r),
-                              // TARJETA DEL PEDIDO
-                              child: Container(
-                                height: 500.h,
-                                decoration: BoxDecoration(
+                          return Column(
+                            children: [
+                              Skeletonizer(
+                                enabled: false,
+                                effect: ShimmerEffect(
+                                    baseColor: Colors.white,
+                                    highlightColor: Colors.grey.shade500),
+                                child: Material(
+                                  elevation: 5.r,
                                   borderRadius: BorderRadius.circular(20.r),
-                                  color: const Color.fromARGB(255, 43, 31, 212),
-                                ),
-                                padding: EdgeInsets.all(8.r),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    // Cabecera: Siempre visible
-                                    Container(
-                                      height: 165.h,
-                                      // color: Colors.green,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
+                                  // TARJETA DEL PEDIDO
+                                  child: Container(
+                                    height: 500.h,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.r),
+                                      color: const Color.fromARGB(
+                                          255, 43, 31, 212),
+                                    ),
+                                    padding: EdgeInsets.all(8.r),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        // Cabecera: Siempre visible
+                                        Container(
+                                          height: 165.h,
+                                          // color: Colors.green,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              // FOTO Y NOMBRE
-                                              Container(
-                                                //color: Colors.amber,
-                                                width: 153.h,
-                                                child: Column(
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  // FOTO Y NOMBRE
+                                                  Container(
+                                                    //color: Colors.amber,
+                                                    width: 153.h,
+                                                    child: Column(
                                                       children: [
-                                                        Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Container(
-                                                              width: 45.h,
-                                                              height: 45.h,
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                image: DecorationImage(
-                                                                    image: NetworkImage(
-                                                                        'https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg')),
-                                                                color: const Color
-                                                                    .fromARGB(
-                                                                    255,
-                                                                    224,
-                                                                    224,
-                                                                    224),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            50.r),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
+                                                        Row(
                                                           mainAxisAlignment:
                                                               MainAxisAlignment
                                                                   .spaceBetween,
                                                           children: [
-                                                            Text(
-                                                              clienteNombre,
-                                                              style: GoogleFonts
-                                                                  .manrope(
+                                                            Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Container(
+                                                                  width: 45.h,
+                                                                  height: 45.h,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    image: DecorationImage(
+                                                                        image: NetworkImage(
+                                                                            'https://i.pinimg.com/736x/17/ec/61/17ec61d172c7e0860fba0de51dad4ffe.jpg')),
+                                                                    color: const Color
+                                                                        .fromARGB(
+                                                                        255,
+                                                                        224,
+                                                                        224,
+                                                                        224),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            50.r),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Text(
+                                                                  clienteNombre,
+                                                                  style: GoogleFonts.manrope(
                                                                       fontSize:
                                                                           14.sp,
                                                                       color: Colors
@@ -383,10 +387,66 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
                                                                       //Colors.grey.shade600
 
                                                                       ),
+                                                                ),
+                                                                Text(
+                                                                  "S/.${total.toStringAsFixed(2)}",
+                                                                  style: GoogleFonts.manrope(
+                                                                      fontSize:
+                                                                          14.sp,
+                                                                      color: Colors
+                                                                          .white,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold),
+                                                                ),
+                                                                Text(
+                                                                  pedido
+                                                                      .emittedTime
+                                                                      .toString()
+                                                                      .split(
+                                                                          ' ')[0],
+                                                                  style: GoogleFonts.manrope(
+                                                                      fontSize:
+                                                                          14.sp,
+                                                                      color: Colors
+                                                                          .white),
+                                                                ),
+                                                              ],
                                                             ),
-                                                            Text(
-                                                              "S/.${total.toStringAsFixed(2)}",
-                                                              style: GoogleFonts.manrope(
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  // ID Y TIPO
+                                                  Container(
+                                                    width: 153.h,
+                                                    //color: Colors.grey,
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .end,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          "ID: #${pedido.id}",
+                                                          style: GoogleFonts
+                                                              .manrope(
+                                                                  fontSize:
+                                                                      16.5.sp,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color: Colors
+                                                                      .yellow),
+                                                        ),
+                                                        Text(
+                                                          pedido.pedidoinfo[
+                                                              'estado'],
+                                                          style: GoogleFonts
+                                                              .manrope(
                                                                   fontSize:
                                                                       14.sp,
                                                                   color: Colors
@@ -394,78 +454,27 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold),
-                                                            ),
-                                                            Text(
-                                                              pedido.emittedTime
-                                                                  .toString()
-                                                                  .split(
-                                                                      ' ')[0],
-                                                              style: GoogleFonts
-                                                                  .manrope(
-                                                                      fontSize:
-                                                                          14.sp,
-                                                                      color: Colors
-                                                                          .white),
-                                                            ),
-                                                          ],
                                                         ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              // ID Y TIPO
-                                              Container(
-                                                width: 153.h,
-                                                //color: Colors.grey,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.end,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      "ID: #${pedido.id}",
-                                                      style:
-                                                          GoogleFonts.manrope(
-                                                              fontSize: 16.5.sp,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: Colors
-                                                                  .yellow),
-                                                    ),
-                                                    Text(
-                                                      pedido
-                                                          .pedidoinfo['estado'],
-                                                      style:
-                                                          GoogleFonts.manrope(
-                                                              fontSize: 14.sp,
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                    ),
-                                                    StreamBuilder(
-                                                      stream: Stream.periodic(
-                                                          const Duration(
-                                                              seconds: 1)),
-                                                      builder:
-                                                          (context, snapshot) {
-                                                        final tiempoRestante =
-                                                            pedido.expiredTime
-                                                                .difference(
-                                                                    DateTime
-                                                                        .now());
+                                                        StreamBuilder(
+                                                          stream:
+                                                              Stream.periodic(
+                                                                  const Duration(
+                                                                      seconds:
+                                                                          1)),
+                                                          builder: (context,
+                                                              snapshot) {
+                                                            final tiempoRestante =
+                                                                pedido
+                                                                    .expiredTime
+                                                                    .difference(
+                                                                        DateTime
+                                                                            .now());
 
-                                                        if (tiempoRestante
-                                                            .isNegative) {
-                                                          return Text(
-                                                            'Expirado',
-                                                            style: GoogleFonts
-                                                                .manrope(
+                                                            if (tiempoRestante
+                                                                .isNegative) {
+                                                              return Text(
+                                                                'Expirado',
+                                                                style: GoogleFonts.manrope(
                                                                     fontSize:
                                                                         12.sp,
                                                                     color: Colors
@@ -473,339 +482,394 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .w500),
-                                                          );
-                                                        }
+                                                              );
+                                                            }
 
-                                                        // Format remaining time as mm:ss
-                                                        final minutes =
-                                                            tiempoRestante
-                                                                .inMinutes;
-                                                        final seconds =
-                                                            tiempoRestante
-                                                                    .inSeconds %
-                                                                60;
-                                                        return Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .end,
-                                                          children: [
-                                                            Icon(
-                                                              Icons
-                                                                  .timer_outlined,
-                                                              color:
-                                                                  Colors.grey,
-                                                            ),
-                                                            Text(
-                                                              '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
-                                                              style: GoogleFonts.manrope(
-                                                                  fontSize:
-                                                                      12.sp,
+                                                            // Format remaining time as mm:ss
+                                                            final minutes =
+                                                                tiempoRestante
+                                                                    .inMinutes;
+                                                            final seconds =
+                                                                tiempoRestante
+                                                                        .inSeconds %
+                                                                    60;
+                                                            return Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .end,
+                                                              children: [
+                                                                Icon(
+                                                                  Icons
+                                                                      .timer_outlined,
                                                                   color: Colors
-                                                                      .white,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500),
-                                                            ),
-                                                          ],
-                                                        );
-                                                      },
+                                                                      .grey,
+                                                                ),
+                                                                Text(
+                                                                  '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+                                                                  style: GoogleFonts.manrope(
+                                                                      fontSize:
+                                                                          12.sp,
+                                                                      color: Colors
+                                                                          .white,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500),
+                                                                ),
+                                                              ],
+                                                            );
+                                                          },
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
+                                                  ),
+                                                ],
+                                              ),
+                                              SizedBox(
+                                                height: 18.h,
+                                              ),
+                                              Text(
+                                                "Dirección",
+                                                style: GoogleFonts.manrope(
+                                                    fontSize: 14.sp,
+                                                    color: Colors.white),
+                                              ),
+                                              SizedBox(
+                                                height: 8.h,
+                                              ),
+                                              Text(
+                                                direccionCompleta ??
+                                                    "Cargando dirección...",
+                                                style: GoogleFonts.manrope(
+                                                    fontSize: 14.sp,
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.w600),
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 2,
+                                              ),
+                                              SizedBox(height: 3.h),
+                                            ],
+                                          ),
+                                        ),
+
+                                        // Reemplaza la sección de los botones con este código
+
+                                        SizedBox(
+                                          height: 10.h,
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 5.h),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              // Google Map
+                                              Container(
+                                                height: 40.h,
+                                                width: 80.w,
+                                                child: ElevatedButton(
+                                                    onPressed: () {
+                                                      _mostrarMapa(
+                                                          context, pedido);
+                                                    },
+                                                    style: ButtonStyle(
+                                                      shape:
+                                                          MaterialStateProperty
+                                                              .all(
+                                                        RoundedRectangleBorder(
+                                                          side:
+                                                              const BorderSide(
+                                                            width: 1.0,
+                                                            color:
+                                                                Color.fromRGBO(
+                                                                    42,
+                                                                    75,
+                                                                    160,
+                                                                    1),
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      15.r),
+                                                        ),
+                                                      ),
+                                                      backgroundColor:
+                                                          MaterialStateProperty
+                                                              .all(
+                                                                  Colors.white),
+                                                    ),
+                                                    child: Icon(
+                                                        Icons.location_pin)),
+                                              ),
+
+                                              // Botón Ignorar
+                                              Container(
+                                                height: 40.h,
+                                                width: 130.w,
+                                                child: ElevatedButton(
+                                                  onPressed: () {
+                                                    final provider = Provider
+                                                        .of<PedidosProvider2>(
+                                                            context,
+                                                            listen: false);
+                                                    provider.ignorarPedidoBoton(
+                                                        pedido.toMap());
+                                                  },
+                                                  style: ButtonStyle(
+                                                    shape: MaterialStateProperty
+                                                        .all(
+                                                      RoundedRectangleBorder(
+                                                        side: const BorderSide(
+                                                          width: 1.0,
+                                                          color: Color.fromRGBO(
+                                                              42, 75, 160, 1),
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(15.r),
+                                                      ),
+                                                    ),
+                                                    backgroundColor:
+                                                        MaterialStateProperty
+                                                            .all(Colors.white),
+                                                  ),
+                                                  child: Text(
+                                                    "Ignorar",
+                                                    style: GoogleFonts.manrope(
+                                                      fontSize: 14.sp,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color:
+                                                          const Color.fromRGBO(
+                                                              42, 75, 160, 1),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+
+                                              // Botón Aceptar
+                                              Container(
+                                                height: 40.h,
+                                                width: 130.w,
+                                                child: ElevatedButton(
+                                                  onPressed: () async {
+                                                    setState(() =>
+                                                        loadingAceptar = true);
+                                                    try {
+                                                      await provider
+                                                          .aceptarYActualizarPedido(
+                                                              pedido.id,
+                                                              pedido.almacenId,
+                                                              conductorProvider
+                                                                  .conductor!
+                                                                  .id);
+
+                                                      print(
+                                                          "ENTRANDO AL BOTON ACEPTAR******");
+                                                      /*
+                                                          context.go(
+                                                              '/drive/navegar'); // Verifica nuevamente antes de navegar
+                                      */
+                                                      GoRouter.of(context)
+                                                          .go('/drive/navegar');
+                                                      setState(() =>
+                                                          loadingAceptar =
+                                                              false);
+                                                    } catch (e) {
+                                                      throw Exception(e);
+                                                    }
+                                                  },
+                                                  style: ButtonStyle(
+                                                    shape: MaterialStateProperty
+                                                        .all(
+                                                      RoundedRectangleBorder(
+                                                        side: const BorderSide(
+                                                          width: 1.0,
+                                                          color: Color.fromRGBO(
+                                                              255, 255, 255, 1),
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(15.r),
+                                                      ),
+                                                    ),
+                                                    backgroundColor:
+                                                        MaterialStateProperty
+                                                            .all(
+                                                      const Color.fromRGBO(
+                                                          42, 75, 160, 1),
+                                                    ),
+                                                  ),
+                                                  child: loadingAceptar
+                                                      ? CircularProgressIndicator(
+                                                          color: Colors.white)
+                                                      : Text(
+                                                          "Aceptar",
+                                                          style: GoogleFonts
+                                                              .manrope(
+                                                            fontSize: 13.sp,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          SizedBox(
-                                            height: 18.h,
-                                          ),
-                                          Text(
-                                            "Dirección",
-                                            style: GoogleFonts.manrope(
-                                                fontSize: 14.sp,
-                                                color: Colors.white),
-                                          ),
-                                          SizedBox(
-                                            height: 8.h,
-                                          ),
-                                          Text(
-                                            direccionCompleta ??
-                                                "Cargando dirección...",
-                                            style: GoogleFonts.manrope(
-                                                fontSize: 14.sp,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w600),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 2,
-                                          ),
-                                          SizedBox(height: 8.h),
-                                        ],
-                                      ),
-                                    ),
-
-                                    // Reemplaza la sección de los botones con este código
-
-                                    SizedBox(
-                                      height: 10.h,
-                                    ),
-                                    Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 5.h),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          // Google Map
-                                          Container(
-                                            height: 40.h,
-                                            width: 80.w,
-                                            child: ElevatedButton(
-                                                onPressed: () {
-                                                  _mostrarMapa(context, pedido);
-                                                },
-                                                style: ButtonStyle(
-                                                  shape:
-                                                      MaterialStateProperty.all(
-                                                    RoundedRectangleBorder(
-                                                      side: const BorderSide(
-                                                        width: 1.0,
-                                                        color: Color.fromRGBO(
-                                                            42, 75, 160, 1),
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              15.r),
-                                                    ),
-                                                  ),
-                                                  backgroundColor:
-                                                      MaterialStateProperty.all(
-                                                          Colors.white),
-                                                ),
-                                                child:
-                                                    Icon(Icons.location_pin)),
-                                          ),
-
-                                          // Botón Ignorar
-                                          Container(
-                                            height: 40.h,
-                                            width: 130.w,
-                                            child: ElevatedButton(
-                                              onPressed: () {
-                                                final provider = Provider.of<
-                                                        PedidosProvider2>(
-                                                    context,
-                                                    listen: false);
-                                                provider.ignorarPedidoBoton(
-                                                    pedido.toMap());
-                                              },
-                                              style: ButtonStyle(
-                                                shape:
-                                                    MaterialStateProperty.all(
-                                                  RoundedRectangleBorder(
-                                                    side: const BorderSide(
-                                                      width: 1.0,
-                                                      color: Color.fromRGBO(
-                                                          42, 75, 160, 1),
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.r),
-                                                  ),
-                                                ),
-                                                backgroundColor:
-                                                    MaterialStateProperty.all(
-                                                        Colors.white),
-                                              ),
-                                              child: Text(
-                                                "Ignorar",
-                                                style: GoogleFonts.manrope(
-                                                  fontSize: 14.sp,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: const Color.fromRGBO(
-                                                      42, 75, 160, 1),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-
-                                          // Botón Aceptar
-                                          Container(
-                                            height: 40.h,
-                                            width: 130.w,
-                                            child: ElevatedButton(
-                                              onPressed: () async {
-                                                await Provider.of<
-                                                            PedidosProvider2>(
-                                                        context,
-                                                        listen: false)
-                                                    .aceptarYActualizarPedido(
-                                                        pedido.id,
-                                                        pedido.almacenId,
-                                                        conductorProvider
-                                                            .conductor!.id);
-
-                                                print(
-                                                    "ENTRANDO AL BOTON ACEPTAR******");
-                                                /*
-                                                          context.go(
-                                                              '/drive/navegar'); // Verifica nuevamente antes de navegar
-                                      */
-                                                GoRouter.of(context)
-                                                    .go('drive/navegar');
-                                              },
-                                              style: ButtonStyle(
-                                                shape:
-                                                    MaterialStateProperty.all(
-                                                  RoundedRectangleBorder(
-                                                    side: const BorderSide(
-                                                      width: 1.0,
-                                                      color: Color.fromRGBO(
-                                                          255, 255, 255, 1),
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.r),
-                                                  ),
-                                                ),
-                                                backgroundColor:
-                                                    MaterialStateProperty.all(
-                                                  const Color.fromRGBO(
-                                                      42, 75, 160, 1),
-                                                ),
-                                              ),
-                                              child: Text(
-                                                "Aceptar",
-                                                style: GoogleFonts.manrope(
-                                                  fontSize: 13.sp,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    // Contenido que se muestra/oculta
-
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(height: 20.h),
-                                        Text(
-                                          "Lista de productos (${pedido.productos.length + pedido.promociones.length})",
-                                          style: GoogleFonts.manrope(
-                                              fontSize: 14.sp,
-                                              color: Colors.white),
                                         ),
-                                        SizedBox(height: 10.h),
 
-                                        // LIST VIEW PRODUCTOS
-                                        Container(
-                                            padding: EdgeInsets.all(8.r),
-                                            height: 170.h,
-                                            //width: 110.w,
-                                            decoration: BoxDecoration(
-                                                color: Colors.amber,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        20.r)),
-                                            child: ListView.builder(
-                                                //Sumamos las cantidades de pedidos y productos para tener un total
-                                                itemCount: pedido
-                                                        .productos.length +
-                                                    pedido.promociones.length,
-                                                itemBuilder: (context, index) {
-                                                  //colocamos valores cambiantes ya que los productos y promociones pasan por 3 condiciones uno es cuando no haya ningun producto otro es cuando no haya ninguna promociones y otra es cuando existan ambas
-                                                  dynamic item;
-                                                  String name;
-                                                  int quantity;
-                                                  //condicion para saber si hay productos
-                                                  if (index <
-                                                      pedido.productos.length) {
-                                                    // esto indica que hay productos
-                                                    item =
-                                                        pedido.productos[index];
-                                                    name = item.nombre;
-                                                    quantity = item.cantidad;
-                                                  } else {
-                                                    // en caso no hayan productos recorre las promociones
-                                                    item = pedido.promociones[
-                                                        index -
-                                                            pedido.productos
-                                                                .length];
-                                                    name = item.nombre;
-                                                    quantity = item.cantidad;
-                                                  }
-                                                  return Column(
-                                                    children: [
-                                                      Container(
-                                                        height: 66.h,
-                                                        //width: 100.w,
-                                                        child: Row(
-                                                          children: [
-                                                            Text(
-                                                              name.toUpperCase(),
-                                                              style: GoogleFonts.manrope(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize:
-                                                                      14.sp),
+                                        // Contenido que se muestra/oculta
+
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(height: 20.h),
+                                            Text(
+                                              "Lista de productos (${pedido.productos.length + pedido.promociones.length})",
+                                              style: GoogleFonts.manrope(
+                                                  fontSize: 14.sp,
+                                                  color: Colors.white),
+                                            ),
+                                            SizedBox(height: 10.h),
+
+                                            // LIST VIEW PRODUCTOS
+                                            Container(
+                                                padding: EdgeInsets.all(8.r),
+                                                height: 170.h,
+                                                //width: 110.w,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.amber,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20.r)),
+                                                child: ListView.builder(
+                                                    //Sumamos las cantidades de pedidos y productos para tener un total
+                                                    itemCount: pedido
+                                                            .productos.length +
+                                                        pedido
+                                                            .promociones.length,
+                                                    itemBuilder:
+                                                        (context, index) {
+                                                      //colocamos valores cambiantes ya que los productos y promociones pasan por 3 condiciones uno es cuando no haya ningun producto otro es cuando no haya ninguna promociones y otra es cuando existan ambas
+                                                      dynamic item;
+                                                      String name;
+                                                      int quantity;
+                                                      //condicion para saber si hay productos
+                                                      if (index <
+                                                          pedido.productos
+                                                              .length) {
+                                                        // esto indica que hay productos
+                                                        item = pedido
+                                                            .productos[index];
+                                                        name = item.nombre;
+                                                        quantity =
+                                                            item.cantidad;
+                                                      } else {
+                                                        // en caso no hayan productos recorre las promociones
+                                                        item = pedido
+                                                                .promociones[
+                                                            index -
+                                                                pedido.productos
+                                                                    .length];
+                                                        name = item.nombre;
+                                                        quantity =
+                                                            item.cantidad;
+                                                      }
+                                                      return Column(
+                                                        children: [
+                                                          Container(
+                                                            height: 66.h,
+                                                            //width: 100.w,
+                                                            child: Row(
+                                                              children: [
+                                                                Text(
+                                                                  name.toUpperCase(),
+                                                                  style: GoogleFonts.manrope(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize:
+                                                                          14.sp),
+                                                                ),
+                                                                SizedBox(
+                                                                  width: 20.w,
+                                                                ),
+                                                                Text(
+                                                                  quantity
+                                                                      .toString(),
+                                                                  style: GoogleFonts.manrope(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize:
+                                                                          14.sp),
+                                                                )
+                                                              ],
                                                             ),
-                                                            SizedBox(
-                                                              width: 20.w,
-                                                            ),
-                                                            Text(
-                                                              quantity
-                                                                  .toString(),
-                                                              style: GoogleFonts.manrope(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize:
-                                                                      14.sp),
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Divider(
-                                                        height: 0.1.h,
-                                                        color: const Color
-                                                            .fromARGB(
-                                                            255, 11, 8, 179),
-                                                      ),
-                                                    ],
-                                                  );
-                                                })),
-                                        SizedBox(height: 20.h),
+                                                          ),
+                                                          Divider(
+                                                            height: 0.1.h,
+                                                            color: const Color
+                                                                .fromARGB(255,
+                                                                11, 8, 179),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    })),
+                                            SizedBox(height: 20.h),
+                                          ],
+                                        ),
+
+                                        // Muesca
                                       ],
                                     ),
-
-                                    // Muesca
-                                  ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 10.5.h,
-                          ),
-                          Container(
-                            width: 345.w,
-                            child: Divider(
-                              height: 10.h,
-                              color: const Color.fromARGB(255, 207, 233, 12),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 10.5.h,
-                          ),
-                        ],
+                              SizedBox(
+                                height: 10.5.h,
+                              ),
+                              Container(
+                                width: 345.w,
+                                child: Divider(
+                                  height: 10.h,
+                                  color:
+                                      const Color.fromARGB(255, 207, 233, 12),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 10.5.h,
+                              ),
+                            ],
+                          );
+                        },
                       );
-                    },
-                  );
-                }))));
+                    })
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 300.w,
+                            height: 300.w,
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: AssetImage(
+                                        'lib/imagenes/centralgirl.png'))),
+                          ),
+                          Text(
+                            "Conéctate al servidor de pedidos",
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.manrope(
+                                fontSize: 20.sp, fontWeight: FontWeight.w400),
+                          )
+                        ],
+                      ),
+                    ),
+            )));
   }
 }
