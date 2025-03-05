@@ -253,7 +253,7 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
     }
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 186, 189, 197),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
         //foregroundColor: Colors.white,
         //shadowColor: Colors.white,
@@ -279,6 +279,29 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
                             final pedidos = provider.getActivePedidos();
                             print(
                                 "------------lIST PROVIDER ${pedidos.length}");
+                            if (pedidos.isEmpty) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 300.w,
+                                      height: 200.w,
+                                      decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                              image: AssetImage(
+                                                  'lib/imagenes/truckwait.png'))),
+                                    ),
+                                    Text(
+                                      "Espera tus pedidos aquí",
+                                      style: GoogleFonts.manrope(
+                                          fontSize: 20.sp,
+                                          fontWeight: FontWeight.w300),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
                             return ListView.builder(
                               itemCount: pedidos.length,
                               itemBuilder: (context, index) {
