@@ -166,6 +166,8 @@ class _AdminDriverState extends State<AdminDriver> {
   Widget build(BuildContext context) {
     final conexionProvider = context.watch<ConexionStatusProvider>();
     final chipsPedidos = context.watch<ChipspedidosProvider>();
+    final conductorProvider =
+        Provider.of<ConductorProvider>(context, listen: false);
     return Scaffold(
       backgroundColor: Colors.white,
       body: conexionProvider.hasInternet
@@ -174,7 +176,7 @@ class _AdminDriverState extends State<AdminDriver> {
                   child: Column(
                     children: [
                       Container(
-                        height: 220.h,
+                        height: 230.h,
                         color: const Color.fromARGB(255, 43, 40, 195),
                         child: Padding(
                           padding: EdgeInsets.only(
@@ -225,7 +227,7 @@ class _AdminDriverState extends State<AdminDriver> {
                                     baseColor: Colors.white,
                                     highlightColor: Colors.grey.shade500),
                                 child: Text(
-                                  "Hola, Admin",
+                                  "Hola, ${conductorProvider.conductor!.nombres} ${conductorProvider.conductor!.apellidos}",
                                   style: GoogleFonts.manrope(
                                       fontSize: 22.sp,
                                       color: Colors.white,

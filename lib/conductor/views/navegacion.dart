@@ -61,7 +61,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   int? conductorId = 0;
   // Añade esta variable en la parte superior de tu clase de estado
   StreamController<int>? _timerController;
-  StreamSubscription? _pedidoAnuladoSubscription;
+  StreamSubscription<String>? _pedidoAnuladoSubscription;
+
   Timer? _timer;
   bool _isTimerRunning = false;
   bool _showAnulacionDialog = false;
@@ -69,10 +70,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   bool _expandido = false;
   String? idpedidoActualDialog = "NA";
 
-  Future<bool> _anularPedido(String observacion) async {
+  Future<bool> _anularPedido(String observacion, String? pedidoId) async {
     try {
       final response = await http.put(
-        Uri.parse('$microUrl/pedido_anulado/${_currentPedido?.id}'),
+        Uri.parse('$microUrl/pedido_anulado/${pedidoId}'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'observacion': observacion,
@@ -91,7 +92,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     }
   }
 
-  void _showCancelarPedido() {
+  void _showCancelarPedido(String? pedidoId) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -128,7 +129,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                               onPressed: () async {
                                 // Usar la nueva función
 
-                                await _anularPedido('Falla técnica');
+                                await _anularPedido('Falla técnica', pedidoId);
 
                                 // Cerrar el diálogo
                                 context.go('/drive');
@@ -173,7 +174,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                           child: ElevatedButton(
                               onPressed: () async {
                                 // Usar la nueva función
-                                await _anularPedido('Cliente no responde');
+                                await _anularPedido(
+                                    'Cliente no responde', pedidoId);
 
                                 // Cerrar el diálogo
 
@@ -446,7 +448,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
           LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!);
       await _initializeRoute(startLatLng);
       _updateCarPosition(startLatLng);
-      setState(() {});
+      if (mounted) {
+        // 🔹 Verifica si el widget aún está en pantalla
+        setState(() {});
+      }
     }
 
     _location.onLocationChanged.listen((LocationData locationData) {
@@ -462,46 +467,6 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       _nextPosition = newLatLng;
       _animateCarMovement();
     });
-  }
-
-  Future<void> entregarPedido(
-      BuildContext context, String pedidoId, int almacenId) async {
-    try {
-      // 1. Obtener el provider
-      final pedidoProvider =
-          Provider.of<PedidosProvider2>(context, listen: false);
-
-      // 2. Actualizar en la base de datos
-      final url = Uri.parse('${microUrl}/pedido_estado/$pedidoId');
-
-      final response = await http.put(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'conductor_id': conductorId!,
-          'estado': 'entregado',
-          'almacen_id': almacenId,
-        }),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception('Error al actualizar estado: ${response.body}');
-      }
-
-      print("------------------------->>>>> UI NAVEGACION--->>> NAVEGACION");
-      print(pedidoId);
-      // 3. Actualizar el provider y eliminar de la lista de aceptados
-      await pedidoProvider.entregarPedido(pedidoId);
-
-      // 4. Navegar a la pantalla de calificación
-      context.push('/drive/calificar');
-    } catch (e) {
-      print('Error al entregar pedido: $e');
-      // Mostrar un mensaje de error al usuario
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al entregar el pedido: $e')),
-      );
-    }
   }
 
   void _initializeTimer() {
@@ -736,6 +701,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   @override
   void initState() {
     super.initState();
+    _setupPedidoAnuladoListener();
     WidgetsBinding.instance.addObserver(this);
     final conductorProvider =
         Provider.of<ConductorProvider>(context, listen: false);
@@ -761,37 +727,48 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     });
   }
 
-  void _showPedidoAnuladoDialog() {
-    // Verifica si el widget sigue montado antes de mostrar el diálogo
-    if (!mounted) return;
+  void _setupPedidoAnuladoListener() {
+    final pedidosProvider =
+        Provider.of<PedidosProvider2>(context, listen: false);
 
+    _pedidoAnuladoSubscription =
+        pedidosProvider.pedidoAnuladoStream.listen((pedidoId) {
+      if (_currentPedido?.id == pedidoId && mounted) {
+        _handlePedidoAnulado();
+      }
+    });
+  }
+
+  void _handlePedidoAnulado() {
+    // Cancelar timer y limpiar recursos
     _timer?.cancel();
     _isTimerRunning = false;
-    _timerController?.close();
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Pedido Actual Anulado"),
+    if (_timerController?.isClosed == false) {
+      _timerController?.close();
+    }
+
+    // Mostrar diálogo
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text("Pedido Anulado"),
           content: Text(
               "El pedido ha sido anulado y no puede continuar con la entrega."),
           actions: [
             TextButton(
               onPressed: () {
-                context.pop();
-                if (mounted) {
-                  // Verificar nuevamente antes de navegar
-                  context.go('/drive');
-                }
+                Navigator.of(context).pop();
+                context.go('/drive');
               },
               child: const Text("Aceptar"),
             ),
           ],
-        );
-      },
-    );
+        ),
+      );
+    }
   }
 
   void _loadPedidoDetails() {
@@ -1039,7 +1016,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
         _showPedidoAnuladoDialog(context);
       }
     });*/
-
+    final conductorProvider =
+        Provider.of<ConductorProvider>(context, listen: false);
     bool mostrarDialogoAhora = false;
 
     print("....NAV CURRENT $_currentPedido");
@@ -1047,33 +1025,6 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     print(_currentPedido);
     // print(pedidosProvider.estaAnulado(_currentPedido!.id));
     print(_hasHandledAnulacion);
-
-    if (_currentPedido == null && !_hasHandledAnulacion) {
-      print("*******------DENTRO DE LA VERIFICACION DEL FUNCION ---->>>");
-      print(_currentPedido);
-      print(_hasHandledAnulacion);
-      // Solo mostraremos el diálogo si venimos de un evento real de anulación
-      // y no por un cambio de estado general en la aplicación
-      setState(() {
-        mostrarDialogoAhora = true;
-
-        // Marcar que ya manejamos esta anulación para no volver a mostrar el diálogo
-        _hasHandledAnulacion = true;
-      });
-    }
-
-    // Mostrar el diálogo después de construir el widget, pero solo si es necesario
-    if (mostrarDialogoAhora) {
-      // Usar un pequeño delay para evitar conflictos con transiciones de navegación
-      Future.delayed(Duration.zero, () {
-        if (mounted) {
-          print(
-              "1NUMERO DOSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS ----->>>>>>>>>>>>>>>>>>>");
-          // Verificar que el widget aún está montado
-          _showPedidoAnuladoDialog();
-        }
-      });
-    }
     // final activePedidos = pedidosProvider.getActivePedidos();
     final departamento = _currentPedido?.ubicacion?['departamento'];
     final provincia = _currentPedido?.ubicacion?['provincia'];
@@ -1119,8 +1070,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                     ),
                     TextButton(
                       onPressed: () {
-                        pedidosProvider
-                            .ignorarPedidoBoton(_currentPedido!.toMap());
+                        pedidosProvider.ignorarPedido(_currentPedido!.toMap());
                         cancelarPedido(
                             _currentPedido!.id, _currentPedido!.almacenId);
                         context.pop(true);
@@ -1656,6 +1606,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                         itemBuilder: (context, index) {
                                           dynamic item;
                                           String name;
+                                          int quantity;
+                                          bool isProducto;
 
                                           if (index <
                                               (_currentPedido
@@ -1665,6 +1617,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                             item = _currentPedido
                                                 ?.productos?[index];
                                             name = item?.nombre ?? 'N/A';
+                                            quantity = item?.cantidad;
+                                            isProducto = true;
                                           } else {
                                             // Promociones
                                             item = _currentPedido?.promociones?[
@@ -1673,6 +1627,8 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                                             ?.length ??
                                                         0)];
                                             name = item?.nombre ?? 'N/A';
+                                            quantity = item?.cantidad;
+                                            isProducto = false;
                                           }
                                           return Column(
                                             children: [
@@ -1681,7 +1637,9 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                                 child: Row(
                                                   children: [
                                                     Text(
-                                                      "Producto",
+                                                      isProducto
+                                                          ? "Producto"
+                                                          : "Promoción",
                                                       style:
                                                           GoogleFonts.manrope(
                                                               fontWeight:
@@ -1700,7 +1658,19 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                                                   FontWeight
                                                                       .bold,
                                                               fontSize: 13.sp),
-                                                    )
+                                                    ),
+                                                    SizedBox(
+                                                      width: 20.w,
+                                                    ),
+                                                    Text(
+                                                      quantity.toString(),
+                                                      style:
+                                                          GoogleFonts.manrope(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 13.sp),
+                                                    ),
                                                   ],
                                                 ),
                                               ),
@@ -1735,7 +1705,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                     // Acción al presionar el botón
 
                                     //_showCancelDialog(context);
-                                    _showCancelarPedido();
+                                    _showCancelarPedido(_currentPedido?.id);
                                   },
                                   style: ButtonStyle(
                                       backgroundColor: WidgetStateProperty.all(
@@ -1783,8 +1753,11 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                       print("UI ---->> LOGS PARA DEPURAR");
                                       print(pedido2?.id);
                                       // Llamamos a la función para entregar el pedido
-                                      entregarPedido(context, pedido2!.id,
-                                          pedido2!.almacenId);
+                                      pedidosProvider.callEntregar(
+                                          pedido2!.id,
+                                          pedido2.almacenId,
+                                          conductorProvider.conductor!.id);
+                                      context.go('/drive/calificar');
                                     } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
