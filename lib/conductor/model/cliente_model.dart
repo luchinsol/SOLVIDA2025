@@ -75,7 +75,7 @@ class Cliente {
     return Cliente(
       id: map['id'] ?? 0,
       usuario_id: map['usuario_id'] ?? 0,
-      nombre: map['nombre'] ?? 'Cliente Desconocido',
+      nombre: map['nombre'] ?? 'Desconocido',
       apellidos: map['apellidos'] ?? '',
       ruc: map['ruc'] ?? '',
       fecha_nacimiento: (map['fecha_nacimiento'] != null)

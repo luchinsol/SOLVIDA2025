@@ -6,6 +6,7 @@ class LastpedidoModel {
   double? total;
   DateTime? fecha;
   String? estado;
+  double? distanciakm;
   ClientelastModel? cliente;
 
   LastpedidoModel(
@@ -13,6 +14,7 @@ class LastpedidoModel {
       required this.tipo,
       required this.total,
       required this.fecha,
+      required this.distanciakm,
       required this.cliente,
       required this.estado});
 }
