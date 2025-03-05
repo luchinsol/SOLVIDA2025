@@ -852,7 +852,7 @@ class _InicioDriverState extends State<InicioDriver> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        " Estamos trabajando para solucionarlo. 🚧",
+                        " Intenta más tarde o verifica tu conexión 🚧",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.manrope(
                             fontSize: 16.sp,
