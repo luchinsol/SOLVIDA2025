@@ -5,8 +5,8 @@ class Pedido {
   final int cliente;
   final double total;
   final DateTime fecha;
-  final String tipo;
-  final String estado;
+  final String? tipo;
+  final String? estado;
   final Ubicacion ubicacion;
   final List<DetallePedido> detallesPedido;
   final String clienteNombre;
@@ -64,10 +64,10 @@ class Pedido {
 
 class Ubicacion {
   final int id;
-  final String departamento;
-  final String provincia;
-  final String distrito;
-  final String direccion;
+  final String? departamento;
+  final String? provincia;
+  final String? distrito;
+  final String? direccion;
   final double latitud;
   final double longitud;
   final int clienteId;
@@ -119,7 +119,7 @@ class DetallePedido {
   final int productoId;
   final int cantidad;
   final int? promocionId;
-  final String productoNombre;
+  final String? productoNombre;
 
   DetallePedido({
     required this.id,

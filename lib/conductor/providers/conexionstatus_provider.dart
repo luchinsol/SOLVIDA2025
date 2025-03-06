@@ -29,9 +29,15 @@ class ConexionStatusProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> _revisarWifi() async {
-    var conexionResult = await Connectivity().checkConnectivity();
-    return conexionResult != ConnectivityResult.none;
+  Future<bool> _revisarInternet() async {
+    try {
+      final response = await http
+          .get(Uri.parse('https://www.google.com'))
+          .timeout(Duration(seconds: 5));
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
   }
 
   void _monitoreoRedes() async {
@@ -40,7 +46,7 @@ class ConexionStatusProvider with ChangeNotifier {
       // Conexión servidor
       hasServerup = await _revisarServerUp();
       // Conexión wifi
-      hasInternet = await _revisarWifi();
+      hasInternet = await _revisarInternet();
       notifyListeners();
     });
   }
