@@ -150,6 +150,11 @@ final GoRouter _router = GoRouter(
       },
     ),
     GoRoute(
+        path: '/localizacion',
+        builder: (BuildContext context, GoRouterState state) {
+          return const LocationPermissionScreen();
+        }),
+    GoRoute(
         path: '/drive',
         builder: (BuildContext context, GoRouterState state) {
           //NotificationsService().silenceNotifications(false);
@@ -214,11 +219,6 @@ final GoRouter _router = GoRouter(
               path: 'ubicacion',
               builder: (BuildContext context, GoRouterState state) {
                 return const FormUbi();
-              }),
-          GoRoute(
-              path: 'localizacion',
-              builder: (BuildContext context, GoRouterState state) {
-                return const LocationPermissionScreen();
               }),
           GoRoute(
             path: 'confirmarubicacion/:direccion',

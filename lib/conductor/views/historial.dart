@@ -33,6 +33,7 @@ class _HistorialState extends State<Historial> {
   int _selectedIndex = -1;
 
   Future<void> getHistorialConductor(String fecha) async {
+    print("..... <<<<<<<<<< DETRO DEL HISTORIAL >>>>>><>>");
     try {
       int? idConductor = 0;
 
@@ -41,6 +42,7 @@ class _HistorialState extends State<Historial> {
       if (conductorProvider.conductor != null) {
         SharedPreferences tokenUser = await SharedPreferences.getInstance();
         String? token = tokenUser.getString('token');
+        print("...TOKEN");
         if (token == null) {
           return;
         }
@@ -51,6 +53,8 @@ class _HistorialState extends State<Historial> {
             pedidosConductor = [];
           });
         }
+        print("...todo los datos");
+        print("${idConductor} $fecha $token");
 
         var res = await http.get(
             Uri.parse('$microUrl/pedido_history/$idConductor/$fecha'),
