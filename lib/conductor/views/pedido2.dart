@@ -18,6 +18,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lottie/lottie.dart' as lotie;
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:geocoding/geocoding.dart';
@@ -255,14 +256,30 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
-        //foregroundColor: Colors.white,
-        //shadowColor: Colors.white,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         title: Consumer<PedidosProvider2>(builder: (context, provider, child) {
-          return Text(
-            "Pedidos (${provider.getActivePedidos().length})",
-            style: GoogleFonts.manrope(fontSize: 16.sp),
-          );
+          return provider.getActivePedidos().isNotEmpty
+              ? Text(
+                  "Pedidos (${provider.getActivePedidos().length})",
+                  style: GoogleFonts.manrope(fontSize: 16.sp),
+                )
+              : Row(
+                  children: [
+                    Text(
+                      "Espera tus pedidos aquí...",
+                      style: GoogleFonts.manrope(fontSize: 16.sp),
+                    ),
+                    Container(
+                        height: 70.w,
+                        width: 70.w,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.r)
+                            // color: Colors.amber
+                            ),
+                        child: lotie.Lottie.asset(
+                            'lib/animaciones/carritovacio.json'))
+                  ],
+                );
         }),
       ),
       body: conexionProvider.hasInternet

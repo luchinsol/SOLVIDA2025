@@ -617,7 +617,7 @@ class _PreloginState extends State<Prelogin> {
                                             //SI NO TIENE UBICACIONES INGRESA A UBICACION
                                           } else {
                                             //print("NO tiene unibicaciones");
-                                            context.go('/client/localizacion');
+                                            context.go('/localizacion');
                                           }
 
                                           //SI ES CONDUCTOR
