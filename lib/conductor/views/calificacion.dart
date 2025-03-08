@@ -27,17 +27,20 @@ class _CalificacionState extends State<Calificacion> {
     print("...claificcacion");
     print(calificacion);
     try {
+      /*
       SharedPreferences tokenUser = await SharedPreferences.getInstance();
       String? token = tokenUser.getString('token');
 
       if (token == null) {
         return;
       }
+      */
       var res = await http.put(Uri.parse(microUrl + '/cliente_calificar/4'),
+          /*
           headers: {
             "Authorization": "Bearer $token",
             "Content-Type": "application/json", // Especifica que envías JSON
-          },
+          },*/
           body: jsonEncode({"calificacion": calificacion}));
       if (res.statusCode == 200) {
         var data = json.decode(res.body);
@@ -64,17 +67,13 @@ class _CalificacionState extends State<Calificacion> {
       if (!mounted) return;
 
       // Obtenemos el provider para verificar si hay pedidos aceptados
-      final pedidosProvider =
-          Provider.of<PedidosProvider2>(context, listen: false);
-      final bool hasPedidos = pedidosProvider.pedidosAceptados.isNotEmpty;
+      //final pedidosProvider =
+      //    Provider.of<PedidosProvider2>(context, listen: false);
+      //final bool hasPedidos = pedidosProvider.pedidosAceptados.isNotEmpty;
 
       // Navegamos según la condición
-      if (!mounted) return;
-      if (hasPedidos) {
-        context.go('/drive/navegar');
-      } else {
-        context.go('/drive');
-      }
+      //if (!mounted) return;
+      context.go('/drive');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

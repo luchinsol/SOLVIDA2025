@@ -36,9 +36,7 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
   //VARIABLES GLOBALES
   final DraggableScrollableController _draggableController =
       DraggableScrollableController();
-  final LatLng _destination =
-      const LatLng(-16.410472367054158, -71.57064420197324);
-
+  late LatLng _destination;
   GoogleMapController? _mapController;
   BitmapDescriptor? _carIcon;
   BitmapDescriptor? _startIcon;
@@ -715,7 +713,10 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
     // Escuchar el stream de pedidos anulados
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final pedidosProvider =
-          Provider.of<PedidosProvider2>(context, listen: false);
+          Provider.of<PedidosProvider2>(context, listen: false)
+              .primerPedidoAceptado;
+      _destination = LatLng(pedidosProvider?.ubicacion['latitud'],
+          pedidosProvider?.ubicacion['longitud']);
 
       // Suscribirse al stream solo para el pedido actual
       /* _pedidoAnuladoSubscription =
@@ -814,37 +815,6 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
       backgroundColor: Colors.amber.withOpacity(0.8),
       isDismissible: true,
       dismissDirection: FlushbarDismissDirection.HORIZONTAL,
-      mainButton: ElevatedButton(
-          style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(
-                  const Color.fromARGB(255, 18, 29, 110))),
-          onPressed: () {
-            print(".........ACEPTE");
-
-            //LOGICA DE ACEPTAR PEDIDO
-            // Llamar al método aceptarPedido del provider
-            Provider.of<PedidosProvider2>(context, listen: false)
-                .aceptarPedido(pedidoMap['id'], pedidoData: pedidoMap)
-                .then((_) {
-              // Cerrar la notificación después de aceptar
-              context.pop();
-            }).catchError((error) {
-              // Manejo de error opcional
-              /*ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Error al aceptar pedido: ${error.toString()}'),
-                  backgroundColor: Colors.red,
-                ),
-              );*/
-              print("error al realizar la aceptacion de pedido $error");
-            });
-            //FIN DE LOGICA DE ACEPTAR PEDIDO
-          },
-          child: Text("Aceptar",
-              style: GoogleFonts.manrope(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  fontSize: 12.sp))),
       messageText: StatefulBuilder(
         builder: (context, setState) {
           return Column(

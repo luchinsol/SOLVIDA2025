@@ -45,9 +45,9 @@ class _NotificacionesState extends State<Notificaciones> {
           return;
         }
 
-        var res = await http.get(
-            Uri.parse('$microUrl/notificacion/$fechaActual/$almacen_id'),
-            headers: {"Authorization": "Bearer $token"});
+        var res = await http
+            .get(Uri.parse('$microUrl/notificacion/$fechaActual/$almacen_id'));
+        //headers: {"Authorization": "Bearer $token"});
 
         if (res.statusCode == 200) {
           var data = json.decode(res.body);

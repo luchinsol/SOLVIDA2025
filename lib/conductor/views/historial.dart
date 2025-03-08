@@ -37,11 +37,12 @@ class _HistorialState extends State<Historial> {
       final conductorProvider =
           Provider.of<ConductorProvider>(context, listen: false);
       if (conductorProvider.conductor != null) {
+        /*
         SharedPreferences tokenUser = await SharedPreferences.getInstance();
         String? token = tokenUser.getString('token');
         if (token == null) {
           return;
-        }
+        }*/
 
         if (mounted) {
           setState(() {
@@ -50,9 +51,9 @@ class _HistorialState extends State<Historial> {
           });
         }
 
-        var res = await http.get(
-            Uri.parse('$microUrl/pedido_history/$idConductor/$fecha'),
-            headers: {"Authorization": "Bearer $token"});
+        var res = await http
+            .get(Uri.parse('$microUrl/pedido_history/$idConductor/$fecha'));
+        //headers: {"Authorization": "Bearer $token"});
 
         if (res.statusCode == 200) {
           if (mounted) {

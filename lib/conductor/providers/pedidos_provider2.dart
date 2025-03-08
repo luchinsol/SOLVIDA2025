@@ -37,8 +37,11 @@ class PedidosProvider2 extends ChangeNotifier {
   //bool get isInitialized => _isInitialized;
   bool _loadingAceptar = false;
   bool get loadingAceptar => _loadingAceptar;
+  String? _token;
 
   String get idecito => _idPedidoActual;
+
+  String? get token => _token;
 
   List<Pedido> get pedidos => _pedidos;
 
@@ -323,22 +326,25 @@ class PedidosProvider2 extends ChangeNotifier {
       print("\n");
       print("\n");
       print("\n");
+      /*
       SharedPreferences tokenUser = await SharedPreferences.getInstance();
       String? token = tokenUser.getString('token'); // Recupera el token
       print("$token");
+      
       if (token == null) {
-        print("No hay token almacenado");
+        print("No hay token almacenado en NOTIFICACIONES");
         // return false;
       }
-
+  */
       String fechaCreacionFormatted =
           DateFormat('yyyy-MM-dd').format(fecha_creacion);
       String fechaEnvioFormatted = DateFormat('yyyy-MM-dd').format(fecha_envio);
       var res = await http.post(Uri.parse('$microUrl/notificacion'),
+          /*
           headers: {
             "Content-type": "application/json",
             "Authorization": "Bearer $token"
-          },
+          },*/
           body: jsonEncode({
             "mensaje": mensaje,
             "tipo": tipo,
@@ -737,6 +743,74 @@ class PedidosProvider2 extends ChangeNotifier {
       throw Exception(e);
     }
   }
+
+/*
+  Future<void> loadToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString('tokendriver'); // Cargar token almacenado
+    print("TOKEN PROVIDER CARGADO---->>");
+    print(_token);
+    notifyListeners(); // Notificar a la app para que se actualice
+  }
+
+  void setToken(String? token) async {
+    _token = token;
+    print("Ingresando por Parametros SETTOKEN $_token");
+    notifyListeners();
+
+    SharedPreferences tokenUser = await SharedPreferences.getInstance();
+    if (token != null) {
+      await tokenUser.setString('tokendriver', token); // Guardar el token
+    } else {
+      await tokenUser.remove('tokendriver'); // Eliminar si es null
+    }
+  }
+*/
+
+  //ENDPOINT PARA COMPARAR REGISTRO DEL PEDIDO CON CONDUCTOR
+  /*
+  Future<bool> verificarPedidoPerteneceConductor(
+      String pedidoId, int conductorId) async {
+    try {
+      final url = Uri.parse('${microUrl}/pedido_cond/$pedidoId');
+      print("URL: $url");
+      print("Token utilizado: $_token");
+
+      final response = await http.get(
+        url,
+        headers: {
+          "Content-type": "application/json",
+          "Authorization": "Bearer $_token"
+        },
+      );
+
+      print("Status code: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        var res = jsonDecode(response.body);
+        print("RESPUESTA VERIFICACIÓN *********>>>>>");
+        print(res);
+        final conductorPedido = res['conductor_id'];
+        print("Conductor en pedido: $conductorPedido");
+        print("Conductor actual: $conductorId");
+
+        return conductorPedido == conductorId;
+      } else {
+        print("Error en la respuesta: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Error verificando pedido: $e");
+      return false;
+    }
+  }*/
+
+/*
+  void removerPedidoNoPertenece(String pedidoId) {
+    _pedidosAceptados.remove(pedidoId);
+    _pedidosAceptadosList.removeWhere((p) => p.id == pedidoId);
+    notifyListeners();
+  }*/
 
   void emitPedidoExpirado(Map<String, dynamic> pedidoData) {
     try {

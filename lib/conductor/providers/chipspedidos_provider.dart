@@ -33,28 +33,30 @@ class ChipspedidosProvider with ChangeNotifier {
   Future<void> getPedidosAlmacen() async {
     if (almacen == null) return;
     try {
+/*
       SharedPreferences tokenUser = await SharedPreferences.getInstance();
       String? token = tokenUser.getString('token');
+
       print("chips ahoy ");
       if (token != null) {
-        print('$microUrl/pedido/almacen/${almacen.toString()}/$estadoActual');
-        var res = await http.get(
-            Uri.parse('$microUrl/pedido/almacen/$almacen/$estadoActual'),
-            headers: {"Authorization": "Bearer $token"});
-        if (res.statusCode == 200) {
-          var data = jsonDecode(res.body);
-          print("Datitos de mi chip");
-          print(data);
-          _pedidosAlmacen.clear();
-          notifyListeners();
-          _pedidosAlmacen.addAll(
-            (data as List).map((e) => PedidosAlmacen.fromJson(e)).toList(),
-          );
-          print("...CHIP CARGADO");
-          print(_pedidosAlmacen);
-          notifyListeners();
-        }
+        print('$microUrl/pedido/almacen/${almacen.toString()}/$estadoActual');*/
+      var res = await http
+          .get(Uri.parse('$microUrl/pedido/almacen/$almacen/$estadoActual'));
+      //headers: {"Authorization": "Bearer $token"});
+      if (res.statusCode == 200) {
+        var data = jsonDecode(res.body);
+        print("Datitos de mi chip");
+        print(data);
+        _pedidosAlmacen.clear();
+        notifyListeners();
+        _pedidosAlmacen.addAll(
+          (data as List).map((e) => PedidosAlmacen.fromJson(e)).toList(),
+        );
+        print("...CHIP CARGADO");
+        print(_pedidosAlmacen);
+        notifyListeners();
       }
+
       notifyListeners();
     } catch (error) {
       throw Exception("Error query get $error");

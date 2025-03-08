@@ -320,8 +320,8 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
                                       children: [
                                         // Cabecera: Siempre visible
                                         Container(
-                                          height: 165.h,
-                                          // color: Colors.green,
+                                          height: 175.h,
+                                          //color: Colors.green,
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -747,6 +747,7 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
                                                             20.r)),
                                                 child: ListView.builder(
                                                     //Sumamos las cantidades de pedidos y productos para tener un total
+                                                    shrinkWrap: true,
                                                     itemCount: pedido
                                                             .productos.length +
                                                         pedido
