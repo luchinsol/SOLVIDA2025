@@ -54,8 +54,6 @@ class _HistorialState extends State<Historial> {
             pedidosConductor = [];
           });
         }
-        print("...todo los datos");
-        print("${idConductor} $fecha $token");
 
         var res = await http
             .get(Uri.parse('$microUrl/pedido_history/$idConductor/$fecha'));
