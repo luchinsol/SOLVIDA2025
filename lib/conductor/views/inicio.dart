@@ -77,6 +77,7 @@ class _InicioDriverState extends State<InicioDriver> {
       var res = await http.get(
         Uri.parse('$microUrl/conductor_lastpedido/$idconductor'),
       );
+      print("RESPUESTA HTTP CONDUCTOR");
 
       if (res.statusCode == 200) {
         var data = json.decode(res.body);
@@ -108,7 +109,7 @@ class _InicioDriverState extends State<InicioDriver> {
             pedidolastProvider.lastPedido!.fecha!.year,
             pedidolastProvider.lastPedido!.fecha!.month,
             pedidolastProvider.lastPedido!.fecha!.day);
-      }
+      } else {}
     } catch (e) {
       throw Exception("Error query $e");
     }
@@ -578,23 +579,35 @@ class _InicioDriverState extends State<InicioDriver> {
                                                         Colors.grey.shade200,
                                                     duration: Duration(
                                                         milliseconds: 1700)),
-                                                child: Text(
-                                                  "${pedidolast.lastPedido!.distanciakm!.toStringAsFixed(1)}",
-                                                  style: GoogleFonts.manrope(
-                                                      fontSize: pedidolast
-                                                                  .lastPedido!
-                                                                  .distanciakm! >
-                                                              999
-                                                          ? 16.sp
-                                                          : (pedidolast
-                                                                      .lastPedido!
-                                                                      .distanciakm! >
-                                                                  99
-                                                              ? 19.sp
-                                                              : 32.sp),
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
+                                                child: pedidolast.lastPedido ==
+                                                        null
+                                                    ? Text(
+                                                        "0",
+                                                        style:
+                                                            GoogleFonts.manrope(
+                                                                fontSize: 32.sp,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                      )
+                                                    : Text(
+                                                        "${pedidolast.lastPedido!.distanciakm!.toStringAsFixed(1)}",
+                                                        style: GoogleFonts.manrope(
+                                                            fontSize: pedidolast
+                                                                        .lastPedido!
+                                                                        .distanciakm! >
+                                                                    999
+                                                                ? 16.sp
+                                                                : (pedidolast
+                                                                            .lastPedido!
+                                                                            .distanciakm! >
+                                                                        99
+                                                                    ? 19.sp
+                                                                    : 32.sp),
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
                                               )
                                             ],
                                           ),

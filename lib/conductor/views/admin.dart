@@ -169,7 +169,8 @@ class _AdminDriverState extends State<AdminDriver> {
                                       effect: ShimmerEffect(
                                           baseColor: Colors.white,
                                           highlightColor: Colors.grey.shade500),
-                                      child: Text("Arequipa - almacen 3",
+                                      child: Text(
+                                          "Arequipa - almacen ${conductorProvider.conductor!.evento_id}",
                                           style: GoogleFonts.manrope(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,

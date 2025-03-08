@@ -9,7 +9,7 @@ class Pedido {
   final String? estado;
   final Ubicacion ubicacion;
   final List<DetallePedido> detallesPedido;
-  final String clienteNombre;
+  final String? clienteNombre;
 
   Pedido({
     required this.id,

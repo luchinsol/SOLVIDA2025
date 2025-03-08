@@ -45,6 +45,7 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
   List<ProductoPedidoCliente> listProductosPedidoPendiente = [];
   List<ProductoPedidoCliente> listProductosPedidoPasados = [];
   String microUrl = dotenv.env['MICRO_URL'] ?? '';
+  bool _isLoading = false; // Variable de estado
 
   @override
   void initState() {
@@ -70,8 +71,7 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
       Uri.parse(apiUrl + apiPedidosCliente + clienteID.toString()),
       headers: {"Content-type": "application/json"},
     );
-    print(".........data");
-    print(res.body);
+
     try {
       if (res.statusCode == 200) {
         var data = json.decode(res.body);
@@ -102,7 +102,6 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
                 tempPedidos[i].iconoEntregado = iconoEntregadoOF;
                 tempPedidos[i].colorEntregado = colorOF;
                 listPedidosPendientes.add(tempPedidos[i]);
-                print(listPedidosPendientes);
 
                 // ACA SE PUEDE AGREGAR UN ATRIBUTO DE FECHA DE ENTREGA AL PEDIDO
               } else if (tempPedidos[i].estado == 'en proceso') {
@@ -183,10 +182,13 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
     }
   }
 
-  Future<bool> _anularPedido(String observacion, String id) async {
+  Future<bool> _anularPedido(String observacion, int id) async {
     try {
+      setState(() {
+        _isLoading = true; // Inicia la carga
+      });
       final response = await http.put(
-        Uri.parse('$microUrl/pedido_anulado/${id}'),
+        Uri.parse('$apiUrl/api/anular_pedido_cliente/${id}'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'observacion': observacion,
@@ -194,6 +196,9 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
       );
 
       if (response.statusCode == 200) {
+        setState(() {
+          _isLoading = false; // Termina la carga
+        });
         return true;
       } else {
         throw Exception("Error: ${response.body}");
@@ -206,8 +211,10 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final TabController tabController = TabController(length: 2, vsync: this);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     final anchoActual = MediaQuery.of(context).size.width;
     final largoActual = MediaQuery.of(context).size.height;
+
     return Scaffold(
         backgroundColor: Colors.white,
         body: PopScope(
@@ -404,18 +411,30 @@ class _EstadoPedido extends State<EstadoPedido> with TickerProviderStateMixin {
                                                               87,
                                                               113,
                                                               255))),
-                                              onPressed: () {
-                                                _anularPedido(
-                                                    "Pedido Anulado Por Cliente",
-                                                    pedido.id.toString());
-                                              },
-                                              child: Text(
-                                                "Anular pedido",
-                                                style: GoogleFonts.manrope(
-                                                    color: Colors.white,
-                                                    fontWeight:
-                                                        FontWeight.w400),
-                                              ))
+                                              onPressed: _isLoading
+                                                  ? null // Deshabilita el botón mientras está cargando
+                                                  : () {
+                                                      _anularPedido(
+                                                          "Pedido Anulado Por Cliente",
+                                                          pedido.id);
+                                                    },
+                                              child: _isLoading
+                                                  ? Center(
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        color: Colors.white,
+                                                      ),
+                                                    )
+                                                  : Text(
+                                                      "Anular pedido",
+                                                      style:
+                                                          GoogleFonts.manrope(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400),
+                                                    ))
                                         ],
                                       ),
                                     ),

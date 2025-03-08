@@ -254,6 +254,7 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
     }
 
     return Scaffold(
+
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
@@ -769,48 +770,61 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
                                                 ),
                                               ),
 
-                                              // Contenido que se muestra/oculta
 
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  SizedBox(height: 20.h),
-                                                  Text(
-                                                    "Lista de productos (${pedido.productos.length + pedido.promociones.length})",
-                                                    style: GoogleFonts.manrope(
-                                                        fontSize: 14.sp,
-                                                        color: Colors.white),
-                                                  ),
-                                                  SizedBox(height: 10.h),
+                                        // Contenido que se muestra/oculta
 
-                                                  // LIST VIEW PRODUCTOS
-                                                  Container(
-                                                      padding:
-                                                          EdgeInsets.all(8.r),
-                                                      height: 170.h,
-                                                      //width: 110.w,
-                                                      decoration: BoxDecoration(
-                                                          color: Colors.amber,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      20.r)),
-                                                      child: ListView.builder(
-                                                          //Sumamos las cantidades de pedidos y productos para tener un total
-                                                          itemCount: pedido
-                                                                  .productos
-                                                                  .length +
-                                                              pedido.promociones
-                                                                  .length,
-                                                          itemBuilder:
-                                                              (context, index) {
-                                                            //colocamos valores cambiantes ya que los productos y promociones pasan por 3 condiciones uno es cuando no haya ningun producto otro es cuando no haya ninguna promociones y otra es cuando existan ambas
-                                                            dynamic item;
-                                                            String name;
-                                                            int quantity;
-                                                            //condicion para saber si hay productos
-                                                            if (index <
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(height: 20.h),
+                                            Text(
+                                              "Lista de productos (${pedido.productos.length + pedido.promociones.length})",
+                                              style: GoogleFonts.manrope(
+                                                  fontSize: 14.sp,
+                                                  color: Colors.white),
+                                            ),
+                                            SizedBox(height: 10.h),
+
+                                            // LIST VIEW PRODUCTOS
+                                            Container(
+                                                padding: EdgeInsets.all(8.r),
+                                                height: 170.h,
+                                                //width: 110.w,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.amber,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20.r)),
+                                                child: ListView.builder(
+                                                    //Sumamos las cantidades de pedidos y productos para tener un total
+                                                    shrinkWrap: true,
+                                                    itemCount: pedido
+                                                            .productos.length +
+                                                        pedido
+                                                            .promociones.length,
+                                                    itemBuilder:
+                                                        (context, index) {
+                                                      //colocamos valores cambiantes ya que los productos y promociones pasan por 3 condiciones uno es cuando no haya ningun producto otro es cuando no haya ninguna promociones y otra es cuando existan ambas
+                                                      dynamic item;
+                                                      String name;
+                                                      int quantity;
+                                                      //condicion para saber si hay productos
+                                                      if (index <
+                                                          pedido.productos
+                                                              .length) {
+                                                        // esto indica que hay productos
+                                                        item = pedido
+                                                            .productos[index];
+                                                        name = item.nombre;
+                                                        quantity =
+                                                            item.cantidad;
+                                                      } else {
+                                                        // en caso no hayan productos recorre las promociones
+                                                        item = pedido
+                                                                .promociones[
+                                                            index -
+
                                                                 pedido.productos
                                                                     .length) {
                                                               // esto indica que hay productos

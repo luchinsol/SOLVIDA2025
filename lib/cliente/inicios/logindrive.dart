@@ -4,6 +4,7 @@ import 'package:app2025/cliente/provider/user_provider.dart';
 import 'package:app2025/cliente/config/localization.dart';
 import 'package:app2025/conductor/model/conductor_model.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
+import 'package:app2025/conductor/providers/pedidos_provider2.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -115,6 +116,11 @@ class _PreloginDriverState extends State<PreloginDriver> {
         // Guardar token de la respuesta
         SharedPreferences tokenUser = await SharedPreferences.getInstance();
         tokenUser.setString('token', data['token']);
+        /*
+        final providerPedido =
+            Provider.of<PedidosProvider2>(context, listen: false);
+        providerPedido.setToken(data['token']);
+        */
         print("ENTRANDO AL MODEL ----------------------------");
 
         conductor = ConductorModel(
