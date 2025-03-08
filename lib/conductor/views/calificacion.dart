@@ -123,13 +123,12 @@ class _CalificacionState extends State<Calificacion> {
               SizedBox(
                 height: 35.h,
               ),
-              Skeletonizer(
-                enabled: false,
-                effect: ShimmerEffect(
-                    baseColor: Colors.white,
-                    highlightColor: Colors.grey.shade500),
+              Container(
+                width: 1.sw / 0.25,
+                //color: Colors.blue,
                 child: Text(
                   '${(pedidosprovider.primerPedidoAceptado?.cliente.nombre ?? '').toUpperCase()} ${(pedidosprovider.primerPedidoAceptado?.cliente.apellidos ?? '').toUpperCase()}',
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.manrope(
                       fontSize: 22.5.sp, color: Colors.grey),
                 ),

@@ -1217,12 +1217,30 @@ class _NavegacionPedidoState extends State<NavegacionPedido>
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceEvenly,
                                           children: [
-                                            Text(
-                                              "${_currentPedido?.cliente.nombre} ${_currentPedido?.cliente.apellidos}" ??
-                                                  'Cargando...',
-                                              style: GoogleFonts.manrope(
+                                            Container(
+                                              //color: Colors.blue,
+                                              width: 110.w,
+                                              child: Text(
+                                                (_currentPedido?.cliente
+                                                                    ?.nombre ??
+                                                                "")
+                                                            .isNotEmpty ||
+                                                        (_currentPedido?.cliente
+                                                                    ?.apellidos ??
+                                                                "")
+                                                            .isNotEmpty
+                                                    ? "${_currentPedido?.cliente?.nombre?.toUpperCase() ?? ''}"
+                                                    : "Cargando...",
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines:
+                                                    2, // Limita a 2 líneas para que se corte con "..."
+
+                                                style: GoogleFonts.manrope(
                                                   fontSize: 14.sp,
-                                                  color: Colors.white),
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
                                             ),
                                             Text(
                                               "S/.${_currentPedido?.total.toString() ?? '0.00'}",
