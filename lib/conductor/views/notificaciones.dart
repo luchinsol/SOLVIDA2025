@@ -37,19 +37,21 @@ class _NotificacionesState extends State<Notificaciones> {
     print(fechaActual);
     try {
       if (conductorProvider.conductor != null) {
-        SharedPreferences tokenUser = await SharedPreferences.getInstance();
+        print("HOLA ENTRE");
+        /*SharedPreferences tokenUser = await SharedPreferences.getInstance();
         String? token = tokenUser.getString('token'); // Recupera el token
 
         if (token == null) {
           print("No hay token almacenado");
           return;
-        }
+        }*/
 
         var res = await http
             .get(Uri.parse('$microUrl/notificacion/$fechaActual/$almacen_id'));
         //headers: {"Authorization": "Bearer $token"});
 
         if (res.statusCode == 200) {
+          print("entre a l 200");
           var data = json.decode(res.body);
           List<NotificacionesModel> tempNotificaciones =
               data.map<NotificacionesModel>((i) {

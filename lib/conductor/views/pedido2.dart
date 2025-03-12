@@ -831,9 +831,7 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
                                                                           .productos
                                                                           .length];
                                                               // esto indica que hay productos
-                                                              item = pedido
-                                                                      .productos[
-                                                                  index];
+
                                                               name =
                                                                   item.nombre;
                                                               quantity =

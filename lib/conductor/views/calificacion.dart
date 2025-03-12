@@ -36,11 +36,9 @@ class _CalificacionState extends State<Calificacion> {
       }
       */
       var res = await http.put(Uri.parse(microUrl + '/cliente_calificar/4'),
-          /*
           headers: {
-            "Authorization": "Bearer $token",
             "Content-Type": "application/json", // Especifica que envías JSON
-          },*/
+          },
           body: jsonEncode({"calificacion": calificacion}));
       if (res.statusCode == 200) {
         var data = json.decode(res.body);
