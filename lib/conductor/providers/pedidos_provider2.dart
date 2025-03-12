@@ -75,124 +75,111 @@ class PedidosProvider2 extends ChangeNotifier {
   }
 
   void _initSocketListeners(String? nombre, int? almacenId) {
-    _socketService.off(nombre!);
-    _socketService.off('initial_orders');
-    _socketService.off('order_taken');
-    _socketService.off('pedido_rotado');
-    _socketService.off('pedido_anulado');
-    _socketService.off('pedido_actualizado');
-    if (!_listenersInitialized) {
-      // Evitar múltiples inicializaciones
-      _listenersInitialized = true;
-      print("🔄 Escuchando eventos en el socket...");
+    //EVENTO PARA CUANDO EL CONDUCTOR SE CONECTA A TIEMPO
+    _socketService.on(nombre!, (data) {
+      //_logEvent('[Events] Received order on $_eventName: $data');
+      if (_uniqueCallback != null) {
+        _uniqueCallback!(data);
+      }
+    });
 
-      //EVENTO PARA CUANDO EL CONDUCTOR SE CONECTA A TIEMPO
-      _socketService.on(nombre!, (data) {
-        //_logEvent('[Events] Received order on $_eventName: $data');
-        if (_uniqueCallback != null) {
-          _uniqueCallback!(data);
-        }
-      });
-
-      //EVENTO PARA CUANDO EL CONDUCTOR SE CONECTA TARDE
-      _socketService.on('initial_orders', (data) {
-        print("📥 Evento initial_orders: $data");
-        if (data is List) {
-          for (var order in data) {
-            if (_uniqueCallback != null) {
-              _uniqueCallback!(order);
-            }
+    //EVENTO PARA CUANDO EL CONDUCTOR SE CONECTA TARDE
+    _socketService.on('initial_orders', (data) {
+      print("📥 Evento initial_orders: $data");
+      if (data is List) {
+        for (var order in data) {
+          if (_uniqueCallback != null) {
+            _uniqueCallback!(order);
           }
         }
-      });
+      }
+    });
 
-      _socketService.on('order_taken', (data) {
-        print('✅ Orden tomada confirmada: $data');
-        if (data is Map) {
-          print('Propiedades disponibles: ${data.keys.toList()}');
+    _socketService.on('order_taken', (data) {
+      print('✅ Orden tomada confirmada: $data');
+      if (data is Map) {
+        print('Propiedades disponibles: ${data.keys.toList()}');
+      }
+      print("IMPRIMIENDO LOS RESULTADOS DE ORDER_TAKEN --------------->");
+      if (data != null && data is Map<String, dynamic>) {
+        String pedidoId = data['id']?.toString() ?? '';
+
+        if (pedidoId.isNotEmpty) {
+          print('🎯 Procesando order_taken para pedido: $pedidoId');
+          _pedidoTomado(pedidoId);
+        } else {
+          print('⚠️ order_taken recibido sin ID de pedido válido');
         }
-        print("IMPRIMIENDO LOS RESULTADOS DE ORDER_TAKEN --------------->");
-        if (data != null && data is Map<String, dynamic>) {
-          String pedidoId = data['id']?.toString() ?? '';
+      } else {
+        print('⚠️ Datos de order_taken inválidos: $data');
+      }
+    });
 
-          if (pedidoId.isNotEmpty) {
-            print('🎯 Procesando order_taken para pedido: $pedidoId');
-            _pedidoTomado(pedidoId);
-          } else {
-            print('⚠️ order_taken recibido sin ID de pedido válido');
+    _socketService.on('pedido_rotado', (data) {
+      if (data != null && data is Map<String, dynamic>) {
+        String pedidoId = data['pedidoId']?.toString() ?? '';
+        int pedidoAlmacenId = data['almacen_id'] ?? 0;
+        print("ROTACION ----------->");
+        print(pedidoAlmacenId);
+        // Solo procesar si el pedido pertenece al almacén actual
+        if (pedidoAlmacenId == almacenId) {
+          final index = _pedidos.indexWhere((p) => p.id == pedidoId);
+          if (index != -1) {
+            try {
+              final updatedPedido = _pedidos[index].copyWith(
+                emittedTime: DateTime.parse(data['emitted_time']),
+                expiredTime: DateTime.parse(data['expired_time']),
+                //rotationAttempts: data['rotationAttempts']
+              );
+
+              _pedidos[index] = updatedPedido;
+              _setupExpirationTimer(updatedPedido);
+
+              print('Pedido rotado actualizado - AlmacenID: $almacenId');
+              print('Nueva fecha de emisión: ${updatedPedido.emittedTime}');
+              print('Nueva fecha de expiración: ${updatedPedido.expiredTime}');
+
+              notifyListeners();
+            } catch (e) {
+              print('Error actualizando tiempos del pedido rotado: $e');
+            }
           }
         } else {
-          print('⚠️ Datos de order_taken inválidos: $data');
+          print(
+              'Pedido rotado ignorado - No pertenece a este almacén (${almacenId})');
         }
-      });
+      }
+    });
 
-      _socketService.on('pedido_rotado', (data) {
-        if (data != null && data is Map<String, dynamic>) {
-          String pedidoId = data['pedidoId']?.toString() ?? '';
-          int pedidoAlmacenId = data['almacen_id'] ?? 0;
-          print("ROTACION ----------->");
-          print(pedidoAlmacenId);
-          // Solo procesar si el pedido pertenece al almacén actual
-          if (pedidoAlmacenId == almacenId) {
-            final index = _pedidos.indexWhere((p) => p.id == pedidoId);
-            if (index != -1) {
-              try {
-                final updatedPedido = _pedidos[index].copyWith(
-                  emittedTime: DateTime.parse(data['emitted_time']),
-                  expiredTime: DateTime.parse(data['expired_time']),
-                  //rotationAttempts: data['rotationAttempts']
-                );
+    _socketService.on('pedido_anulado', (data) {
+      print("📥 Pedido ANULADO EVENTO ANULADO: $data");
 
-                _pedidos[index] = updatedPedido;
-                _setupExpirationTimer(updatedPedido);
+      // Extraer el ID del pedido anulado
+      final String pedidoId = data['id']?.toString() ?? '';
+      if (pedidoId.isEmpty) {
+        print('⚠️ ID de pedido anulado no válido');
+        return;
+      }
 
-                print('Pedido rotado actualizado - AlmacenID: $almacenId');
-                print('Nueva fecha de emisión: ${updatedPedido.emittedTime}');
-                print(
-                    'Nueva fecha de expiración: ${updatedPedido.expiredTime}');
+      // Emitir el evento al stream antes de modificar las listas
+      //_pedidoAnuladoStreamController.add(pedidoId);
 
-                notifyListeners();
-              } catch (e) {
-                print('Error actualizando tiempos del pedido rotado: $e');
-              }
-            }
-          } else {
-            print(
-                'Pedido rotado ignorado - No pertenece a este almacén (${almacenId})');
-          }
-        }
-      });
+      // Remover de todas las listas
+      _removePedidoFromAllLists(pedidoId);
+      _pedidoAnuladoStreamController.add(pedidoId);
 
-      _socketService.on('pedido_anulado', (data) {
-        print("📥 Pedido ANULADO EVENTO ANULADO: $data");
+      // Notificar a los listeners para actualizar la UI
+      notifyListeners();
 
-        // Extraer el ID del pedido anulado
-        final String pedidoId = data['id']?.toString() ?? '';
-        if (pedidoId.isEmpty) {
-          print('⚠️ ID de pedido anulado no válido');
-          return;
-        }
+      print('🗑️ Pedido $pedidoId removido de todas las listas');
 
-        // Emitir el evento al stream antes de modificar las listas
-        //_pedidoAnuladoStreamController.add(pedidoId);
+      // Emitir evento al backend con todos los datos necesarios
+      _socketService.emit("procesando_anulacion", data);
+    });
 
-        // Remover de todas las listas
-        _removePedidoFromAllLists(pedidoId);
-        _pedidoAnuladoStreamController.add(pedidoId);
-
-        // Notificar a los listeners para actualizar la UI
-        notifyListeners();
-
-        print('🗑️ Pedido $pedidoId removido de todas las listas');
-
-        // Emitir evento al backend con todos los datos necesarios
-        _socketService.emit("procesando_anulacion", data);
-      });
-
-      _socketService.on('pedido_actualizado', (data) {
-        print("📥 Pedido actualizado: $data");
-      });
-    }
+    _socketService.on('pedido_actualizado', (data) {
+      print("📥 Pedido actualizado: $data");
+    });
   }
 
   // 2.  EMITIR EVENTOS
@@ -1074,13 +1061,12 @@ class PedidosProvider2 extends ChangeNotifier {
     _socketService.connect();
 
     // Solo inicializa listeners si no estaban inicializados
-    if (!_listenersInitialized) {
-      _initSocketListeners(nombre, almacenId);
-      onHolapedido((data) {
-        print("📦 Nuevo pedido recibido en el Provider: $data");
-        _processPedidoData(data);
-      });
-    }
+
+    _initSocketListeners(nombre, almacenId);
+    onHolapedido((data) {
+      print("📦 Nuevo pedido recibido en el Provider: $data");
+      _processPedidoData(data);
+    });
 
     _initialEmit(almacenId);
   }
