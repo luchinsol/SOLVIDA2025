@@ -29,18 +29,11 @@ class SocketService2 {
       );
       _socket?.onConnect((_) {
         print("CONECTADO A SOCKET.IO");
-        _socket?.on('order_taken', (data) {
-          print("*****************************Orden Tomadada");
-        });
-        _reRegistro();
       });
       _socket?.onDisconnect((_) => print('❌ Desconectado de Socket.IO'));
       _socket?.onConnectError((error) => print('⚠️ Error de conexión: $error'));
       _socket
           ?.onError((error) => print('🚨 Error general en el socket: $error'));
-      _socket?.on("order_taken", (data) {
-        print(' IMPRIMIENDO DATA $data');
-      });
     }
 
     _socket?.connect();
@@ -56,12 +49,6 @@ class SocketService2 {
 
   void on(String eventName, Function(dynamic) callback) {
     _socket?.on(eventName, (data) => callback(data));
-  }
-
-  void _reRegistro() {
-    _socket?.on('order_taken', (data) {
-      print("*****************************Orden Tomadada");
-    });
   }
 
   void off(String eventName) {
