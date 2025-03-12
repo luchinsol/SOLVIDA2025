@@ -186,9 +186,6 @@ class _InicioDriverState extends State<InicioDriver> {
         enabled = false;
       });
     }
-    print("${pedidolast.lastPedido?.cliente?.nombre}");
-    print("");
-    print("cond :${conductorProvider.conductor?.nombres}");
 
     return Scaffold(
       backgroundColor: Colors.white,
