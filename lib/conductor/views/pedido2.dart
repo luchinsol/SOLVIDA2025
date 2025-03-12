@@ -78,9 +78,9 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
 
     print('🔄 Initializing DrivePedidos state');
     _initializeAll();
-    final notificationsService = NotificationsService();
+    /*final notificationsService = NotificationsService();
     notificationsService.initNotification();
-    notificationsService.requestNotificationPermission();
+    notificationsService.requestNotificationPermission();*/
   }
 
   // Versión mejorada de handlePedidoAcceptance
@@ -831,9 +831,7 @@ class _DrivePedidos2State extends State<DrivePedidos2> {
                                                                           .productos
                                                                           .length];
                                                               // esto indica que hay productos
-                                                              item = pedido
-                                                                      .productos[
-                                                                  index];
+
                                                               name =
                                                                   item.nombre;
                                                               quantity =

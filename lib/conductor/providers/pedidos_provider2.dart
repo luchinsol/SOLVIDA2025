@@ -340,11 +340,7 @@ class PedidosProvider2 extends ChangeNotifier {
           DateFormat('yyyy-MM-dd').format(fecha_creacion);
       String fechaEnvioFormatted = DateFormat('yyyy-MM-dd').format(fecha_envio);
       var res = await http.post(Uri.parse('$microUrl/notificacion'),
-          /*
-          headers: {
-            "Content-type": "application/json",
-            "Authorization": "Bearer $token"
-          },*/
+          headers: {"Content-type": "application/json"},
           body: jsonEncode({
             "mensaje": mensaje,
             "tipo": tipo,
