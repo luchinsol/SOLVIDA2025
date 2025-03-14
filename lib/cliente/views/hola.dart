@@ -143,8 +143,9 @@ class _HolaState extends State<Hola2> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    ordenarFuncionesInit();
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    clienteID = userProvider.user?.id;
+    ordenarFuncionesInit();
   }
 
   Future<void> muestraDialogoPubli(BuildContext context) async {
@@ -544,14 +545,15 @@ class _HolaState extends State<Hola2> with TickerProviderStateMixin {
   }
 
   Future<void> ordenarFuncionesInit() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     await _cargarPreferencias();
-    await getUbicaciones(widget.clienteId);
+    await getUbicaciones(userProvider.user?.id);
     await getProducts();
     await getZonas();
     await getPromociones();
     // TRAEMOS EL ID DEL USUARIO
     if (!mounted) return;
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    //final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     bool compreBidon = await getBidonCliente(userProvider.user?.id);
 
@@ -695,11 +697,12 @@ class _HolaState extends State<Hola2> with TickerProviderStateMixin {
     }
   }
 
-  Future<dynamic> getUbicaciones(clienteID) async {
+  Future<dynamic> getUbicaciones(int? clienteID) async {
     setState(() {
       listUbicacionesObjetos = [];
       ubicacionesString = [];
     });
+    print(clienteID);
     var res = await http.get(
       Uri.parse("$apiUrl/api/ubicacion/$clienteID"),
       headers: {"Content-type": "application/json"},
@@ -708,6 +711,8 @@ class _HolaState extends State<Hola2> with TickerProviderStateMixin {
       if (res.statusCode == 200) {
         //print("2) entro al try de get ubicaciones---------");
         var data = json.decode(res.body);
+        print("📊 Datos recibidos: ${data.length} ubicaciones");
+        print("📄 Datos completos: $data");
         List<UbicacionModel> tempUbicacion = data.map<UbicacionModel>((mapa) {
           return UbicacionModel(
               id: mapa['id'],
@@ -731,6 +736,8 @@ class _HolaState extends State<Hola2> with TickerProviderStateMixin {
           UbicacionListaModel listUbis = UbicacionListaModel(
               listaUbisObjeto: listUbicacionesObjetos,
               listaUbisString: ubicacionesString);
+          print("PANTALLA DE INICIO --->> UBICACIONES ALMACENADAS");
+          print(listUbis);
           Provider.of<UbicacionListProvider>(context, listen: false)
               .updateUbicacionList(listUbis);
         }
@@ -764,6 +771,8 @@ class _HolaState extends State<Hola2> with TickerProviderStateMixin {
   }
 
   Future<dynamic> creadoUbicacion(clienteId, distrito) async {
+    print("CREADO UBICACION");
+    print(clienteID);
     await http.post(Uri.parse("$apiUrl/api/ubicacion"),
         headers: {"Content-type": "application/json"},
         body: jsonEncode({
