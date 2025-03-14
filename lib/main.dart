@@ -125,7 +125,16 @@ final GoRouter _router = GoRouter(
         //NotificationsService().silenceNotifications(true);
         //return const AdminDriver();
         // return const PedidoWidget();
-        return const Bienvenida();
+        return UpgradeAlert(
+            upgrader: Upgrader(
+              languageCode: "es",
+              //debugLogging: true,
+              minAppVersion: "3.3.7",
+              //debugDisplayAlways: true,
+            ),
+            showIgnore: false,
+            showLater: false,
+            child: const Bienvenida());
         //return const Demos();
         //return const NavegacionPedido2(); // Pantalla principal con navegación curva
       },
@@ -321,15 +330,13 @@ class _MyAppState extends State<MyApp> {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return UpgradeAlert(
-          child: MaterialApp.router(
-            routerConfig: _router,
-            title: 'Flutter Demo',
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              useMaterial3: true,
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-            ),
+        return MaterialApp.router(
+          routerConfig: _router,
+          debugShowCheckedModeBanner: false,
+          title: 'Sol vida',
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           ),
         );
       },
