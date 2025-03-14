@@ -129,7 +129,7 @@ final GoRouter _router = GoRouter(
             upgrader: Upgrader(
               languageCode: "es",
               //debugLogging: true,
-              minAppVersion: "3.3.7",
+              minAppVersion: "3.3.8",
               //debugDisplayAlways: true,
             ),
             showIgnore: false,
