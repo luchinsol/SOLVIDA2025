@@ -1,4 +1,5 @@
 import 'package:app2025/conductor/views/admin.dart';
+import 'package:app2025/conductor/views/adminpedidos.dart';
 import 'package:app2025/conductor/views/historial.dart';
 import 'package:app2025/conductor/views/inicio.dart';
 import 'package:app2025/conductor/views/pedido.dart';
@@ -20,6 +21,7 @@ class _BarraConductorAdminState extends State<BarraConductorAdmin> {
 
   final List<Widget> _screens = const [
     AdminDriver(),
+    AdminPedidos(),
     Perfil(),
   ];
 
@@ -39,6 +41,11 @@ class _BarraConductorAdminState extends State<BarraConductorAdmin> {
         animationDuration: const Duration(milliseconds: 300),
         items: const [
           Icon(Icons.home_filled, size: 30, color: Colors.white),
+          Icon(
+            Icons.local_shipping,
+            size: 30,
+            color: Colors.white,
+          ),
           Icon(Icons.more_vert_outlined, size: 30, color: Colors.white),
         ],
         onTap: (index) {
