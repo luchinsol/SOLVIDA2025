@@ -27,7 +27,7 @@ class _HistorialState extends State<Historial> {
   String microUrl = dotenv.env['MICRO_URL'] ?? '';
   late DateTime _currentDate;
   late List<DateTime> _days;
-  List<Pedido> pedidosConductor = [];
+  List<Pedidos> pedidosConductor = [];
   bool cargando = true;
   bool esperando = true;
   int _selectedIndex = -1;
@@ -62,7 +62,7 @@ class _HistorialState extends State<Historial> {
         if (res.statusCode == 200) {
           if (mounted) {
             setState(() {
-              pedidosConductor = Pedido.fromJsonList(res.body);
+              pedidosConductor = Pedidos.fromJsonList(res.body);
               cargando = false;
             });
           }

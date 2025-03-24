@@ -1,43 +1,46 @@
 import 'dart:convert';
 
-class Pedido {
+import 'package:app2025/conductor/model/cliente_model.dart';
+
+class Pedidos {
   final int id;
   final int cliente;
   final double total;
   final DateTime fecha;
   final String? tipo;
-  final String? estado;
+  String? estado;
   final Ubicacion ubicacion;
   final List<DetallePedido> detallesPedido;
   final String? clienteNombre;
+  final String? telefono;
 
-  Pedido({
-    required this.id,
-    required this.cliente,
-    required this.total,
-    required this.fecha,
-    required this.tipo,
-    required this.estado,
-    required this.ubicacion,
-    required this.detallesPedido,
-    required this.clienteNombre,
-  });
+  Pedidos(
+      {required this.id,
+      required this.cliente,
+      required this.total,
+      required this.fecha,
+      required this.tipo,
+      required this.estado,
+      required this.ubicacion,
+      required this.detallesPedido,
+      required this.clienteNombre,
+      required this.telefono});
 
   // Convertir JSON a Pedido
-  factory Pedido.fromJson(Map<String, dynamic> json) {
-    return Pedido(
-      id: json['id'],
-      cliente: json['cliente'],
-      total: (json['total'] as num).toDouble(),
-      fecha: DateTime.parse(json['fecha']),
-      tipo: json['tipo'],
-      estado: json['estado'],
-      ubicacion: Ubicacion.fromJson(json['ubicacion']),
-      detallesPedido: (json['detalles_pedido'] as List)
-          .map((i) => DetallePedido.fromJson(i))
-          .toList(),
-      clienteNombre: json['cliente_nombre'],
-    );
+  factory Pedidos.fromJson(Map<String, dynamic> json) {
+    return Pedidos(
+        id: json['id'],
+        cliente: json['cliente'],
+        total: (json['total'] as num).toDouble(),
+        fecha: DateTime.parse(json['fecha']),
+        tipo: json['tipo'],
+        estado: json['estado'],
+        ubicacion: Ubicacion.fromJson(json['ubicacion']),
+        detallesPedido: (json['detalles_pedido'] as List)
+            .map((i) => DetallePedido.fromJson(i))
+            .toList(),
+        clienteNombre: json['cliente_nombre'],
+        telefono: json['cliente_telefono']);
   }
 
   // Convertir Pedido a JSON
@@ -52,13 +55,14 @@ class Pedido {
       'ubicacion': ubicacion.toJson(),
       'detalles_pedido': detallesPedido.map((e) => e.toJson()).toList(),
       'cliente_nombre': clienteNombre,
+      'telefono': telefono,
     };
   }
 
   // Convertir una lista de JSON a una lista de Pedidos
-  static List<Pedido> fromJsonList(String jsonString) {
+  static List<Pedidos> fromJsonList(String jsonString) {
     List<dynamic> decoded = json.decode(jsonString);
-    return decoded.map((e) => Pedido.fromJson(e)).toList();
+    return decoded.map((e) => Pedidos.fromJson(e)).toList();
   }
 }
 

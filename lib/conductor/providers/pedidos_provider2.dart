@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:app2025/conductor/config/notifications.dart';
 import 'package:app2025/conductor/config/socketCentral2.dart';
 import 'package:app2025/conductor/model/pedido_model.dart';
+import 'package:app2025/conductor/model/pedidos_history_model.dart';
 import 'package:app2025/conductor/providers/conductor_provider.dart';
 import 'package:app2025/conductor/providers/notificacioncustom_provider.dart';
 import 'package:app2025/conductor/providers/notificaciones_provider.dart';
@@ -22,7 +23,7 @@ class PedidosProvider2 extends ChangeNotifier {
   final SocketService2 _socketService = SocketService2(); // Usa el Singleton
   final List<Pedido> _pedidos = [];
   PedidoCallback? _uniqueCallback;
-  final Map<String, Timer> _timers = {};
+  //final Map<String, Timer> _timers = {};
   final Set<String> _pedidosAceptados = {};
   bool _isInitialized = false;
   bool _isLoading = false;
@@ -38,6 +39,12 @@ class PedidosProvider2 extends ChangeNotifier {
   bool _loadingAceptar = false;
   bool get loadingAceptar => _loadingAceptar;
   String? _token;
+  List<Pedidos> _pedidosHistorial =
+      []; // Changed from List<Pedido> to List<Pedidos>
+  bool _cargandoHistorial = false;
+  bool _esperandoHistorial = false;
+
+  bool historialCargado = false;
 
   bool _listenersInitialized = false; // Nueva bandera
 
@@ -53,6 +60,11 @@ class PedidosProvider2 extends ChangeNotifier {
 
   Pedido? get primerPedidoAceptado =>
       _pedidosAceptadosList.isNotEmpty ? _pedidosAceptadosList.first : null;
+
+  // Update the getter to return the correct type
+  List<Pedidos> get pedidosHistorial => _pedidosHistorial;
+  bool get cargandoHistorial => _cargandoHistorial;
+  bool get esperandoHistorial => _esperandoHistorial;
 
   final StreamController<String> _pedidoAnuladoStreamController =
       StreamController<String>.broadcast();
@@ -127,17 +139,17 @@ class PedidosProvider2 extends ChangeNotifier {
           if (index != -1) {
             try {
               final updatedPedido = _pedidos[index].copyWith(
-                emittedTime: DateTime.parse(data['emitted_time']),
-                expiredTime: DateTime.parse(data['expired_time']),
-                //rotationAttempts: data['rotationAttempts']
-              );
+                  //emittedTime: DateTime.parse(data['emitted_time']),
+                  //expiredTime: DateTime.parse(data['expired_time']),
+                  //rotationAttempts: data['rotationAttempts']
+                  );
 
               _pedidos[index] = updatedPedido;
-              _setupExpirationTimer(updatedPedido);
+              //_setupExpirationTimer(updatedPedido);
 
               print('Pedido rotado actualizado - AlmacenID: $almacenId');
-              print('Nueva fecha de emisión: ${updatedPedido.emittedTime}');
-              print('Nueva fecha de expiración: ${updatedPedido.expiredTime}');
+              //print('Nueva fecha de emisión: ${updatedPedido.emittedTime}');
+              //print('Nueva fecha de expiración: ${updatedPedido.expiredTime}');
 
               notifyListeners();
             } catch (e) {
@@ -286,8 +298,8 @@ class PedidosProvider2 extends ChangeNotifier {
       final index = _pedidos.indexWhere((p) => p.id == pedidoId);
       if (index != -1) {
         _pedidos.removeAt(index);
-        _timers[pedidoId]?.cancel();
-        _timers.remove(pedidoId);
+        //_timers[pedidoId]?.cancel();
+        //_timers.remove(pedidoId);
         notifyListeners();
       }
     } catch (e) {
@@ -295,6 +307,7 @@ class PedidosProvider2 extends ChangeNotifier {
     }
   }
 
+/*
   void _setupExpirationTimer(Pedido pedido) {
     _timers[pedido.id]?.cancel();
 
@@ -309,7 +322,7 @@ class PedidosProvider2 extends ChangeNotifier {
         _handleExpiration(pedido.id);
       });
     }
-  }
+  }*/
 
   void llegopedido(bool llego) {
     _llegopedido = llego;
@@ -396,6 +409,35 @@ class PedidosProvider2 extends ChangeNotifier {
     }
   }
 
+  //ENDPOINT PARA LOS DISTRIBUIDORES
+  Future<void> actualizarEstadoPedidoDistribuidor(
+      String pedidoId, int almacenId, int conductorId) async {
+    final url = Uri.parse('${microUrl}/pedido_estado/$pedidoId');
+    _loadingAceptar = true;
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'conductor_id': conductorId, // Usamos el parámetro
+          'estado': 'en proceso',
+          'almacen_id': almacenId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al actualizar estado: ${response.body}');
+      }
+      notifyListeners();
+    } catch (e) {
+      throw Exception('Error en la llamada al API: $e');
+    } finally {
+      _loadingAceptar = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> addPedido(
       Map<String, dynamic> pedidoData, bool showNotification) async {
     try {
@@ -439,7 +481,7 @@ class PedidosProvider2 extends ChangeNotifier {
       // AQUÍ SE MUESTRA LA NOTIFICACIÓN
 
       _pedidos.add(pedido);
-      _setupExpirationTimer(pedido);
+      //_setupExpirationTimer(pedido);
       notifyListeners();
       return true;
     } catch (e) {
@@ -453,10 +495,10 @@ class PedidosProvider2 extends ChangeNotifier {
       if (data['estado'] == 'expirado') {
         _pedidos.removeWhere((p) => p.id == data['id']);
         print("TIMERRRRR ${data['id']}");
-        print(_timers[data['id']]);
-        _timers[data['id']]?.cancel();
+        //print(_timers[data['id']]);
+        //_timers[data['id']]?.cancel();
 
-        _timers.remove(data['id']);
+        //_timers.remove(data['id']);
         notifyListeners();
         return;
       }
@@ -711,7 +753,7 @@ class PedidosProvider2 extends ChangeNotifier {
   }
 
   Future<void> actualizarEstadoPedidoEntregado(
-      String pedidoId, int almacenId, int conductorId) async {
+      String pedidoId, int? almacenId, int? conductorId) async {
     try {
       // 2. Actualizar en la base de datos
       final url = Uri.parse('${microUrl}/pedido_estado/$pedidoId');
@@ -725,8 +767,88 @@ class PedidosProvider2 extends ChangeNotifier {
           'almacen_id': almacenId,
         }),
       );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Actualizar el modelo local
+        final index =
+            pedidosHistorial.indexWhere((p) => p.id.toString() == pedidoId);
+        if (index != -1) {
+          pedidosHistorial[index].estado = 'entregado';
+          notifyListeners(); // Esto es crucial para que la UI se actualice
+        }
+      }
     } catch (e) {
       throw Exception(e);
+    }
+  }
+
+  //ENDPOINT PARA TRAER LOS PEDIDOS ENTREGADOS DEL DIA DE HOY PARA LOS DISTRIBUIDORES
+  Future<void> getHistorialConductor(String fecha, int? conductorId) async {
+    // No notificamos inmediatamente para evitar el error durante la construcción
+    _cargandoHistorial = true;
+    _esperandoHistorial = true;
+
+    // Usamos esto para notificar después de que el frame actual termine
+    /* WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });*/
+
+    print("..... <<<<<<<<<< DENTRO DE PEDIDOS ENTREGADOS (PROVIDER) >>>>>><>>");
+
+    try {
+      if (conductorId == 0) {
+        print("❌ ID de conductor inválido");
+        _cargandoHistorial = false;
+        _esperandoHistorial = false;
+/*
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });*/
+        return;
+      }
+
+      var res = await http.get(
+        Uri.parse('$microUrl/pedido_history/$conductorId/$fecha'),
+      )
+          /* .timeout(Duration(seconds: 5), onTimeout: () {
+        return http.Response('{"error": "timeout"}', 408);
+      })*/
+          ;
+
+      if (res.statusCode == 200) {
+        _pedidosHistorial = Pedidos.fromJsonList(res.body);
+        _cargandoHistorial = false;
+
+        // Notificar fuera del ciclo de build
+        /* WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });*/
+
+        // Reducimos el delay
+        // await Future.delayed(Duration(milliseconds: 500));
+
+        _esperandoHistorial = false;
+
+        // Última notificación también fuera del ciclo de build
+        // WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+        //});
+      } else {
+        _pedidosHistorial = [];
+        _cargandoHistorial = false;
+        _esperandoHistorial = false;
+
+        // WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+        //});
+      }
+    } catch (e) {
+      _pedidosHistorial = [];
+      _cargandoHistorial = false;
+      _esperandoHistorial = false;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
@@ -922,8 +1044,8 @@ class PedidosProvider2 extends ChangeNotifier {
       _pedidosAceptados.remove(pedidoData['id']);
 
       // Limpiar temporizadores
-      _timers[pedidoData['id']]?.cancel();
-      _timers.remove(pedidoData['id']);
+      //_timers[pedidoData['id']]?.cancel();
+      //_timers.remove(pedidoData['id']);
 
       notifyListeners();
     } catch (e) {
@@ -942,11 +1064,12 @@ class PedidosProvider2 extends ChangeNotifier {
       if (pedidoExistente) {
         _pedidos.removeWhere((p) => p.id == pedidoId);
 
+        /*
         if (_timers.containsKey(pedidoId)) {
           print('Cancelando timer para pedido: $pedidoId');
           _timers[pedidoId]?.cancel();
           _timers.remove(pedidoId);
-        }
+        }*/
 
         print('Notificando cambios en UI...');
         notifyListeners();
@@ -985,8 +1108,8 @@ class PedidosProvider2 extends ChangeNotifier {
     }
 
     // Limpiar timers
-    _timers[pedidoId]?.cancel();
-    _timers.remove(pedidoId);
+    //_timers[pedidoId]?.cancel();
+    //_timers.remove(pedidoId);
   }
 
   //FUNCION PARA MI BOTON DE IGNORAR PEDIDO
@@ -1030,16 +1153,35 @@ class PedidosProvider2 extends ChangeNotifier {
     }
   }
 
+  //FUNCION EN ESPECIFICO PARA EL DISTRIBUIDOR PARA ENTREGAR PEDIDOS
+  Future<void> aceptarYActualizarPedidoDistribuidor(
+      String pedidoId, int almacenId, int conductorId) async {
+    try {
+      // 1. Aceptar pedido localmente
+      await aceptarPedido(pedidoId);
+
+      // 2. Actualizar estado en backend
+      await actualizarEstadoPedidoDistribuidor(
+          pedidoId, almacenId, conductorId);
+
+      // 3. Forzar actualización de UI
+      notifyListeners();
+    } catch (e) {
+      // Remover de lista si falla
+      _pedidosAceptados.remove(pedidoId);
+      _pedidosAceptadosList.removeWhere((p) => p.id == pedidoId);
+      notifyListeners();
+      throw Exception(e);
+    }
+  }
+
   //PEDIDO TOMADO
 
   List<Pedido> getActivePedidos() {
     final now = DateTime.now();
 
     List<Pedido> activePedidos = _pedidos
-        .where((pedido) =>
-            pedido.estado != 'expirado' &&
-            pedido.expiredTime.isAfter(now) &&
-            !_pedidosAceptados.contains(pedido.id))
+        .where((pedido) => !_pedidosAceptados.contains(pedido.id))
         .toList();
 
     return activePedidos.isNotEmpty ? activePedidos : [];
