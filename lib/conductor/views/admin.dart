@@ -697,7 +697,7 @@ class _AdminDriverState extends State<AdminDriver> {
                                                                 "Cliente:${pedidolast.lastPedido?.cliente!.nombre?.toUpperCase()}",
                                                                 style: GoogleFonts.manrope(
                                                                     fontSize:
-                                                                        14.sp,
+                                                                        13.sp,
                                                                     color: Colors
                                                                         .grey
                                                                         .shade600),
@@ -727,6 +727,7 @@ class _AdminDriverState extends State<AdminDriver> {
                                                   ),
                                                   Container(
                                                     width: 153.h,
+                                                    //color: Colors.blue,
                                                     child: Column(
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment
