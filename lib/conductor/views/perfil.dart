@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Perfil extends StatefulWidget {
   const Perfil({Key? key}) : super(key: key);
@@ -170,7 +171,13 @@ class _PerfilState extends State<Perfil> {
                           color: const Color.fromARGB(255, 62, 65, 220),
                           borderRadius: BorderRadius.circular(15.r)),
                       child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            prefs.remove('conductor');
+                            Provider.of<ConductorProvider>(context,
+                                    listen: false)
+                                .logout();
                             context.go('/');
                           },
                           child: Row(
