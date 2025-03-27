@@ -80,6 +80,8 @@ void main() async {
   bool estalogeado = userJson != null;
   int rol = 0;
 
+  print("----/////// $userJson");
+
   if (estalogeado) {
     rol = jsonDecode(userJson)['rolid'];
     print("ROLLLLLLL----->>>");
@@ -125,18 +127,32 @@ final GoRouter _router = GoRouter(
         //NotificationsService().silenceNotifications(true);
         //return const AdminDriver();
         // return const PedidoWidget();
-        return UpgradeAlert(
-            upgrader: Upgrader(
-              languageCode: "es",
-              //debugLogging: true,
-              minAppVersion: "3.3.8",
-              //debugDisplayAlways: true,
-            ),
-            showIgnore: false,
-            showLater: false,
-            child: const Bienvenida());
-        //return const Demos();
-        //return const NavegacionPedido2(); // Pantalla principal con navegación curva
+        UserProvider userProvider = Provider.of<UserProvider>(context);
+        if (userProvider.user != null) {
+          return UpgradeAlert(
+              upgrader: Upgrader(
+                languageCode: "es",
+                //debugLogging: true,
+                minAppVersion: "3.3.7",
+                //debugDisplayAlways: true,
+              ),
+              showIgnore: false,
+              showLater: false,
+              child: const BarraNavegacion());
+        } else {
+          return UpgradeAlert(
+              upgrader: Upgrader(
+                languageCode: "es",
+                //debugLogging: true,
+                minAppVersion: "3.3.7",
+                //debugDisplayAlways: true,
+              ),
+              showIgnore: false,
+              showLater: false,
+              child: const Bienvenida());
+          //return const Demos();
+          //return const NavegacionPedido2(); // Pantalla principal con navegación curva
+        }
       },
     ),
     GoRoute(

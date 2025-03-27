@@ -736,6 +736,10 @@ class _PerfilCliente extends State<PerfilCliente> {
                   SharedPreferences prefs =
                       await SharedPreferences.getInstance();
                   prefs.remove('user');
+
+// Actualizamos el estado del usuario en UserProvider
+                  Provider.of<UserProvider>(context, listen: false).logout();
+
                   if (context.mounted) {
                     context.go('/');
                   }
