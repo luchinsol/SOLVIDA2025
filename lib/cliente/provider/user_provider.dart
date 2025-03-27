@@ -42,6 +42,12 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> logout() async {
+    _user = null; // Eliminamos el usuario en memoria
+    notifyListeners(); // Notificamos a los widgets que dependen de este provider
+  }
+
   // ACTUALIZAS EL VALOR DEL OBJETO Y NOTIFICAMOS A LOS RECEPTORES
   /*void updateUser(UserModel newUser) async {
     _user = newUser;
