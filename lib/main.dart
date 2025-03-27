@@ -90,6 +90,9 @@ void main() async {
 
   UserProvider userProvider = UserProvider();
   await userProvider.initUser();
+
+  ConductorProvider conductorProvider = ConductorProvider();
+  await conductorProvider.initConductor();
   //SocketService();
   runApp(
     MultiProvider(
@@ -99,7 +102,8 @@ void main() async {
         ChangeNotifierProvider(create: (context) => UbicacionProvider()),
         ChangeNotifierProvider(create: (context) => UbicacionListProvider()),
         //ChangeNotifierProvider<PedidosProvider>.value(value: pedidosProvider),
-        ChangeNotifierProvider(create: (context) => ConductorProvider()),
+        ChangeNotifierProvider<ConductorProvider>.value(
+            value: conductorProvider),
         ChangeNotifierProvider(create: (context) => AlmacenProvider()),
         ChangeNotifierProvider(create: (context) => PedidosProvider2()),
         ChangeNotifierProvider(create: (context) => LastpedidoProvider()),
@@ -128,23 +132,34 @@ final GoRouter _router = GoRouter(
         //return const AdminDriver();
         // return const PedidoWidget();
         UserProvider userProvider = Provider.of<UserProvider>(context);
+        ConductorProvider conductorProvider =
+            Provider.of<ConductorProvider>(context);
         if (userProvider.user != null) {
           return UpgradeAlert(
               upgrader: Upgrader(
                 languageCode: "es",
                 //debugLogging: true,
-                minAppVersion: "3.3.7",
+                minAppVersion: "3.4.0",
                 //debugDisplayAlways: true,
               ),
               showIgnore: false,
               showLater: false,
               child: const BarraNavegacion());
+        } else if (conductorProvider.conductor != null) {
+          return UpgradeAlert(
+              upgrader: Upgrader(
+                languageCode: "es",
+                minAppVersion: "3.4.0",
+              ),
+              showIgnore: false,
+              showLater: false,
+              child: const BarraConductorAdmin());
         } else {
           return UpgradeAlert(
               upgrader: Upgrader(
                 languageCode: "es",
                 //debugLogging: true,
-                minAppVersion: "3.3.7",
+                minAppVersion: "3.4.0",
                 //debugDisplayAlways: true,
               ),
               showIgnore: false,
